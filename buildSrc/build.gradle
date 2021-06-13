@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    compileOnly gradleApi()
+
+    implementation 'org.spongepowered:configurate-gson:4.1.1'
+}
+
+sourceCompatibility = '11.0'

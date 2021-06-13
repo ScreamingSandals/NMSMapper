@@ -1,0 +1,6 @@
+cache/
+src/main/resources/nms-mappings
+build/
+.gradle/
+.idea/
+*.iml

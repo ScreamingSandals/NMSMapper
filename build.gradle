@@ -1,0 +1,22 @@
+import org.screamingsandals.nms.mapper.NMSMapper
+
+allprojects {
+    group = 'org.screamingsandals.nms'
+    version = VERSION
+}
+
+buildscript {
+    repositories {
+        maven { url 'https://repo.screamingsandals.org/public/' }
+    }
+    dependencies {
+		classpath 'org.screamingsandals.gradle.builder:screaming-plugin-builder:1.0.43'
+    }
+}
+
+apply plugin: 'org.screamingsandals.gradle.builder'
+apply plugin: NMSMapper
+
+nms.buildTasks(['1.17', '1.16.5', '1.16.4', '1.16.3', '1.16.2', '1.16.1', '1.15.2', '1.15.1', '1.15', '1.14.4'])
+
+sourceCompatibility = '11.0'

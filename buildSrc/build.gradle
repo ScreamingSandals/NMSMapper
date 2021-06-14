@@ -12,6 +12,7 @@ dependencies {
     compileOnly gradleApi()
 
     implementation 'org.spongepowered:configurate-gson:4.1.1'
+    implementation 'com.j2html:j2html:1.4.0'
 }
 
 sourceCompatibility = '11.0'

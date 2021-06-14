@@ -48,7 +48,7 @@ public class MojangMappingParser {
                     return;
                 }
 
-                var matcher = Pattern.compile("\\s+(\\d+:\\d+:)?(?<type>[^\\s])+\\s(?<unobfuscated>[^\\s(]+)\\((?<parameters>[^)]*)\\)\\s->\\s(?<obfuscated>[^\\s]+)").matcher(line);
+                var matcher = Pattern.compile("\\s+(\\d+:\\d+:)?(?<type>[^\\s]+)\\s(?<unobfuscated>[^\\s(]+)\\((?<parameters>[^)]*)\\)\\s->\\s(?<obfuscated>[^\\s]+)").matcher(line);
 
                 if (!matcher.find()) {
                     return;

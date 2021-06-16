@@ -32,6 +32,40 @@ public class DescriptionPage implements WebsiteComponent {
                 ),
                 body(
                         div(
+                                nav(
+                                        div(
+                                                div(
+                                                        ul(
+                                                                li(
+                                                                        a(
+                                                                                "Main page"
+                                                                        )
+                                                                                .withClass("nav-link")
+                                                                                .withHref("../".repeat(keyName.split("\\.").length))
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "Overview"
+                                                                        )
+                                                                                .withClass("nav-link")
+                                                                                .withHref("../".repeat(keyName.split("\\.").length - 1))
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "Package"
+                                                                        ).withClass("nav-link")
+                                                                        .withHref("index.html")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "Class"
+                                                                        ).withClass("nav-link active")
+                                                                ).withClass("nav-item")
+                                                        ).withClass("navbar-nav")
+
+                                                ).withClass("collapse navbar-collapse")
+                                        ).withClass("container-fluid")
+                                ).withClass("navbar navbar-light bg-light navbar-expand"),
                                 div("Package " + keyName.substring(0, keyName.lastIndexOf("."))),
                                 h1(keyName.substring(keyName.lastIndexOf(".") + 1)),
                                 ul(
@@ -61,7 +95,7 @@ public class DescriptionPage implements WebsiteComponent {
                                                         )
                                                 ),
                                                 tbody(
-                                                    getMethods()
+                                                        getMethods()
                                                 )
                                         ).withClass("table table-stripped")
                                 ).withClass("methods")
@@ -156,15 +190,10 @@ public class DescriptionPage implements WebsiteComponent {
 
     @SneakyThrows
     public String generateLink(String clazz) {
-        var ownPath = keyName
-                .replace(".", "/")
-                .replace("${V}", "VVV");
-        ownPath = ownPath.substring(0, ownPath.lastIndexOf("/"));
-        var pathKey = clazz
+        // TODO: Generate better links
+        return "../".repeat(keyName.split("\\.").length - 1) + clazz
                 .replace(".", "/")
                 .replace("${V}", "VVV")
                 .replace("[]", "") + ".html";
-
-        return new URI(ownPath).relativize(new URI(pathKey)).getPath();
     }
 }

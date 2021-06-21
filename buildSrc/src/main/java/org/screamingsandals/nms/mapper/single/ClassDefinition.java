@@ -43,6 +43,10 @@ public class ClassDefinition {
         public static Link nmsLink(String type) {
             return new Link(type, true);
         }
+
+        public String joined() {
+            return (nms ? "&" : "") + type;
+        }
     }
 
     // TODO: figure out how to do custom serializer (configurate is refusing to do anything for some reason)
@@ -52,8 +56,7 @@ public class ClassDefinition {
         fields.forEach((k,v) -> {
             try {
                 var f = fieldsN.appendListNode();
-                f.node("type").node("type").set(v.getType().getType());
-                f.node("type").node("nms").set(v.getType().isNms());
+                f.node("type").set(v.getType().joined());
                 f.node("mapping").set(v.getMapping());
             } catch (SerializationException serializationException) {
                 serializationException.printStackTrace();
@@ -65,8 +68,7 @@ public class ClassDefinition {
             v.getParameters().forEach(link -> {
                 try {
                     var listNode = constructorN.appendListNode();
-                    listNode.node("type").set(link.getType());
-                    listNode.node("nms").set(link.isNms());
+                    listNode.set(link.joined());
                 } catch (SerializationException serializationException) {
                     serializationException.printStackTrace();
                 }
@@ -76,14 +78,12 @@ public class ClassDefinition {
         methods.forEach(v -> {
             try {
                 var methodN = methodsN.appendListNode();
-                methodN.node("returnType").node("type").set(v.getReturnType().getType());
-                methodN.node("returnType").node("nms").set(v.getReturnType().isNms());
+                methodN.node("returnType").set(v.getReturnType().joined());
                 methodN.node("mapping").set(v.getMapping());
                 v.getParameters().forEach(link -> {
                     try {
                         var listNode = methodN.node("parameters").appendListNode();
-                        listNode.node("type").set(link.getType());
-                        listNode.node("nms").set(link.isNms());
+                        listNode.set(link.joined());
                     } catch (SerializationException serializationException) {
                         serializationException.printStackTrace();
                     }

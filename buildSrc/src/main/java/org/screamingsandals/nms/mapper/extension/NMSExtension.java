@@ -3,6 +3,7 @@ package org.screamingsandals.nms.mapper.extension;
 import lombok.Data;
 import org.gradle.api.Project;
 import org.screamingsandals.nms.mapper.tasks.DocsGenerationTask;
+import org.screamingsandals.nms.mapper.tasks.JoinedMappingTask;
 import org.screamingsandals.nms.mapper.tasks.RemappingTask;
 import org.screamingsandals.nms.mapper.tasks.SaveMappingsTask;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
@@ -25,6 +26,12 @@ public class NMSExtension {
                 saveMappingsTask.getUtils().set(utilsHolder);
 
                 saveMappingsTask.dependsOn(versions.stream().map(s -> "remapVersion" + s).toArray());
+            });
+
+            project.getTasks().create("createAndSaveJoinedMappings", JoinedMappingTask.class, joinedMappingTask -> {
+                joinedMappingTask.getUtils().set(utilsHolder);
+
+                joinedMappingTask.dependsOn(versions.stream().map(s -> "remapVersion" + s).toArray());
             });
 
             project.getTasks().create("generateNmsDocs", DocsGenerationTask.class, docsGenerationTask -> {

@@ -61,7 +61,7 @@ public class MojangMappingParser {
                 while (matcherI.find()) {
                     var clazz = matcherI.group();
 
-                    if (map.containsKey(clazz)) {
+                    if (map.containsKey(clazz.replaceAll("\\[]", ""))) {
                         parameters.add(ClassDefinition.Link.nmsLink(clazz));
                     } else {
                         parameters.add(ClassDefinition.Link.casualLink(clazz));
@@ -76,7 +76,7 @@ public class MojangMappingParser {
                 } else {
                     var type = matcher.group("type");
                     ClassDefinition.Link link;
-                    if (map.containsKey(type)) {
+                    if (map.containsKey(type.replaceAll("\\[]", ""))) {
                         link = ClassDefinition.Link.nmsLink(type);
                     } else {
                         link = ClassDefinition.Link.casualLink(type);
@@ -100,7 +100,7 @@ public class MojangMappingParser {
 
                 var type = matcher.group("type");
                 ClassDefinition.Link link;
-                if (map.containsKey(type)) {
+                if (map.containsKey(type.replaceAll("\\[]", ""))) {
                     link = ClassDefinition.Link.nmsLink(type);
                 } else {
                     link = ClassDefinition.Link.casualLink(type);

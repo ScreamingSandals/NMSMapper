@@ -1,24 +1,35 @@
 package org.screamingsandals.nms.mapper.tasks;
 
+import lombok.SneakyThrows;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
-import org.spongepowered.configurate.ConfigurateException;
-import org.spongepowered.configurate.gson.GsonConfigurationLoader;
-import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.DigestException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class JoinedMappingTask extends DefaultTask {
+    private static MessageDigest digest;
+
+    static {
+        try {
+            digest = MessageDigest.getInstance("sha256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Input
     public abstract Property<UtilsHolder> getUtils();
 
@@ -30,13 +41,15 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
         var mappings = getUtils().get().getMappings();
 
-        var finalMapping = new HashMap<String, JoinedClassDefinition>();
-        versions.forEach(version ->
-                mappings.get(version).forEach((key, classDefinition) -> {
-                    if (!finalMapping.containsKey(key)) {
-                        finalMapping.put(key, new JoinedClassDefinition());
+        var finalMapping = getUtils().get().getJoinedMappings();
+        versions.forEach(version -> {
+            mappings.get(version).forEach((key, classDefinition) -> {
+                try {
+                    var finalClassName = getJoinedClassName(classDefinition);
+                    if (!finalMapping.containsKey(finalClassName)) {
+                        finalMapping.put(finalClassName, new JoinedClassDefinition());
                     }
-                    var definition = finalMapping.get(key);
+                    var definition = finalMapping.get(finalClassName);
                     classDefinition.getMapping().forEach((mappingType, s) -> definition.getMapping()
                             .entrySet()
                             .stream()
@@ -49,19 +62,27 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
                     classDefinition.getConstructors().forEach(constructorDefinition -> definition.getConstructors()
                             .stream()
-                            .filter(joinedConstructor -> constructorDefinition.getParameters().equals(joinedConstructor.getParameters()))
+                            .filter(joinedConstructor -> constructorDefinition.getParameters()
+                                    .stream()
+                                    .map(link -> remapParameterType(version, link))
+                                    .collect(Collectors.toList())
+                                    .equals(joinedConstructor.getParameters())
+                            )
                             .findFirst()
                             .ifPresentOrElse(joinedConstructor -> joinedConstructor.getSupportedVersions().add(version), () -> {
                                 var constructor = new JoinedClassDefinition.JoinedConstructor();
                                 constructor.getSupportedVersions().add(version);
-                                constructor.getParameters().addAll(constructorDefinition.getParameters());
+                                constructor.getParameters().addAll(constructorDefinition.getParameters()
+                                        .stream()
+                                        .map(link -> remapParameterType(version, link))
+                                        .collect(Collectors.toList()));
                                 definition.getConstructors().add(constructor);
                             }));
 
                     classDefinition.getFields().forEach((s, fieldDefinition) -> {
                         definition.getFields()
                                 .stream()
-                                .filter(joinedField -> joinedField.getType().equals(fieldDefinition.getType()) && joinedField.getMapping()
+                                .filter(joinedField -> joinedField.getType().equals(remapParameterType(version, fieldDefinition.getType())) && joinedField.getMapping()
                                         .entrySet()
                                         .stream()
                                         .filter(entry -> entry.getKey().getValue() == MappingType.MOJANG)
@@ -81,7 +102,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                                             joinedField.getMapping().put(Map.entry(entry.getKey().getKey() + "," + version, entry.getKey().getValue()), entry.getValue());
                                                         },
                                                         () -> joinedField.getMapping().put(Map.entry(version, mappingType), s3))), () -> {
-                                    var joinedField = new JoinedClassDefinition.JoinedField(fieldDefinition.getType());
+                                    var joinedField = new JoinedClassDefinition.JoinedField(remapParameterType(version, fieldDefinition.getType()));
                                     fieldDefinition.getMapping()
                                             .forEach((mappingType, s1) -> joinedField.getMapping().put(Map.entry(version, mappingType), s1));
 
@@ -93,7 +114,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     classDefinition.getMethods().forEach(methodDefinition -> {
                         definition.getMethods()
                                 .stream()
-                                .filter(joinedMethod -> joinedMethod.getReturnType().equals(methodDefinition.getReturnType())
+                                .filter(joinedMethod -> joinedMethod.getReturnType().equals(remapParameterType(version, methodDefinition.getReturnType()))
                                         && joinedMethod.getMapping()
                                         .entrySet()
                                         .stream()
@@ -102,7 +123,11 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                         .findFirst()
                                         .orElse("")
                                         .equals(methodDefinition.getMapping().get(MappingType.MOJANG))
-                                        && methodDefinition.getParameters().equals(joinedMethod.getParameters()))
+                                        && methodDefinition.getParameters()
+                                        .stream()
+                                        .map(link -> remapParameterType(version, link))
+                                        .collect(Collectors.toList())
+                                        .equals(joinedMethod.getParameters()))
                                 .findFirst()
                                 .ifPresentOrElse(joinedMethod -> methodDefinition.getMapping()
                                         .forEach((mappingType, s3) -> joinedMethod.getMapping()
@@ -115,38 +140,69 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                                             joinedMethod.getMapping().put(Map.entry(entry.getKey().getKey() + "," + version, entry.getKey().getValue()), entry.getValue());
                                                         },
                                                         () -> joinedMethod.getMapping().put(Map.entry(version, mappingType), s3))), () -> {
-                                    var joinedMethod = new JoinedClassDefinition.JoinedMethod(methodDefinition.getReturnType());
+                                    var joinedMethod = new JoinedClassDefinition.JoinedMethod(remapParameterType(version, methodDefinition.getReturnType()));
                                     methodDefinition.getMapping()
                                             .forEach((mappingType, s1) -> joinedMethod.getMapping().put(Map.entry(version, mappingType), s1));
-                                    joinedMethod.getParameters().addAll(methodDefinition.getParameters());
+                                    joinedMethod.getParameters().addAll(methodDefinition.getParameters()
+                                            .stream()
+                                            .map(link -> remapParameterType(version, link))
+                                            .collect(Collectors.toList()));
 
                                     definition.getMethods().add(joinedMethod);
                                 });
                     });
-                })
-        );
-
-        System.out.println("Saving joined mappings");
-
-        var saver = GsonConfigurationLoader.builder()
-                .file(new File(getUtils().get().getResourceDir(), "joined.json"))
-                .build();
-
-        var mainNode = saver.createNode();
-
-        finalMapping.forEach((k, v) -> {
-            try {
-                v.asNode(mainNode.node(k));
-            } catch (SerializationException e) {
-                e.printStackTrace();
-            }
+                } catch (DigestException e) {
+                    e.printStackTrace();
+                }
+            });
         });
+    }
 
-        try {
-            saver.save(mainNode);
-        } catch (ConfigurateException e) {
-            e.printStackTrace();
+    public String getJoinedClassName(ClassDefinition classDefinition) throws DigestException {
+        var mojMap = classDefinition.getMapping().get(MappingType.MOJANG); // TODO: add some resolution algorithm for < 1.14.4
+
+        var links = getUtils().get().getJoinedMappingsClassLinks();
+
+        if (links.containsKey(mojMap)) {
+            return links.get(mojMap);
         }
 
+        var byteArray = digest.digest(mojMap.getBytes(StandardCharsets.UTF_8));
+        var longHash = new StringBuilder();
+
+        for (var b : byteArray) {
+            longHash.append(Integer.toHexString(0xFF & b));
+        }
+
+        var length = 7;
+
+        while (true) {
+            var hash = "c_" + longHash.substring(0, length);
+
+            if (links.containsValue(hash)) {
+                length++;
+            } else {
+                links.put(mojMap, hash);
+                return hash;
+            }
+        }
+    }
+
+    @SneakyThrows
+    public ClassDefinition.Link remapParameterType(String version, ClassDefinition.Link link) {
+        if (link.isNms()) {
+            var type = link.getType();
+            var suffix = new StringBuilder();
+            while (type.endsWith("[]")) {
+                suffix.append("[]");
+                type = type.substring(0, type.length() - 2);
+            }
+            if (type.matches(".*\\$\\d+")) { // WTF? How
+                suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                type = type.substring(0, type.lastIndexOf("$"));
+            }
+            return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).get(type)) + suffix);
+        }
+        return link;
     }
 }

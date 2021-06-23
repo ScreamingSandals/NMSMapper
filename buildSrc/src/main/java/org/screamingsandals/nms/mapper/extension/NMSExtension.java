@@ -8,6 +8,7 @@ import org.screamingsandals.nms.mapper.tasks.RemappingTask;
 import org.screamingsandals.nms.mapper.tasks.SaveMappingsTask;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Data
 public class NMSExtension {
@@ -22,23 +23,23 @@ public class NMSExtension {
                 remappingTask.getUtils().set(utilsHolder);
             }));
 
-            project.getTasks().create("saveNmsMappings", SaveMappingsTask.class, saveMappingsTask -> {
-                saveMappingsTask.getUtils().set(utilsHolder);
-
-                saveMappingsTask.dependsOn(versions.stream().map(s -> "remapVersion" + s).toArray());
-            });
-
-            project.getTasks().create("createAndSaveJoinedMappings", JoinedMappingTask.class, joinedMappingTask -> {
+            project.getTasks().create("createJoinedMappings", JoinedMappingTask.class, joinedMappingTask -> {
                 joinedMappingTask.getUtils().set(utilsHolder);
 
                 joinedMappingTask.dependsOn(versions.stream().map(s -> "remapVersion" + s).toArray());
+            });
+
+            project.getTasks().create("saveNmsMappings", SaveMappingsTask.class, saveMappingsTask -> {
+                saveMappingsTask.getUtils().set(utilsHolder);
+
+                saveMappingsTask.dependsOn(Stream.concat(versions.stream().map(s -> "remapVersion" + s), Stream.of("createJoinedMappings")).toArray());
             });
 
             project.getTasks().create("generateNmsDocs", DocsGenerationTask.class, docsGenerationTask -> {
                 docsGenerationTask.getUtils().set(utilsHolder);
                 docsGenerationTask.getOutputFolder().set(project.file("build/docs"));
 
-                docsGenerationTask.dependsOn(versions.stream().map(s -> "remapVersion" + s).toArray());
+                docsGenerationTask.dependsOn(Stream.concat(versions.stream().map(s -> "remapVersion" + s), Stream.of("createJoinedMappings")).toArray());
             });
         }
     }

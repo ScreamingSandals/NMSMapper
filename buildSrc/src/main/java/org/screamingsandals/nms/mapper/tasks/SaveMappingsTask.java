@@ -20,6 +20,7 @@ public abstract class SaveMappingsTask extends DefaultTask {
     @TaskAction
     public void run() {
         getUtils().get().getNewlyGeneratedMappings().forEach(version -> {
+            System.out.println("Saving " + version + " mappings");
             var saver = GsonConfigurationLoader.builder()
                     .file(new File(getUtils().get().getResourceDir(), version + ".json"))
                     .build();
@@ -40,5 +41,29 @@ public abstract class SaveMappingsTask extends DefaultTask {
                 e.printStackTrace();
             }
         });
+
+        System.out.println("Saving joined mappings");
+
+        var saver = GsonConfigurationLoader.builder()
+                .file(new File(getUtils().get().getResourceDir(), "joined.json"))
+                .build();
+
+        var mainNode = saver.createNode();
+
+        getUtils().get().getJoinedMappings().forEach((k, v) -> {
+            try {
+                v.asNode(mainNode.node(k));
+            } catch (SerializationException e) {
+                e.printStackTrace();
+            }
+        });
+
+        mainNode.node("classNames").set(getUtils().get().getJoinedMappingsClassLinks());
+
+        try {
+            saver.save(mainNode);
+        } catch (ConfigurateException e) {
+            e.printStackTrace();
+        }
     }
 }

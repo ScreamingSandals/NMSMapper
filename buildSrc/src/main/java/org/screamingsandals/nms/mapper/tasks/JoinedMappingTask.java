@@ -159,6 +159,10 @@ public abstract class JoinedMappingTask extends DefaultTask {
     }
 
     public String getJoinedClassName(ClassDefinition classDefinition) throws DigestException {
+        if (classDefinition.getJoinedKey() != null) {
+            return classDefinition.getJoinedKey();
+        }
+
         var mojMap = classDefinition.getMapping().get(MappingType.MOJANG); // TODO: add some resolution algorithm for < 1.14.4
 
         var links = getUtils().get().getJoinedMappingsClassLinks();
@@ -182,6 +186,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
             if (links.containsValue(hash)) {
                 length++;
             } else {
+                classDefinition.setJoinedKey(hash);
                 links.put(mojMap, hash);
                 return hash;
             }

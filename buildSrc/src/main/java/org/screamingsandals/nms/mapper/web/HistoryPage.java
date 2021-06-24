@@ -1,0 +1,239 @@
+package org.screamingsandals.nms.mapper.web;
+
+import j2html.tags.ContainerTag;
+import j2html.tags.DomContent;
+import lombok.Data;
+import org.gradle.util.VersionNumber;
+import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.MappingType;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.a;
+
+@Data
+public class HistoryPage implements WebsiteComponent {
+    private final String name;
+    private final Map<String, String> joinedMappingsClassLinks;
+    private final Map<String, JoinedClassDefinition> joinedMappings;
+
+    @Override
+    public ContainerTag generate() {
+        return html(
+                head(
+                        title(name),
+                        link().withRel("stylesheet")
+                                .withHref("https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css")
+                                .attr("integrity", "sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x")
+                                .attr("crossorigin", "anonymous")
+                ),
+                body(
+                        div(
+                                nav(
+                                        div(
+                                                div(
+                                                        ul(
+                                                                li(
+                                                                        a(
+                                                                                "Main page"
+                                                                        )
+                                                                                .withClass("nav-link")
+                                                                                .withHref("../")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "Overview"
+                                                                        )
+                                                                                .withClass("nav-link disabled")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        //.withHref("index.html") There's no overview page yet
+                                                                        a(
+                                                                                "Package"
+                                                                        ).withClass("nav-link disabled")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "Class"
+                                                                        ).withClass("nav-link disabled")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "History"
+                                                                        ).withClass("nav-link active")
+                                                                ).withClass("nav-item")
+                                                        ).withClass("navbar-nav")
+                                                ).withClass("collapse navbar-collapse")
+                                        ).withClass("container-fluid")
+                                ).withClass("navbar navbar-light bg-light navbar-expand"),
+                                h1("History of " + name),
+                                div(
+                                        generateChangelogs()
+                                )
+                        ).withClass("main")
+                )
+        );
+    }
+
+    private DomContent generateChangelogs() {
+        var definition = joinedMappings.get(joinedMappingsClassLinks.get(name));
+
+        var versions = definition.getMapping()
+                .keySet()
+                .stream()
+                .filter(s -> s.getValue() == MappingType.OBFUSCATED)
+                .map(s -> s.getKey().split(","))
+                .flatMap(Stream::of)
+                .sorted(Comparator.comparing(VersionNumber::parse).reversed())
+                .collect(Collectors.toList());
+
+        var mainContent = div();
+
+        versions.forEach(s -> {
+            var d = div(
+                    h5(s).withClass("card-title")
+            ).withClass("card card-body m-5");
+
+            var changes = false;
+
+            var previousVersionIndex = versions.indexOf(s) + 1;
+            var previousVersion = versions.size() > previousVersionIndex ? versions.get(previousVersionIndex) : null;
+
+            var classMapping = definition.getMapping()
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Arrays.asList(e.getKey().getKey().split(",")).contains(s))
+                    .collect(Collectors.toList());
+
+            var constructorsMapping = definition.getConstructors()
+                    .stream()
+                    .filter(e -> e.getSupportedVersions().contains(s))
+                    .collect(Collectors.toList());
+
+            if (previousVersion == null) { // Everything is change
+                changes = true;
+                d.with(p(i("First known occurrence")));
+
+                d.with(h6("Name mapping").withClass("card-subtitle mb-2 text-muted"));
+                classMapping.forEach(entry ->
+                        d.with(div(text(entry.getKey().getValue().name()), text(": "), text(entry.getValue())).withClass("alert-info font-monospace"))
+                );
+
+                if (!constructorsMapping.isEmpty()) {
+                    d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
+                    constructorsMapping.forEach(entry ->
+                            d.with(div(text("+ "), renderMethodParameters(entry.getParameters())).withClass("alert-info font-monospace"))
+                    );
+                }
+            } else {
+                var diffClassMapping = classMapping
+                        .stream()
+                        .map(entry -> {
+                            var old = definition.getMapping().entrySet().stream()
+                                    .filter(e -> Arrays.asList(e.getKey().getKey().split(",")).contains(previousVersion) && e.getKey().getValue() == entry.getKey().getValue())
+                                    .findFirst();
+
+                            if (old.isPresent()) {
+                                if (!old.get().getValue().equals(entry.getValue())) {
+                                    return div(
+                                            div("- " + entry.getKey().getValue() + ": " + old.get().getValue()).withClass("alert-danger font-monospace"),
+                                            div("+ " + entry.getKey().getValue() + ": " + entry.getValue()).withClass("alert-success font-monospace")
+                                    );
+                                }
+                            } else {
+                                return div("+ " + entry.getKey().getValue() + ": " + entry.getValue()).withClass("alert-success font-monospace");
+                            }
+
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                if (!diffClassMapping.isEmpty()) {
+                    changes = true;
+                    d.with(h6("Name mapping").withClass("card-subtitle mb-2 text-muted"));
+                    diffClassMapping.forEach(d::with);
+                }
+
+
+                var diffConstructors = Stream
+                        .concat(
+                                constructorsMapping
+                                        .stream()
+                                        .map(entry -> {
+                                            if (!entry.getSupportedVersions().contains(previousVersion)) {
+                                                return div(text("+ "), renderMethodParameters(entry.getParameters())).withClass("alert-success font-monospace");
+                                            }
+
+                                            return null;
+                                        }),
+                                definition.getConstructors()
+                                        .stream()
+                                        .filter(e -> e.getSupportedVersions().contains(previousVersion) && !e.getSupportedVersions().contains(s))
+                                        .map(entry -> div(text("- "), renderMethodParameters(entry.getParameters())).withClass("alert-danger font-monospace"))
+                        )
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                if (!diffConstructors.isEmpty()) {
+                    changes = true;
+                    d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
+                    diffConstructors.forEach(d::with);
+                }
+            }
+
+            if (!changes) {
+                d.with(i("No changes so far"));
+            }
+
+            mainContent.with(d);
+        });
+
+        return mainContent;
+    }
+
+    public DomContent renderMethodParameters(List<ClassDefinition.Link> parameters) {
+        var span = span(text("("));
+        var first = new AtomicBoolean();
+
+        parameters.stream()
+                .map(this::nmsLink)
+                .forEach(r -> {
+                    if (first.get()) {
+                        span.with(text(", "));
+                    } else {
+                        first.set(true);
+                    }
+                    span.with(r);
+                });
+
+        span.with(text(")"));
+        return span;
+    }
+
+    public DomContent nmsLink(ClassDefinition.Link link) {
+        if (link.isNms()) {
+            var type = link.getType();
+            var suffix = new StringBuilder();
+            while (type.endsWith("[]")) {
+                suffix.append("[]");
+                type = type.substring(0, type.length() - 2);
+            }
+            if (type.matches(".*\\$\\d+")) { // WTF? How
+                suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                type = type.substring(0, type.lastIndexOf("$"));
+            }
+            var finalType = type;
+            var name = joinedMappingsClassLinks.entrySet().stream().filter(e -> e.getValue().equals(finalType)).map(Map.Entry::getKey).findFirst().orElse(finalType);
+            return span(a(name.substring(name.lastIndexOf(".") + 1))
+                    .withHref(type + ".html"), text(suffix.toString()));
+        } else {
+            return text(link.getType());
+        }
+    }
+}

@@ -5,10 +5,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
-import org.screamingsandals.nms.mapper.web.DescriptionPage;
-import org.screamingsandals.nms.mapper.web.MainPage;
-import org.screamingsandals.nms.mapper.web.OverviewPage;
-import org.screamingsandals.nms.mapper.web.PackageInfoPage;
+import org.screamingsandals.nms.mapper.web.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -80,6 +77,18 @@ public abstract class DocsGenerationTask extends DefaultTask {
             finalHtml.getParentFile().mkdirs();
 
             var page = new OverviewPage("NMS mapping - v" + version, packages);
+            try (var fileWriter = new FileWriter(finalHtml)) {
+                page.generate().render(fileWriter);
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+        });
+
+        getUtils().get().getJoinedMappingsClassLinks().forEach((s, s2) -> {
+            var finalHtml = new File(outputFolder, "history/" + s2 + ".html");
+            finalHtml.getParentFile().mkdirs();
+
+            var page = new HistoryPage(s, getUtils().get().getJoinedMappingsClassLinks(), getUtils().get().getJoinedMappings());
             try (var fileWriter = new FileWriter(finalHtml)) {
                 page.generate().render(fileWriter);
             } catch (IOException exception) {

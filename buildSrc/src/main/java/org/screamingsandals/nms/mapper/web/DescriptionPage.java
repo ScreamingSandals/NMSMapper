@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +59,12 @@ public class DescriptionPage implements WebsiteComponent {
                                                                         a(
                                                                                 "Class"
                                                                         ).withClass("nav-link active")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "History"
+                                                                        ).withClass("nav-link")
+                                                                        .withHref("../".repeat(keyName.split("\\.").length) + "/history/" + definition.getJoinedKey() + ".html")
                                                                 ).withClass("nav-item")
                                                         ).withClass("navbar-nav")
 
@@ -172,8 +177,18 @@ public class DescriptionPage implements WebsiteComponent {
 
     public DomContent convertToMapping(ClassDefinition.Link link, MappingType mappingType) {
         if (link.isNms()) {
-            return a(mappings.get(link.getType()).getMapping().getOrDefault(mappingType, mappings.get(link.getType()).getMapping().get(MappingType.OBFUSCATED)))
-                    .withHref(generateLink(link.getType()));
+            var type = link.getType();
+            var suffix = new StringBuilder();
+            while (type.endsWith("[]")) {
+                suffix.append("[]");
+                type = type.substring(0, type.length() - 2);
+            }
+            if (type.matches(".*\\$\\d+")) { // WTF? How
+                suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                type = type.substring(0, type.lastIndexOf("$"));
+            }
+            return span(a(mappings.get(type).getMapping().getOrDefault(mappingType, mappings.get(type).getMapping().get(MappingType.OBFUSCATED)))
+                    .withHref(generateLink(type)), text(suffix.toString()));
         } else {
             return text(link.getType());
         }

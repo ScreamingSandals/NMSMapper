@@ -13,6 +13,8 @@ public class ClassDefinition {
     private final List<MethodDefinition> methods = new ArrayList<>();
     private final List<ConstructorDefinition> constructors = new ArrayList<>();
 
+    private volatile String joinedKey;
+
     @Data
     public static class FieldDefinition {
         private final Link type;

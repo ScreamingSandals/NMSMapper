@@ -49,6 +49,11 @@ public class MainPage implements WebsiteComponent {
                                                                         a(
                                                                                 "Class"
                                                                         ).withClass("nav-link disabled")
+                                                                ).withClass("nav-item"),
+                                                                li(
+                                                                        a(
+                                                                                "History"
+                                                                        ).withClass("nav-link disabled")
                                                                 ).withClass("nav-item")
                                                         ).withClass("navbar-nav")
                                                 ).withClass("collapse navbar-collapse")

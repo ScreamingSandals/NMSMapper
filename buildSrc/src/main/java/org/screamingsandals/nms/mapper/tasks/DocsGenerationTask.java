@@ -46,6 +46,10 @@ public abstract class DocsGenerationTask extends DefaultTask {
                     packages.add(packageStr);
                 }
 
+                classDefinition.setPathKey(pathKey + ".html");
+
+                getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, pathKey + ".html");
+
                 var finalHtml = new File(versionDirectory, pathKey + ".html");
                 finalHtml.getParentFile().mkdirs();
 

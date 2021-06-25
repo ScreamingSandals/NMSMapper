@@ -59,9 +59,27 @@ public class SpigotMappingParser {
                 }
             }
             split[1] = split[1].replace("/", ".");
+            split[0] = split[0].replace("/", ".");
 
-            obfuscateToValue.get(split[0].replace("/", ".")).getMapping().put(MappingType.SPIGOT, split[1]);
-            spigotToValue.put(split[1], obfuscateToValue.get(split[0].replace("/", ".")));
+            var tempMapping = obfuscateToValue.get(split[0]).getMapping().get(MappingType.SPIGOT);
+
+            if (tempMapping != null) {
+                // Nested class automatically got mapping but it's not valid
+                spigotToValue.remove(tempMapping);
+            }
+
+            obfuscateToValue.get(split[0]).getMapping().put(MappingType.SPIGOT, split[1]);
+            spigotToValue.put(split[1], obfuscateToValue.get(split[0]));
+
+            // Filtering nested classes
+            obfuscateToValue.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getKey().startsWith(split[0] + "$") && !entry.getValue().getMapping().containsKey(MappingType.SPIGOT))
+                    .forEach(entry -> {
+                        var spigotName = split[1] + entry.getKey().substring(entry.getKey().indexOf("$"));
+                        entry.getValue().getMapping().put(MappingType.SPIGOT, spigotName);
+                        spigotToValue.put(spigotName, entry.getValue());
+                    });
         });
 
         if (old) {

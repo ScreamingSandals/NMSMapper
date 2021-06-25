@@ -96,7 +96,7 @@ public class HistoryPage implements WebsiteComponent {
 
         versions.forEach(s -> {
             var d = div(
-                    h5(s).withClass("card-title")
+                    h5(a(s).withHref("../" + s + "/" + definition.getPathKeys().get(s))).withClass("card-title")
             ).withClass("card card-body m-5");
 
             var changes = false;
@@ -115,6 +115,26 @@ public class HistoryPage implements WebsiteComponent {
                     .filter(e -> e.getSupportedVersions().contains(s))
                     .collect(Collectors.toList());
 
+            var fieldsMapping = definition.getFields()
+                    .stream()
+                    .map(e -> Map.entry(e.getMapping()
+                            .entrySet()
+                            .stream()
+                            .filter(e1 -> Arrays.asList(e1.getKey().getKey().split(",")).contains(s))
+                            .collect(Collectors.toList()), e))
+                    .filter(l -> !l.getKey().isEmpty())
+                    .collect(Collectors.toList());
+
+            var methodsMapping = definition.getMethods()
+                    .stream()
+                    .map(e -> Map.entry(e.getMapping()
+                            .entrySet()
+                            .stream()
+                            .filter(e1 -> Arrays.asList(e1.getKey().getKey().split(",")).contains(s))
+                            .collect(Collectors.toList()), e))
+                    .filter(l -> !l.getKey().isEmpty())
+                    .collect(Collectors.toList());
+
             if (previousVersion == null) { // Everything is change
                 changes = true;
                 d.with(p(i("First known occurrence")));
@@ -127,7 +147,21 @@ public class HistoryPage implements WebsiteComponent {
                 if (!constructorsMapping.isEmpty()) {
                     d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
                     constructorsMapping.forEach(entry ->
-                            d.with(div(text("+ "), renderMethodParameters(entry.getParameters())).withClass("alert-info font-monospace"))
+                            d.with(div(renderMethodParameters(entry.getParameters())).withClass("alert-info font-monospace"))
+                    );
+                }
+
+                if (!fieldsMapping.isEmpty()) {
+                    d.with(h6("Fields").withClass("card-subtitle mb-2 text-muted"));
+                    fieldsMapping.forEach(entry ->
+                            d.with(div(nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-info font-monospace"))
+                    );
+                }
+
+                if (!methodsMapping.isEmpty()) {
+                    d.with(h6("Methods").withClass("card-subtitle mb-2 text-muted"));
+                    methodsMapping.forEach(entry ->
+                            d.with(div(nmsLink(entry.getValue().getReturnType()), renderMethodParameters(entry.getValue().getParameters()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-info font-monospace"))
                     );
                 }
             } else {
@@ -160,7 +194,6 @@ public class HistoryPage implements WebsiteComponent {
                     diffClassMapping.forEach(d::with);
                 }
 
-
                 var diffConstructors = Stream
                         .concat(
                                 constructorsMapping
@@ -184,6 +217,102 @@ public class HistoryPage implements WebsiteComponent {
                     changes = true;
                     d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
                     diffConstructors.forEach(d::with);
+                }
+
+                var oldFields = definition.getFields()
+                        .stream()
+                        .map(e -> Map.entry(e.getMapping()
+                                .entrySet()
+                                .stream()
+                                .filter(e1 -> Arrays.asList(e1.getKey().getKey().split(",")).contains(previousVersion))
+                                .collect(Collectors.toList()), e))
+                        .filter(l -> !l.getKey().isEmpty())
+                        .collect(Collectors.toList());
+
+                var diffFieldsMapping = Stream
+                        .concat(
+                                fieldsMapping
+                                        .stream()
+                                        .map(entry -> {
+                                            if (!oldFields.contains(entry)) {
+                                                var similar = oldFields.stream()
+                                                        .filter(e -> e.getValue() == entry.getValue())
+                                                        .findFirst();
+
+                                                if (similar.isPresent()) {
+                                                    return div(
+                                                            div(text("- "), nmsLink(similar.get().getValue().getType()), text(" " + similar.get().getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace"),
+                                                            div(text("+ "), nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-success font-monospace")
+                                                    );
+                                                }
+
+                                                return div(text("+ "), nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-success font-monospace");
+                                            }
+
+                                            return null;
+                                        }),
+                                oldFields
+                                    .stream()
+                                    .filter(e -> fieldsMapping.stream().noneMatch(e2 -> e2.getValue() == e.getValue()))
+                                    .map(entry ->
+                                            div(text("- "), nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace")
+                                    )
+                        )
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                if (!diffFieldsMapping.isEmpty()) {
+                    changes = true;
+                    d.with(h6("Fields").withClass("card-subtitle mb-2 text-muted"));
+                    diffFieldsMapping.forEach(d::with);
+                }
+
+                var oldMethods = definition.getMethods()
+                        .stream()
+                        .map(e -> Map.entry(e.getMapping()
+                                .entrySet()
+                                .stream()
+                                .filter(e1 -> Arrays.asList(e1.getKey().getKey().split(",")).contains(previousVersion))
+                                .collect(Collectors.toList()), e))
+                        .filter(l -> !l.getKey().isEmpty())
+                        .collect(Collectors.toList());
+
+                var diffMethodsMapping = Stream
+                        .concat(
+                                methodsMapping
+                                        .stream()
+                                        .map(entry -> {
+                                            if (!oldMethods.contains(entry)) {
+                                                var similar = oldMethods.stream()
+                                                        .filter(e -> e.getValue() == entry.getValue())
+                                                        .findFirst();
+
+                                                if (similar.isPresent()) {
+                                                    return div(
+                                                            div(text("- "), nmsLink(similar.get().getValue().getReturnType()), renderMethodParameters(similar.get().getValue().getParameters()), text(" " + similar.get().getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace"),
+                                                            div(text("+ "), nmsLink(entry.getValue().getReturnType()), renderMethodParameters(entry.getValue().getParameters()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-success font-monospace")
+                                                    );
+                                                }
+
+                                                return div(text("+ "), nmsLink(entry.getValue().getReturnType()), renderMethodParameters(entry.getValue().getParameters()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-success font-monospace");
+                                            }
+
+                                            return null;
+                                        }),
+                                oldMethods
+                                        .stream()
+                                        .filter(e -> methodsMapping.stream().noneMatch(e2 -> e2.getValue() == e.getValue()))
+                                        .map(entry ->
+                                                div(text("- "), nmsLink(entry.getValue().getReturnType()), renderMethodParameters(entry.getValue().getParameters()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace")
+                                        )
+                        )
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                if (!diffMethodsMapping.isEmpty()) {
+                    changes = true;
+                    d.with(h6("Methods").withClass("card-subtitle mb-2 text-muted"));
+                    diffMethodsMapping.forEach(d::with);
                 }
             }
 

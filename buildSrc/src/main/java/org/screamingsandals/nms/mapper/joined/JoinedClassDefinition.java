@@ -18,6 +18,8 @@ public class JoinedClassDefinition {
     private final List<JoinedConstructor> constructors = new ArrayList<>();
     private final List<JoinedMethod> methods = new ArrayList<>();
 
+    private transient final Map<String, String> pathKeys = new HashMap<>();
+
     @Data
     public static class JoinedField {
         private final ClassDefinition.Link type;

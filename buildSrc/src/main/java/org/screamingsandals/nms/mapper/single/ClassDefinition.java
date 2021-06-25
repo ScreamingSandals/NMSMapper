@@ -13,7 +13,8 @@ public class ClassDefinition {
     private final List<MethodDefinition> methods = new ArrayList<>();
     private final List<ConstructorDefinition> constructors = new ArrayList<>();
 
-    private volatile String joinedKey;
+    private transient String joinedKey;
+    private transient String pathKey;
 
     @Data
     public static class FieldDefinition {

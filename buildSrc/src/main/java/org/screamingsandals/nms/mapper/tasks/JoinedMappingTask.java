@@ -168,6 +168,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
         var links = getUtils().get().getJoinedMappingsClassLinks();
 
         if (links.containsKey(mojMap)) {
+            classDefinition.setJoinedKey(links.get(mojMap));
             return links.get(mojMap);
         }
 

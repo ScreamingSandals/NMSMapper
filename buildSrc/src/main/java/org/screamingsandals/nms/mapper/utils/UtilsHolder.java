@@ -3,6 +3,7 @@ package org.screamingsandals.nms.mapper.utils;
 import lombok.Data;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.MappingType;
 import org.spongepowered.configurate.ConfigurationNode;
 
 import java.io.File;
@@ -17,8 +18,10 @@ public class UtilsHolder {
     private final Caching caching;
     private final Map<String, Map<String, ClassDefinition>> mappings = new HashMap<>();
     private final File resourceDir;
-    private final List<String> newlyGeneratedMappings = new ArrayList<>();
+    private final Map<String, MappingType> newlyGeneratedMappings = new HashMap<>();
     private final AtomicReference<ConfigurationNode> versionManifest = new AtomicReference<>();
     private final Map<String, String> joinedMappingsClassLinks = new HashMap<>();
     private final Map<String, JoinedClassDefinition> joinedMappings = new HashMap<>();
+    private final Map<String, String> spigotJoinedMappingsClassLinks = new HashMap<>();
+    private final List<String> undefinedClassLinks = new ArrayList<>();
 }

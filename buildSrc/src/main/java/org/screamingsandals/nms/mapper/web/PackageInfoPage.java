@@ -3,16 +3,18 @@ package org.screamingsandals.nms.mapper.web;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import lombok.Data;
-import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.MiscUtils;
 
-import java.util.Map;
+import java.util.List;
 
 import static j2html.TagCreator.*;
 
 @Data
 public class PackageInfoPage implements WebsiteComponent {
     private final String packageName;
-    private final Map<String, ClassDefinition> mappings;
+    private final List<String> paths;
+    private final MappingType defaultMapping;
 
     @Override
     public ContainerTag generate() {
@@ -65,6 +67,7 @@ public class PackageInfoPage implements WebsiteComponent {
                                         ).withClass("container-fluid")
                                 ).withClass("navbar navbar-light bg-light navbar-expand"),
                                 h1("Package " + packageName),
+                                MiscUtils.descriptions(defaultMapping),
                                 div(
                                         b("Class/Interface/Enum summary"),
                                         table(
@@ -74,15 +77,13 @@ public class PackageInfoPage implements WebsiteComponent {
                                                         )
                                                 ),
                                                 tbody(
-                                                        mappings.keySet()
-                                                                .stream()
+                                                        paths.stream()
                                                                 .sorted()
-                                                                .filter(entry -> entry.substring(0, entry.lastIndexOf(".")).equals(packageName))
                                                                 .map(entry ->
                                                                         tr(
                                                                                 td(
-                                                                                        a(entry.substring(entry.lastIndexOf(".") + 1))
-                                                                                                .withHref(entry.substring(entry.lastIndexOf(".") + 1) + ".html")
+                                                                                        a(entry.substring(0, entry.length() - 5))
+                                                                                                .withHref(entry)
                                                                                 )
                                                                         )
                                                                 )

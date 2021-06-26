@@ -3,15 +3,18 @@ package org.screamingsandals.nms.mapper.web;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import lombok.Data;
+import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.MiscUtils;
 
-import java.util.List;
+import java.util.Set;
 
 import static j2html.TagCreator.*;
 
 @Data
 public class OverviewPage implements WebsiteComponent {
     private final String docsName;
-    private final List<String> packages;
+    private final Set<String> packages;
+    private final MappingType defaultMapping;
 
     @Override
     public ContainerTag generate() {
@@ -60,6 +63,7 @@ public class OverviewPage implements WebsiteComponent {
                                         ).withClass("container-fluid")
                                 ).withClass("navbar navbar-light bg-light navbar-expand"),
                                 h1(docsName),
+                                MiscUtils.descriptions(defaultMapping),
                                 div(
                                         b("Packages"),
                                         table(

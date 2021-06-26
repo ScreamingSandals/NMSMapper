@@ -4,6 +4,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 import org.screamingsandals.nms.mapper.web.*;
 
@@ -11,6 +12,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class DocsGenerationTask extends DefaultTask {
     @Input
@@ -27,24 +32,32 @@ public abstract class DocsGenerationTask extends DefaultTask {
 
         outputFolder.mkdirs();
 
-        versions.forEach(version -> {
+        versions.forEach((version, defaultMapping) -> {
             System.out.println("Generating docs for version " + version);
 
             var versionDirectory = new File(outputFolder, version);
             versionDirectory.mkdirs();
 
-            var packages = new ArrayList<String>();
+            var packages = new HashMap<String, List<String>>();
 
             mappings.get(version).forEach((key, classDefinition) -> {
-                var pathKey = key
+                var key2 = classDefinition.getMapping().getOrDefault(defaultMapping, key);
+
+                var pathKey = key2
                         .replace(".", "/")
                         .replace("${V}", "VVV");
 
-                var packageStr = key.substring(0, key.lastIndexOf("."));
+                var packageStr = key2.lastIndexOf(".") == -1 ? "default-pkg" : key2.substring(0, key2.lastIndexOf("."));
 
-                if (!packages.contains(packageStr)) {
-                    packages.add(packageStr);
+                if (!packages.containsKey(packageStr)) {
+                    packages.put(packageStr, new ArrayList<>());
                 }
+
+                if (packageStr.equals("default-pkg")) {
+                    pathKey = "default-pkg/" + pathKey;
+                }
+
+                packages.get(packageStr).add(pathKey.substring(pathKey.lastIndexOf("/") + 1) + ".html");
 
                 classDefinition.setPathKey(pathKey + ".html");
 
@@ -53,7 +66,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 var finalHtml = new File(versionDirectory, pathKey + ".html");
                 finalHtml.getParentFile().mkdirs();
 
-                var page = new DescriptionPage(key, classDefinition, mappings.get(version));
+                var page = new DescriptionPage(key2, classDefinition, mappings.get(version), defaultMapping);
                 try (var fileWriter = new FileWriter(finalHtml)) {
                     page.generate().render(fileWriter);
                 } catch (IOException exception) {
@@ -61,7 +74,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 }
             });
 
-            packages.forEach(key -> {
+            packages.forEach((key, paths) -> {
                 var pathKey = key
                         .replace(".", "/")
                         .replace("${V}", "VVV");
@@ -69,7 +82,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 var finalHtml = new File(versionDirectory, pathKey + "/index.html");
                 finalHtml.getParentFile().mkdirs();
 
-                var page = new PackageInfoPage(key, mappings.get(version));
+                var page = new PackageInfoPage(key, paths, defaultMapping);
                 try (var fileWriter = new FileWriter(finalHtml)) {
                     page.generate().render(fileWriter);
                 } catch (IOException exception) {
@@ -80,7 +93,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
             var finalHtml = new File(versionDirectory, "index.html");
             finalHtml.getParentFile().mkdirs();
 
-            var page = new OverviewPage("NMS mapping - v" + version, packages);
+            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), defaultMapping);
             try (var fileWriter = new FileWriter(finalHtml)) {
                 page.generate().render(fileWriter);
             } catch (IOException exception) {
@@ -103,7 +116,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
         var finalHtml = new File(outputFolder, "index.html");
         finalHtml.getParentFile().mkdirs();
 
-        var page = new MainPage(versions);
+        var page = new MainPage(versions.keySet().stream().sorted(Comparator.comparing(VersionNumber::parse)).collect(Collectors.toList()));
         try (var fileWriter = new FileWriter(finalHtml)) {
             page.generate().render(fileWriter);
         } catch (IOException exception) {

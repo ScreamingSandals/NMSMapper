@@ -37,7 +37,11 @@ public abstract class JoinedMappingTask extends DefaultTask {
     public void run() {
         System.out.println("Generating joined mapping...");
 
-        var versions = getUtils().get().getNewlyGeneratedMappings().stream().sorted(Comparator.comparing(VersionNumber::parse).reversed()).collect(Collectors.toList());
+        var versions = getUtils().get().getNewlyGeneratedMappings()
+                .keySet()
+                .stream()
+                .sorted(Comparator.comparing(VersionNumber::parse).reversed())
+                .collect(Collectors.toList());
 
         var mappings = getUtils().get().getMappings();
 
@@ -163,7 +167,73 @@ public abstract class JoinedMappingTask extends DefaultTask {
             return classDefinition.getJoinedKey();
         }
 
-        var mojMap = classDefinition.getMapping().get(MappingType.MOJANG); // TODO: add some resolution algorithm for < 1.14.4
+        var mojMap = classDefinition.getMapping().get(MappingType.MOJANG);
+
+        if (mojMap == null) {
+            // YAY, we are on older version
+            var spigotLinks = getUtils().get().getSpigotJoinedMappingsClassLinks();
+            var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
+            if (spigot == null) {
+                var obfuscated = classDefinition.getMapping().get(MappingType.OBFUSCATED);
+                if (obfuscated.equals("net.minecraft.server.Main") || obfuscated.equals("net.minecraft.server.MinecraftServer")) {
+                    spigot = "net.minecraft.server.${V}" + obfuscated.substring(obfuscated.lastIndexOf("."));
+                }
+            }
+
+            if (spigot != null) {
+                spigot = spigot.substring(spigot.lastIndexOf(".") + 1);
+                var hash = spigotLinks.get(spigot);
+
+                if (hash != null) {
+                    return hash;
+                } else {
+                    var byteArray = digest.digest(spigot.getBytes(StandardCharsets.UTF_8));
+                    var longHash = new StringBuilder();
+
+                    for (var b : byteArray) {
+                        longHash.append(Integer.toHexString(0xFF & b));
+                    }
+
+                    var length = 7;
+
+                    while (true) {
+                        hash = "c_old_" + longHash.substring(0, length);
+
+                        if (spigotLinks.containsValue(hash)) {
+                            length++;
+                        } else {
+                            classDefinition.setJoinedKey(hash);
+                            spigotLinks.put(spigot, hash);
+                            return hash;
+                        }
+                    }
+                }
+            } else {
+                var obfuscated = classDefinition.getMapping().get(MappingType.OBFUSCATED);
+
+                var byteArray = digest.digest(obfuscated.getBytes(StandardCharsets.UTF_8));
+                var longHash = new StringBuilder();
+
+                for (var b : byteArray) {
+                    longHash.append(Integer.toHexString(0xFF & b));
+                }
+
+                var length = 7;
+
+                while (true) {
+                    var hash = "c_undefined_" + longHash.substring(0, length);
+
+                    if (getUtils().get().getUndefinedClassLinks().contains(hash)) {
+                        length++;
+                    } else {
+                        classDefinition.setJoinedKey(hash);
+                        System.out.println("Class without any mapping: " + obfuscated + ", hash: " + hash);
+                        getUtils().get().getUndefinedClassLinks().add(hash);
+                        return hash;
+                    }
+                }
+            }
+        }
 
         var links = getUtils().get().getJoinedMappingsClassLinks();
 
@@ -189,6 +259,12 @@ public abstract class JoinedMappingTask extends DefaultTask {
             } else {
                 classDefinition.setJoinedKey(hash);
                 links.put(mojMap, hash);
+                if (classDefinition.getMapping().containsKey(MappingType.SPIGOT)) {
+                    // current spigot 1.17 has still unique names like before just another packages
+                    var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
+                    spigot = spigot.substring(spigot.lastIndexOf(".") + 1);
+                    getUtils().get().getSpigotJoinedMappingsClassLinks().put(spigot, hash);
+                }
                 return hash;
             }
         }

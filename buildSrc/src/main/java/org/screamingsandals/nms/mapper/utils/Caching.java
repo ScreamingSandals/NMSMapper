@@ -2,6 +2,7 @@ package org.screamingsandals.nms.mapper.utils;
 
 import lombok.Data;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -34,5 +35,20 @@ public class Caching {
             Files.writeString(cacheDirectory.resolve(cache), c);
         }
         return c;
+    }
+
+    public File getFile(URI uri, String cache) throws IOException, InterruptedException {
+        return getFile(() -> uri, cache);
+    }
+
+    public File getFile(Supplier<URI> uri, String cache) throws IOException, InterruptedException {
+        if (cache != null && Files.exists(cacheDirectory.resolve(cache))) {
+            return cacheDirectory.resolve(cache).toFile();
+        }
+
+        var p = cache != null ? cacheDirectory.resolve(cache) : File.createTempFile("nms", "cache").toPath();
+        p.getParent().toFile().mkdirs();
+        client.send(HttpRequest.newBuilder().uri(uri.get()).build(), HttpResponse.BodyHandlers.ofFile(p));
+        return p.toFile();
     }
 }

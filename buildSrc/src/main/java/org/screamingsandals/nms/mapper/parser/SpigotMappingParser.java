@@ -24,11 +24,6 @@ public class SpigotMappingParser {
         var node = loader.load();
         var buildDataRevision = node.node("refs", "BuildData").getString();
 
-        var obfuscateToValue = map.values()
-                .stream()
-                .map(classDefinition -> Map.entry(classDefinition.getMapping().get(MappingType.OBFUSCATED), classDefinition))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
         var classFileUrl = new URI("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-" + version + "-cl.csrg?at=" + buildDataRevision);
         var membersFileUrl = new URI("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-" + version + "-members.csrg?at=" + buildDataRevision);
 
@@ -61,18 +56,18 @@ public class SpigotMappingParser {
             split[1] = split[1].replace("/", ".");
             split[0] = split[0].replace("/", ".");
 
-            var tempMapping = obfuscateToValue.get(split[0]).getMapping().get(MappingType.SPIGOT);
+            var tempMapping = map.get(split[0]).getMapping().get(MappingType.SPIGOT);
 
             if (tempMapping != null) {
                 // Nested class automatically got mapping but it's not valid
                 spigotToValue.remove(tempMapping);
             }
 
-            obfuscateToValue.get(split[0]).getMapping().put(MappingType.SPIGOT, split[1]);
-            spigotToValue.put(split[1], obfuscateToValue.get(split[0]));
+            map.get(split[0]).getMapping().put(MappingType.SPIGOT, split[1]);
+            spigotToValue.put(split[1], map.get(split[0]));
 
             // Filtering nested classes
-            obfuscateToValue.entrySet()
+            map.entrySet()
                     .stream()
                     .filter(entry -> entry.getKey().startsWith(split[0] + "$") && !entry.getValue().getMapping().containsKey(MappingType.SPIGOT))
                     .forEach(entry -> {
@@ -84,21 +79,21 @@ public class SpigotMappingParser {
 
         if (old) {
             if (!spigotToValue.containsKey("net.minecraft.server.Main") && !version.matches("1\\.(1[0-5]|[0-9])(\\..*)?$")) {
-                obfuscateToValue.get("net.minecraft.server.Main").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.${V}.Main");
-                spigotToValue.put("net.minecraft.server.${V}.Main", obfuscateToValue.get("net.minecraft.server.Main"));
+                map.get("net.minecraft.server.Main").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.${V}.Main");
+                spigotToValue.put("net.minecraft.server.${V}.Main", map.get("net.minecraft.server.Main"));
             }
             if (!spigotToValue.containsKey("net.minecraft.server.MinecraftServer")) {
-                obfuscateToValue.get("net.minecraft.server.MinecraftServer").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.${V}.MinecraftServer");
-                spigotToValue.put("net.minecraft.server.${V}.MinecraftServer", obfuscateToValue.get("net.minecraft.server.MinecraftServer"));
+                map.get("net.minecraft.server.MinecraftServer").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.${V}.MinecraftServer");
+                spigotToValue.put("net.minecraft.server.${V}.MinecraftServer", map.get("net.minecraft.server.MinecraftServer"));
             }
         } else {
             if (!spigotToValue.containsKey("net.minecraft.server.Main")) {
-                obfuscateToValue.get("net.minecraft.server.Main").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.Main");
-                spigotToValue.put("net.minecraft.server.Main", obfuscateToValue.get("net.minecraft.server.Main"));
+                map.get("net.minecraft.server.Main").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.Main");
+                spigotToValue.put("net.minecraft.server.Main", map.get("net.minecraft.server.Main"));
             }
             if (!spigotToValue.containsKey("net.minecraft.server.MinecraftServer")) {
-                obfuscateToValue.get("net.minecraft.server.MinecraftServer").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.MinecraftServer");
-                spigotToValue.put("net.minecraft.server.MinecraftServer", obfuscateToValue.get("net.minecraft.server.MinecraftServer"));
+                map.get("net.minecraft.server.MinecraftServer").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.MinecraftServer");
+                spigotToValue.put("net.minecraft.server.MinecraftServer", map.get("net.minecraft.server.MinecraftServer"));
             }
         }
 
@@ -121,6 +116,11 @@ public class SpigotMappingParser {
                 }
             }
             split[0] = split[0].replace("/", ".");
+
+            if (spigotToValue.get(split[0]) == null) {
+                System.out.println("can't get spigot class " + split[0]);
+                return;
+            }
 
             if (split.length == 3) {
                 // field

@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.MiscUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +20,7 @@ public class DescriptionPage implements WebsiteComponent {
     private final String keyName;
     private final ClassDefinition definition;
     private final Map<String, ClassDefinition> mappings;
+    private final MappingType defaultMapping;
 
     @Override
     public ContainerTag generate() {
@@ -64,15 +67,19 @@ public class DescriptionPage implements WebsiteComponent {
                                                                         a(
                                                                                 "History"
                                                                         ).withClass("nav-link")
-                                                                        .withHref("../".repeat(keyName.split("\\.").length) + "/history/" + definition.getJoinedKey() + ".html")
+                                                                        .withHref("../".repeat(keyName.split("\\.").length) + "history/" + definition.getJoinedKey() + ".html")
                                                                 ).withClass("nav-item")
                                                         ).withClass("navbar-nav")
 
                                                 ).withClass("collapse navbar-collapse")
                                         ).withClass("container-fluid")
                                 ).withClass("navbar navbar-light bg-light navbar-expand"),
-                                div("Package " + keyName.substring(0, keyName.lastIndexOf("."))),
-                                h1(keyName.substring(keyName.lastIndexOf(".") + 1)),
+                                div(keyName.lastIndexOf(".") != -1 ? ("Package " + keyName.substring(0, keyName.lastIndexOf("."))) : "(default)"),
+                                h1(text(MiscUtils.getModifierString(definition.getModifier())), text(definition.getType().name().toLowerCase() + " " + keyName.substring(keyName.lastIndexOf(".") + 1))),
+                                div(definition.getType() != ClassDefinition.Type.INTERFACE ? span(text("extends "), linkIfNms(definition.getSuperclass())) : text("")),
+                                resolveImplementations(),
+                                hr(),
+                                MiscUtils.descriptions(defaultMapping),
                                 ul(
                                         getMappings()
                                 ),
@@ -81,7 +88,7 @@ public class DescriptionPage implements WebsiteComponent {
                                         table(
                                                 thead(
                                                         tr(
-                                                                th(/*"Modifier and Type"*/ "Type"),
+                                                                th("Modifier and Type"),
                                                                 th("Field")
                                                         )
                                                 ),
@@ -91,11 +98,25 @@ public class DescriptionPage implements WebsiteComponent {
                                         ).withClass("table table-stripped")
                                 ),
                                 div(
+                                        b("Constructor Summary"),
+                                        table(
+                                                thead(
+                                                        tr(
+                                                                th("Modifier"),
+                                                                th("Constructor")
+                                                        )
+                                                ),
+                                                tbody(
+                                                        getConstructors()
+                                                )
+                                        ).withClass("table table-stripped")
+                                ).withClass("methods"),
+                                div(
                                         b("Method summary"),
                                         table(
                                                 thead(
                                                         tr(
-                                                                th(/*"Modifier and Type"*/ "Type"),
+                                                                th("Modifier and Type"),
                                                                 th("Method")
                                                         )
                                                 ),
@@ -122,7 +143,7 @@ public class DescriptionPage implements WebsiteComponent {
                 .values()
                 .stream()
                 .map(field -> tr(
-                        td(linkIfNms(field.getType())),
+                        td(text(MiscUtils.getModifierString(field.getModifier())), linkIfNms(field.getType())),
                         td(
                                 ul(
                                         field
@@ -143,7 +164,7 @@ public class DescriptionPage implements WebsiteComponent {
         return definition.getMethods()
                 .stream()
                 .map(method -> tr(
-                        td(linkIfNms(method.getReturnType())),
+                        td(text(MiscUtils.getModifierString(method.getModifier())), linkIfNms(method.getReturnType())),
                         td(
                                 ul(
                                         method
@@ -160,11 +181,25 @@ public class DescriptionPage implements WebsiteComponent {
                 .toArray(DomContent[]::new);
     }
 
+    public DomContent[] getConstructors() {
+        return definition.getConstructors()
+                .stream()
+                .map(constructor -> tr(
+                        td(text(MiscUtils.getModifierString(constructor.getModifier()))),
+                        td(generateMethodDescriptor(constructor.getParameters(), defaultMapping))
+                ))
+                .toArray(DomContent[]::new);
+    }
+
     public DomContent generateMethodDescriptor(ClassDefinition.MethodDefinition method, MappingType mappingType) {
+        return generateMethodDescriptor(method.getParameters(), mappingType);
+    }
+
+    public DomContent generateMethodDescriptor(List<ClassDefinition.Link> parameters, MappingType mappingType) {
         var list = new ArrayList<DomContent>();
         list.add(text("("));
         AtomicInteger counter = new AtomicInteger();
-        method.getParameters().forEach(link -> {
+        parameters.forEach(link -> {
             if (list.size() > 1) {
                 list.add(text(", "));
             }
@@ -187,7 +222,7 @@ public class DescriptionPage implements WebsiteComponent {
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
             }
-            return span(a(mappings.get(type).getMapping().getOrDefault(mappingType, mappings.get(type).getMapping().get(MappingType.OBFUSCATED)))
+            return span(a(mappings.get(type).getMapping().getOrDefault(mappingType, type))
                     .withHref(generateLink(type)), text(suffix.toString()));
         } else {
             return text(link.getType());
@@ -195,20 +230,47 @@ public class DescriptionPage implements WebsiteComponent {
     }
 
     public DomContent linkIfNms(ClassDefinition.Link link) {
-        if (link.isNms()) {
-            return a(link.getType())
-                    .withHref(generateLink(link.getType()));
-        } else {
-            return text(link.getType());
-        }
+       return convertToMapping(link, defaultMapping);
     }
 
     @SneakyThrows
     public String generateLink(String clazz) {
         // TODO: Generate better links
-        return "../".repeat(keyName.split("\\.").length - 1) + clazz
+        var moj = clazz.replaceAll("\\[]", "");
+
+        return "../".repeat(keyName.split("\\.").length - 1) + mappings
+                .get(moj)
+                .getMapping()
+                .getOrDefault(defaultMapping, moj)
                 .replace(".", "/")
                 .replace("${V}", "VVV")
-                .replace("[]", "") + ".html";
+                + ".html";
+    }
+
+    public DomContent resolveImplementations() {
+        var d = div();
+
+        var c = definition;
+
+        do {
+            c.getInterfaces().forEach(link -> {
+                if (d.getNumChildren() > 0) {
+                    d.with(text(", "));
+                }
+
+                d.with(linkIfNms(link));
+            });
+
+            c = c.getSuperclass().isNms() ? mappings.get(c.getSuperclass().getType()) : null;
+        } while (c != null);
+
+        if (d.getNumChildren() > 0) {
+            return div(
+                    div(b("All known superinterfaces:")),
+                    d
+            );
+        }
+
+        return text("");
     }
 }

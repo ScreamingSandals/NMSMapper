@@ -67,7 +67,7 @@ public class MiscUtils {
     public static DomContent descriptions(MappingType defaultMapping) {
         if (defaultMapping != MappingType.MOJANG) {
             return div(
-                    "This minecraft version doesn't have published official Mojang mappings. Other mappings is used as default instead: " + defaultMapping
+                    "This minecraft version doesn't have published official Mojang mappings. Other mappings are used as default instead: " + defaultMapping
             ).withClass("alert alert-danger");
         }
 

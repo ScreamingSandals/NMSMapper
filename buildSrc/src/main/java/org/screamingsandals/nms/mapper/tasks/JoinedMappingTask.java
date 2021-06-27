@@ -173,18 +173,13 @@ public abstract class JoinedMappingTask extends DefaultTask {
             // YAY, we are on older version
             var spigotLinks = getUtils().get().getSpigotJoinedMappingsClassLinks();
             var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
-            if (spigot == null) {
-                var obfuscated = classDefinition.getMapping().get(MappingType.OBFUSCATED);
-                if (obfuscated.equals("net.minecraft.server.Main") || obfuscated.equals("net.minecraft.server.MinecraftServer")) {
-                    spigot = "net.minecraft.server.${V}" + obfuscated.substring(obfuscated.lastIndexOf("."));
-                }
-            }
 
             if (spigot != null) {
                 spigot = spigot.substring(spigot.lastIndexOf(".") + 1);
                 var hash = spigotLinks.get(spigot);
 
                 if (hash != null) {
+                    classDefinition.setJoinedKey(hash);
                     return hash;
                 } else {
                     var byteArray = digest.digest(spigot.getBytes(StandardCharsets.UTF_8));

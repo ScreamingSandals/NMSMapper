@@ -29,6 +29,7 @@ public class VanillaJarParser {
                     })
                     .filter(Objects::nonNull)
                     .filter(e -> !e.isAnonymous() && !e.isSynthetic())
+                    .filter(e -> !e.getClassName().equals("net.minecraft.data.Main")) // net.minecraft.data.Main is excluded from custom servers
                     .collect(Collectors.toList());
 
             entries.forEach(javaClass -> {

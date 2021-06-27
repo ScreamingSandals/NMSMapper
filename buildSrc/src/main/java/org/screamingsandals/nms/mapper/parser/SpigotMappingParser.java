@@ -9,13 +9,18 @@ import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// TODO: convert this mess to AnyMappingParser
 public class SpigotMappingParser {
     @SneakyThrows
-    public static void mapTo(String version, Map<String, ClassDefinition> map, Caching caching) {
+    public static int mapTo(String version, Map<String, ClassDefinition> map, Caching caching, List<String> excluded) {
+        var errors = new AtomicInteger();
+
         var loader = GsonConfigurationLoader
                 .builder()
                 .url(new URI("https://hub.spigotmc.org/versions/" + version + ".json").toURL())
@@ -122,6 +127,8 @@ public class SpigotMappingParser {
                 return;
             }
 
+            var selfLink = ClassDefinition.Link.nmsLink(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED));
+
             if (split.length == 3) {
                 // field
                 var fields = spigotToValue.get(split[0]).getFields();
@@ -129,8 +136,13 @@ public class SpigotMappingParser {
                         .stream()
                         .filter(f -> f.getMapping().get(MappingType.OBFUSCATED).equals(split[1]))
                         .findFirst()
-                        .ifPresent(fieldDefinition -> {
+                        .ifPresentOrElse(fieldDefinition -> {
                             fieldDefinition.getMapping().put(MappingType.SPIGOT, split[2]);
+                        }, () -> {
+                             if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " field " + split[1])) {
+                                System.out.println(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": Missing " + split[1] + " -> " + split[2]);
+                                errors.incrementAndGet();
+                            }
                         });
             } else if (split.length == 4) {
                 // method
@@ -145,18 +157,35 @@ public class SpigotMappingParser {
                             matched = matched.replace("net/minecraft/server/MinecraftServer", "net.minecraft.server.${V}.MinecraftServer"); // ${V} is placeholder
                         } else if (matched.contains("net/minecraft/server/Main")) {
                             matched = matched.replace("net/minecraft/server/Main", "net.minecraft.server.${V}.Main"); // ${V} is placeholder
-                        } else if (matched.replace("[", "").startsWith("L") && !matched.contains("/")) {
-                            var sp = matched.split("L");
+                        } else if (matched.replace("[", "").startsWith("L") && (!matched.contains("/") || matched.matches(".*(net/minecraft/|com/mojang/math/).*"))) {
+                            var sp = matched.split("L", 2);
 
                             if (weird1165version) {
-                                var matcher2 = pattern.matcher(split[1]);
+                                var pattern2 = Pattern.compile("(net/minecraft/|com/mojang/math/)(.+/)*(?<clazz>.*)");
+                                var matcher2 = pattern2.matcher(sp[1]);
                                 if (matcher2.matches()) {
                                     sp[1] = matcher2.group("clazz");
                                 }
                             }
-                            matched = sp[0] + "Lnet.minecraft.server.${V}." + sp[1] + ";";
+                            matched = sp[0] + "Lnet.minecraft.server.${V}." + sp[1];
                         }
-                        matched = matched.replace("/", ".");
+                    }
+                    matched = matched.replace("/", ".");
+                    matched = SpigotMappingParser.convertInternal(matched);
+
+                    if (spigotToValue.containsKey(matched)) {
+                        var type = matched;
+                        var suffix = new StringBuilder();
+                        while (type.endsWith("[]")) {
+                            suffix.append("[]");
+                            type = type.substring(0, type.length() - 2);
+                        }
+                        if (type.matches(".*\\$\\d+")) { // WTF? How
+                            suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                            type = type.substring(0, type.lastIndexOf("$"));
+                        }
+
+                        matched = spigotToValue.get(type).getMapping().get(MappingType.OBFUSCATED) + suffix;
                     }
 
                     allMatches.add(matched);
@@ -183,11 +212,71 @@ public class SpigotMappingParser {
                             return true;
                         })
                         .findFirst()
-                        .ifPresent(methodDefinition -> {
+                        .ifPresentOrElse(methodDefinition -> {
                             methodDefinition.getMapping().put(MappingType.SPIGOT, split[3]);
+
+                            // Try to find overridden methods
+                            map.entrySet()
+                            .stream()
+                            .filter(entry -> isImplementing(map, entry.getValue(), selfLink))
+                            .forEach(entry -> {
+                                entry.getValue()
+                                        .getMethods()
+                                        .stream()
+                                        .filter(m -> {
+                                            if (!m.getMapping().get(MappingType.OBFUSCATED).equals(split[1])) {
+                                                return false;
+                                            }
+                                            if (m.getParameters().size() != allMatches.size()) {
+                                                return false;
+                                            }
+
+                                            for (var i = 0; i < m.getParameters().size(); i++) {
+                                                var par = m.getParameters().get(i);
+                                                var spar = allMatches.get(i);
+
+                                                if (!par.getType().equals(spar)) {
+                                                    return false;
+                                                }
+                                            }
+
+                                            return true;
+                                        })
+                                        .findFirst()
+                                        .ifPresent(md -> {
+                                            md.getMapping().put(MappingType.SPIGOT, split[3]);
+                                        });
+
+                            });
+                        }, () -> {
+                            var s2 = String.join(",", allMatches);
+                            if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " method " + split[1] + "(" + s2 + ")")) {
+                                System.out.println(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": missing " + split[1] + "(" + s2 + ") -> " + split[3]);
+                                errors.incrementAndGet();
+                            }
                         });
             }
         });
+
+        return errors.get();
+    }
+
+    public static boolean isImplementing(Map<String,ClassDefinition> map, ClassDefinition definition, ClassDefinition.Link self) {
+        if (definition.getSuperclass().equals(self) || definition.getInterfaces().contains(self)) {
+            return true;
+        }
+
+        for (var theInterface : definition.getInterfaces()) {
+            if (theInterface.isNms() && isImplementing(map, map.get(theInterface.getType()), self)) {
+                return true;
+            }
+        }
+
+        if (definition.getSuperclass() != null && definition.getSuperclass().isNms()) {
+            return isImplementing(map, map.get(definition.getSuperclass().getType()), self);
+        }
+
+        return false;
     }
 
     public static String convertInternal(String type) {

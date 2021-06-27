@@ -41,7 +41,7 @@ public abstract class SaveMappingsTask extends DefaultTask {
                 e.printStackTrace();
             }
         });
-/*
+
         System.out.println("Saving joined mappings");
 
         var saver = GsonConfigurationLoader.builder()
@@ -60,10 +60,12 @@ public abstract class SaveMappingsTask extends DefaultTask {
 
         mainNode.node("classNames").set(getUtils().get().getJoinedMappingsClassLinks());
 
+        mainNode.node("spigotNames").set(getUtils().get().getSpigotJoinedMappingsClassLinks());
+
         try {
             saver.save(mainNode);
         } catch (ConfigurateException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 }

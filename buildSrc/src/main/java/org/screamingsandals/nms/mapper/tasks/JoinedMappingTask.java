@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,6 +48,14 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
         var finalMapping = getUtils().get().getJoinedMappings();
         versions.forEach(version -> {
+            var versionDefaultMapping = getUtils().get().getNewlyGeneratedMappings().get(version);
+
+            var nextVersion = versions.stream()
+                    .filter(a -> VersionNumber.parse(a).compareTo(VersionNumber.parse(version)) > 0)
+                    .min(Comparator.comparing(VersionNumber::parse));
+
+            System.out.println("Applying version " + version);
+
             mappings.get(version).forEach((key, classDefinition) -> {
                 try {
                     var finalClassName = getJoinedClassName(classDefinition);
@@ -86,14 +95,9 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     classDefinition.getFields().forEach((s, fieldDefinition) -> {
                         definition.getFields()
                                 .stream()
-                                .filter(joinedField -> joinedField.getType().equals(remapParameterType(version, fieldDefinition.getType())) && joinedField.getMapping()
-                                        .entrySet()
-                                        .stream()
-                                        .filter(entry -> entry.getKey().getValue() == MappingType.MOJANG)
-                                        .map(Map.Entry::getValue)
-                                        .findFirst()
-                                        .orElse("")
-                                        .equals(fieldDefinition.getMapping().get(MappingType.MOJANG)))
+                                .filter(joinedField -> joinedField.getType().equals(remapParameterType(version, fieldDefinition.getType()))
+                                        && compareMappings(joinedField.getMapping(), nextVersion.orElse(""), versionDefaultMapping, fieldDefinition.getMapping())
+                                )
                                 .findFirst()
                                 .ifPresentOrElse(joinedField -> fieldDefinition.getMapping()
                                         .forEach((mappingType, s3) -> joinedField.getMapping()
@@ -119,14 +123,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                         definition.getMethods()
                                 .stream()
                                 .filter(joinedMethod -> joinedMethod.getReturnType().equals(remapParameterType(version, methodDefinition.getReturnType()))
-                                        && joinedMethod.getMapping()
-                                        .entrySet()
-                                        .stream()
-                                        .filter(entry -> entry.getKey().getValue() == MappingType.MOJANG)
-                                        .map(Map.Entry::getValue)
-                                        .findFirst()
-                                        .orElse("")
-                                        .equals(methodDefinition.getMapping().get(MappingType.MOJANG))
+                                        && compareMappings(joinedMethod.getMapping(), nextVersion.orElse(""), versionDefaultMapping, methodDefinition.getMapping())
                                         && methodDefinition.getParameters()
                                         .stream()
                                         .map(link -> remapParameterType(version, link))
@@ -281,5 +278,30 @@ public abstract class JoinedMappingTask extends DefaultTask {
             return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).get(type)) + suffix);
         }
         return link;
+    }
+
+    public boolean compareMappings(Map<Map.Entry<String, MappingType>, String> mapping, String anotherVersion, MappingType baseMappingType, Map<MappingType, String> versionSpecificMapping) {
+        return mapping
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().getValue() == baseMappingType && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                .findFirst()
+                .or(() ->
+                    // In versions before 1.17 Searge should contain everything
+                    mapping
+                            .entrySet()
+                            .stream()
+                            .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                            .findFirst()
+                            .or(() -> mapping
+                                    .entrySet()
+                                    .stream()
+                                    .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                    .findFirst()
+                            )
+                )
+                .map(entry -> Map.entry(entry.getKey().getValue(), entry.getValue()))
+                .map(entry -> entry.getValue().equals(versionSpecificMapping.get(entry.getKey())))
+                .orElse(false);
     }
 }

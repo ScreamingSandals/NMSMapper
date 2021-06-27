@@ -17,33 +17,38 @@ buildscript {
 apply plugin: 'org.screamingsandals.gradle.builder'
 apply plugin: NMSMapper
 
-nms.buildTasks([
-        '1.17',
-        '1.16.5',
-        '1.16.4',
-        '1.16.3',
-        '1.16.2',
-        '1.16.1',
-        '1.15.2',
-        '1.15.1',
-        '1.15',
-        '1.14.4',
-        '1.14.3',
-        '1.14.2',
-        '1.14.1',
-        '1.14',
-        '1.13.2',
-        '1.13.1',
-        '1.13',
-        '1.12.2',
-        '1.12.1',
-        '1.12',
-        '1.11.2',
-        '1.11.1',
-        '1.11',
-        '1.10.2',
-        '1.10',
-        '1.9.4'
-])
+nms {
+    buildTasks([
+            /* NOTE: We are using the MCP officially used by Forge, not the real latest build (but except few versions it's actually the same) */
+            version('1.17'), // new srg mapping, no forge is out for this version yet
+            version('1.16.5', '20210115.110354'),
+            version('1.16.4', '20201209.230658'),
+            version('1.16.3', '20201209.230658'),
+            version('1.16.2', '20201209.230658'),
+            version('1.16.1', '20201209.230658'),
+            // 1.16 excluded, no server available, existed only one day
+            version('1.15.2', '20201018.162339'),
+            version('1.15.1', '20201018.162339'),
+            version('1.15', '20201018.162339'),
+            version('1.14.4', '20201018.162339'),
+            version('1.14.3', '20190718.125703'),
+            version('1.14.2', '20190603.175704'),
+            version('1.14.1', '20190603.175704'),
+            version('1.14', '20190523.154634'),
+            version('1.13.2', '20190213.203750'),
+            version('1.13.1', '20180929.143449'),
+            version('1.13', '2018.08.03.15.41.37'),
+            version('1.12.2', '20201025.185735'),
+            version('1.12.1', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.12.1/mcp-1.12.1-srg.zip'),
+            version('1.12', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.12/mcp-1.12-srg.zip'),
+            version('1.11.2', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.11.2/mcp-1.11.2-srg.zip'),
+            // 1.11.1 excluded, existed only one day, nearly identical to 1.11.2, breaking SEARGE mappigs
+            version('1.11', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.11/mcp-1.11-srg.zip'),
+            version('1.10.2', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.10.2/mcp-1.10.2-srg.zip'),
+            // 1.10.1 excluded, nearly the same as 1.10, compatible protocol
+            version('1.10', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.10/mcp-1.10-srg.zip'),
+            version('1.9.4', 'https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.9.4/mcp-1.9.4-srg.zip')
+    ])
+}
 
 sourceCompatibility = '11.0'

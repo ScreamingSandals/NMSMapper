@@ -1,5 +1,8 @@
 package org.screamingsandals.nms.mapper.single;
 
 public enum MappingType {
-    MOJANG, OBFUSCATED, SPIGOT;
+    MOJANG,
+    OBFUSCATED, // sometimes referred as NOTCH
+    SPIGOT,
+    SEARGE; // read from MCPConfig
 }

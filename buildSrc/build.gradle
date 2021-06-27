@@ -4,6 +4,9 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://maven.minecraftforge.net/'
+    }
 }
 
 dependencies {
@@ -14,6 +17,7 @@ dependencies {
     implementation 'org.spongepowered:configurate-gson:4.1.1'
     implementation 'com.j2html:j2html:1.4.0'
     implementation 'org.apache.bcel:bcel:6.5.0'
+    implementation 'net.minecraftforge:srgutils:0.4.3'
 }
 
 sourceCompatibility = '11.0'

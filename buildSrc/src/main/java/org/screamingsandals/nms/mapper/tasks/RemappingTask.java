@@ -4,18 +4,18 @@ import lombok.SneakyThrows;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.parser.MojangMappingParser;
+import org.screamingsandals.nms.mapper.parser.SeargeMappingParser;
 import org.screamingsandals.nms.mapper.parser.SpigotMappingParser;
 import org.screamingsandals.nms.mapper.parser.VanillaJarParser;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
-import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
-import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URL;
@@ -27,6 +27,10 @@ public abstract class RemappingTask extends DefaultTask {
 
     @Input
     public abstract Property<UtilsHolder> getUtils();
+
+    @Input
+    @Optional
+    public abstract Property<String> getMcpBuild();
 
     @SneakyThrows
     @TaskAction
@@ -98,9 +102,9 @@ public abstract class RemappingTask extends DefaultTask {
 
             var errors = MojangMappingParser.map(
                     mapping,
-                    caching.loadData(
+                    new FileInputStream(caching.getFile(
                             new URI(Objects.requireNonNull(n.node("downloads", "server_mappings", "url").getString())),
-                            "mojang-" + version + ".mapping"),
+                            "mojang-" + version + ".mapping")),
                     excluded
             );
 
@@ -109,10 +113,23 @@ public abstract class RemappingTask extends DefaultTask {
             }
         }
 
-        System.out.println("Applying Spigot mapping ....");
-        SpigotMappingParser.mapTo(version, mapping, caching);
+        if (getMcpBuild().isPresent()) {
+            System.out.println("Applying Searge (Forge) mapping ....");
 
-        // TODO: MCP
+            var errors = SeargeMappingParser.map(mapping, version, getMcpBuild().get(), caching, excluded);
+
+            if (errors > 0) {
+                System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+            }
+        }
+
+        System.out.println("Applying Spigot mapping ....");
+        var errors = SpigotMappingParser.mapTo(version, mapping, caching, excluded);
+
+        if (errors > 0) {
+            System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+        }
+
         // TODO: Yarn
 
         newlyGeneratedMappings.put(version, defaultMappings);

@@ -101,6 +101,8 @@ public abstract class DocsGenerationTask extends DefaultTask {
             }
         });
 
+        System.out.println("Generating classes history");
+
         getUtils().get().getJoinedMappingsClassLinks().forEach((s, s2) -> {
             var finalHtml = new File(outputFolder, "history/" + s2 + ".html");
             finalHtml.getParentFile().mkdirs();

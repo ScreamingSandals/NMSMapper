@@ -3,4 +3,5 @@ src/main/resources/nms-mappings
 build/
 .gradle/
 .idea/
+work/
 *.iml

@@ -1,44 +1,30 @@
 package org.screamingsandals.nms.mapper.parser;
 
 import lombok.SneakyThrows;
+import org.screamingsandals.nms.mapper.extension.Version;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
-import org.screamingsandals.nms.mapper.utils.Caching;
-import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 // TODO: convert this mess to AnyMappingParser
 public class SpigotMappingParser {
     @SneakyThrows
-    public static int mapTo(String version, Map<String, ClassDefinition> map, Caching caching, List<String> excluded) {
+    public static int mapTo(Version version, Map<String, ClassDefinition> map,  List<String> excluded) {
         var errors = new AtomicInteger();
 
-        var loader = GsonConfigurationLoader
-                .builder()
-                .url(new URI("https://hub.spigotmc.org/versions/" + version + ".json").toURL())
-                .build();
+        var workspace = version.getWorkspace();
 
-        var node = loader.load();
-        var buildDataRevision = node.node("refs", "BuildData").getString();
-
-        var classFileUrl = new URI("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-" + version + "-cl.csrg?at=" + buildDataRevision);
-        var membersFileUrl = new URI("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-" + version + "-members.csrg?at=" + buildDataRevision);
-
-        var cl = caching.loadData(classFileUrl, "bukkit-" + version + "-cl.csrg");
-        var mem = caching.loadData(membersFileUrl, "bukkit-" + version + "-members.csrg");
+        var cl = Files.readString(workspace.getFile(Objects.requireNonNull(version.getSpigotClassMappings()), "bukkit-cl.csrg").toPath());
+        var mem = Files.readString(workspace.getFile(Objects.requireNonNull(version.getSpigotMemberMappings()), "bukkit-members.csrg").toPath());
 
         var spigotToValue = new HashMap<String, ClassDefinition>();
 
-        var old = version.matches("1\\.(1[0-6]|[0-9])(\\..*)?$");
-        var weird1165version = version.equals("1.16.5");
+        var old = version.getVersion().matches("1\\.(1[0-6]|[0-9])(\\..*)?$");
+        var weird1165version = version.getVersion().equals("1.16.5");
 
         cl.lines().filter(l -> !l.startsWith("#") && !l.isBlank()).forEach(s -> {
             var split = s.split(" ");
@@ -83,7 +69,7 @@ public class SpigotMappingParser {
         });
 
         if (old) {
-            if (!spigotToValue.containsKey("net.minecraft.server.Main") && !version.matches("1\\.(1[0-5]|[0-9])(\\..*)?$")) {
+            if (!spigotToValue.containsKey("net.minecraft.server.Main") && !version.getVersion().matches("1\\.(1[0-5]|[0-9])(\\..*)?$")) {
                 map.get("net.minecraft.server.Main").getMapping().put(MappingType.SPIGOT, "net.minecraft.server.${V}.Main");
                 spigotToValue.put("net.minecraft.server.${V}.Main", map.get("net.minecraft.server.Main"));
             }
@@ -173,18 +159,18 @@ public class SpigotMappingParser {
                     matched = matched.replace("/", ".");
                     matched = SpigotMappingParser.convertInternal(matched);
 
-                    if (spigotToValue.containsKey(matched)) {
-                        var type = matched;
-                        var suffix = new StringBuilder();
-                        while (type.endsWith("[]")) {
-                            suffix.append("[]");
-                            type = type.substring(0, type.length() - 2);
-                        }
-                        if (type.matches(".*\\$\\d+")) { // WTF? How
-                            suffix.insert(0, type.substring(type.lastIndexOf("$")));
-                            type = type.substring(0, type.lastIndexOf("$"));
-                        }
+                    var type = matched;
+                    var suffix = new StringBuilder();
+                    while (type.endsWith("[]")) {
+                        suffix.append("[]");
+                        type = type.substring(0, type.length() - 2);
+                    }
+                    if (type.matches(".*\\$\\d+")) { // WTF? How
+                        suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                        type = type.substring(0, type.lastIndexOf("$"));
+                    }
 
+                    if (spigotToValue.containsKey(type)) {
                         matched = spigotToValue.get(type).getMapping().get(MappingType.OBFUSCATED) + suffix;
                     }
 

@@ -1,0 +1,21 @@
+{
+  "version": "1.15",
+  "vanilla-jar": {
+    "url": "https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar",
+    "sha1": "e9f105b3c5c7e85c7b445249a93362a22f62442d"
+  },
+  "mojang-mappings": {
+    "url": "https://launcher.mojang.com/v1/objects/25ff0e2b1104b8f06fe55b7675dd11b05c72f5f4/server.txt",
+    "sha1": "25ff0e2b1104b8f06fe55b7675dd11b05c72f5f4"
+  },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.15/mcp_config-1.15.zip",
+    "sha1": "029cf5faa34e2ab1379ce5f9bc407c79b17a71fe"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.15-cl.csrg?at=f845c6ee8a6d41562c71dc218c7d5b7b9eeb03d6"
+  },
+  "spigot-member-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.15-members.csrg?at=f845c6ee8a6d41562c71dc218c7d5b7b9eeb03d6"
+  }
+}

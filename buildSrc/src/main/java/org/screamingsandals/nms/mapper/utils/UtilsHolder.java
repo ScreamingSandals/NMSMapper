@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Data
 public class UtilsHolder {
-    private final Caching caching;
     private final Map<String, Map<String, ClassDefinition>> mappings = new HashMap<>();
     private final File resourceDir;
     private final Map<String, MappingType> newlyGeneratedMappings = new HashMap<>();

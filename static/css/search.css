@@ -1,0 +1,13 @@
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ui-autocomplete .ui-menu-item {
+    font-size: 0.9em;
+}
+
+.small-desc {
+    font-size: 0.7em;
+}

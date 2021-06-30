@@ -6,8 +6,7 @@ import org.screamingsandals.nms.mapper.single.MappingType;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.text;
+import static j2html.TagCreator.*;
 
 public class MiscUtils {
     public static String getModifierString(int modifier) {
@@ -72,5 +71,21 @@ public class MiscUtils {
         }
 
         return text("");
+    }
+
+    public static DomContent mappingToBadge(MappingType mappingType) {
+        var capitalized = mappingType.name().substring(0, 1).toUpperCase() + mappingType.name().substring(1).toLowerCase();
+        switch (mappingType) {
+            case MOJANG:
+                return span(capitalized).withClass("badge bg-success me-2");
+            case SPIGOT:
+                return span(capitalized).withClass("badge bg-warning me-2");
+            case SEARGE:
+                return span(capitalized).withClass("badge bg-danger me-2");
+            case OBFUSCATED:
+                return span(capitalized).withClass("badge bg-primary me-2");
+            default:
+                return span(capitalized).withClass("badge bg-secondary me-2");
+        }
     }
 }

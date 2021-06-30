@@ -3,96 +3,123 @@ package org.screamingsandals.nms.mapper.web;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
+import org.screamingsandals.nms.mapper.web.parts.CompactTablePart;
+import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class PackageInfoPage implements WebsiteComponent {
+public class PackageInfoPage extends AbstractPage {
     private final String packageName;
-    private final List<String> paths;
+    private final List<Map.Entry<ClassDefinition.Type, String>> paths;
     private final MappingType defaultMapping;
 
     @Override
-    public ContainerTag generate() {
-        return html(
-                head(
-                        title(packageName),
-                        link().withRel("stylesheet")
-                                .withHref("https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css")
-                                .attr("integrity", "sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x")
-                                .attr("crossorigin", "anonymous")
-                ),
-                body(
-                        div(
-                                nav(
-                                        div(
-                                                div(
-                                                        ul(
-                                                                li(
-                                                                        a(
-                                                                                "Main page"
-                                                                        )
-                                                                                .withClass("nav-link")
-                                                                                .withHref("../".repeat(packageName.split("\\.").length + 1))
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Overview"
-                                                                        )
-                                                                                .withClass("nav-link")
-                                                                                .withHref("../".repeat(packageName.split("\\.").length))
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        //.withHref("index.html") There's no overview page yet
-                                                                        a(
-                                                                                "Package"
-                                                                        ).withClass("nav-link active")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Class"
-                                                                        ).withClass("nav-link disabled")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "History"
-                                                                        ).withClass("nav-link disabled")
-                                                                ).withClass("nav-item")
-                                                        ).withClass("navbar-nav")
-                                                ).withClass("collapse navbar-collapse")
-                                        ).withClass("container-fluid")
-                                ).withClass("navbar navbar-light bg-light navbar-expand"),
-                                h1("Package " + packageName),
-                                MiscUtils.descriptions(defaultMapping),
-                                div(
-                                        b("Class/Interface/Enum summary"),
-                                        table(
-                                                thead(
-                                                        tr(
-                                                                th("Class") // TODO: split classes, interfaces and enums
-                                                        )
-                                                ),
-                                                tbody(
-                                                        paths.stream()
-                                                                .sorted()
-                                                                .map(entry ->
-                                                                        tr(
-                                                                                td(
-                                                                                        a(entry.substring(0, entry.length() - 5))
-                                                                                                .withHref(entry)
-                                                                                )
-                                                                        )
-                                                                )
-                                                                .toArray(DomContent[]::new)
-                                                )
-                                        ).withClass("table table-stripped")
-                                )
-                        ).withClass("main")
+    protected void configure() {
+        title = packageName;
+        basePath = "../".repeat(packageName.split("\\.").length + 1);
+        navbarPart = NavbarPart.builder()
+                .mainPageUrl("../".repeat(packageName.split("\\.").length + 1))
+                .overviewUrl("../".repeat(packageName.split("\\.").length))
+                .currentPage(NavbarPart.CurrentPage.PACKAGE)
+                .build();
+    }
+
+    @Override
+    protected void constructContent(ContainerTag div) {
+        div.with(MiscUtils.descriptions(defaultMapping));
+
+        var interfaces = paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.INTERFACE)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> Map.of(
+                        "Interface", (DomContent) a(entry.substring(0, entry.length() - 5))
+                                .withHref(entry)
+                        )
                 )
-        );
+                .collect(Collectors.toList());
+
+        if (!interfaces.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Interface summary",
+                            List.of("Interface"),
+                            interfaces
+                    ).generate()
+            );
+        }
+
+        var annotations = paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.ANNOTATION)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> Map.of(
+                        "Annotation", (DomContent) a(entry.substring(0, entry.length() - 5))
+                                .withHref(entry)
+                        )
+                )
+                .collect(Collectors.toList());
+
+        if (!annotations.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Annotation summary",
+                            List.of("Annotation"),
+                            annotations
+                    ).generate()
+            );
+        }
+
+        var classes = paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.CLASS)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> Map.of(
+                        "Class", (DomContent) a(entry.substring(0, entry.length() - 5))
+                                .withHref(entry)
+                        )
+                )
+                .collect(Collectors.toList());
+
+        if (!classes.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Class summary",
+                            List.of("Class"),
+                            classes
+                    ).generate()
+            );
+        }
+
+        var enums = paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.ENUM)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> Map.of(
+                        "Enum", (DomContent) a(entry.substring(0, entry.length() - 5))
+                                .withHref(entry)
+                        )
+                )
+                .collect(Collectors.toList());
+
+        if (!enums.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Enum summary",
+                            List.of("Enum"),
+                            enums
+                    ).generate()
+            );
+        }
     }
 }

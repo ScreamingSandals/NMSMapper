@@ -3,192 +3,147 @@ package org.screamingsandals.nms.mapper.web;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
+import org.screamingsandals.nms.mapper.web.parts.CompactTablePart;
+import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class DescriptionPage implements WebsiteComponent {
+public class DescriptionPage extends AbstractPage {
     private final String keyName;
     private final ClassDefinition definition;
     private final Map<String, ClassDefinition> mappings;
     private final MappingType defaultMapping;
 
     @Override
-    public ContainerTag generate() {
-        return html(
-                head(
-                        title(keyName),
-                        link().withRel("stylesheet")
-                                .withHref("https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css")
-                                .attr("integrity", "sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x")
-                                .attr("crossorigin", "anonymous")
-                ),
-                body(
-                        div(
-                                nav(
-                                        div(
-                                                div(
-                                                        ul(
-                                                                li(
-                                                                        a(
-                                                                                "Main page"
-                                                                        )
-                                                                                .withClass("nav-link")
-                                                                                .withHref("../".repeat(keyName.split("\\.").length))
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Overview"
-                                                                        )
-                                                                                .withClass("nav-link")
-                                                                                .withHref("../".repeat(keyName.split("\\.").length - 1))
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Package"
-                                                                        ).withClass("nav-link")
-                                                                        .withHref("index.html")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Class"
-                                                                        ).withClass("nav-link active")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "History"
-                                                                        ).withClass("nav-link")
-                                                                        .withHref("../".repeat(keyName.split("\\.").length) + "history/" + definition.getJoinedKey() + ".html")
-                                                                ).withClass("nav-item")
-                                                        ).withClass("navbar-nav")
+    protected void configure() {
+        title = MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + keyName.substring(keyName.lastIndexOf(".") + 1);
+        basePath = "../".repeat(keyName.split("\\.").length);
+        navbarPart = NavbarPart.builder()
+                .mainPageUrl("../".repeat(keyName.split("\\.").length))
+                .overviewUrl("../".repeat(keyName.split("\\.").length - 1))
+                .packageUrl("index.html")
+                .historyUrl("../".repeat(keyName.split("\\.").length) + "history/" + definition.getJoinedKey() + ".html")
+                .currentPage(NavbarPart.CurrentPage.CLASS)
+                .build();
+    }
 
-                                                ).withClass("collapse navbar-collapse")
-                                        ).withClass("container-fluid")
-                                ).withClass("navbar navbar-light bg-light navbar-expand"),
-                                div(keyName.lastIndexOf(".") != -1 ? ("Package " + keyName.substring(0, keyName.lastIndexOf("."))) : "(default)"),
-                                h1(text(MiscUtils.getModifierString(definition.getModifier())), text(definition.getType().name().toLowerCase() + " " + keyName.substring(keyName.lastIndexOf(".") + 1))),
-                                div(definition.getType() != ClassDefinition.Type.INTERFACE ? span(text("extends "), linkIfNms(definition.getSuperclass())) : text("")),
-                                resolveImplementations(),
-                                hr(),
-                                MiscUtils.descriptions(defaultMapping),
-                                ul(
-                                        getMappings()
-                                ),
-                                div(
-                                        b("Field summary"),
-                                        table(
-                                                thead(
-                                                        tr(
-                                                                th("Modifier and Type"),
-                                                                th("Field")
-                                                        )
-                                                ),
-                                                tbody(
-                                                        getFields()
-                                                )
-                                        ).withClass("table table-stripped")
-                                ),
-                                div(
-                                        b("Constructor Summary"),
-                                        table(
-                                                thead(
-                                                        tr(
-                                                                th("Modifier"),
-                                                                th("Constructor")
-                                                        )
-                                                ),
-                                                tbody(
-                                                        getConstructors()
-                                                )
-                                        ).withClass("table table-stripped")
-                                ).withClass("methods"),
-                                div(
-                                        b("Method summary"),
-                                        table(
-                                                thead(
-                                                        tr(
-                                                                th("Modifier and Type"),
-                                                                th("Method")
-                                                        )
-                                                ),
-                                                tbody(
-                                                        getMethods()
-                                                )
-                                        ).withClass("table table-stripped")
-                                ).withClass("methods")
-                        ).withClass("main")
-                )
+    @Override
+    protected void constructContent(ContainerTag div) {
+        div.with(
+                div(definition.getType() != ClassDefinition.Type.INTERFACE ? span(text("extends "), linkIfNms(definition.getSuperclass())) : text("")),
+                resolveImplementations(),
+                hr(),
+                MiscUtils.descriptions(defaultMapping),
+                ul(
+                        getMappings()
+                ).withClass("list-unstyled")
         );
+
+        var fields = getFields();
+        var constructors = getConstructors();
+        var methods = getMethods();
+
+        if (!fields.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Field summary",
+                            List.of("Modifier and Type", "Field"),
+                            fields
+                    ).generate()
+            );
+        }
+
+        if (!constructors.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Constructor summary",
+                            List.of("Modifier", "Constructor"),
+                            constructors
+                    ).generate()
+            );
+        }
+
+        if (!methods.isEmpty()) {
+            div.with(
+                    new CompactTablePart(
+                            "Method summary",
+                            List.of("Modifier and Type", "Method"),
+                            methods
+                    ).generate()
+            );
+        }
     }
 
     public DomContent[] getMappings() {
         return definition.getMapping()
                 .entrySet()
                 .stream()
-                .map(entry -> li(entry.getKey() + ": " + entry.getValue()))
+                .map(entry -> li(MiscUtils.mappingToBadge(entry.getKey()), text(entry.getValue())))
                 .toArray(DomContent[]::new);
     }
 
-    public DomContent[] getFields() {
+    public List<Map<String, DomContent>> getFields() {
         return definition.getFields()
                 .values()
                 .stream()
-                .map(field -> tr(
-                        td(text(MiscUtils.getModifierString(field.getModifier())), linkIfNms(field.getType())),
-                        td(
-                                ul(
-                                        field
-                                                .getMapping()
-                                                .entrySet()
-                                                .stream()
-                                                .map(entry ->
-                                                        li(entry.getKey() + ": " + entry.getValue())
-                                                )
-                                                .toArray(DomContent[]::new)
-                                )
-                        )
+                .map(field -> Map.of(
+                        "Modifier and Type", (DomContent) span(text(MiscUtils.getModifierString(field.getModifier())), linkIfNms(field.getType())),
+                        "Field", ul(
+                                field
+                                        .getMapping()
+                                        .entrySet()
+                                        .stream()
+                                        .map(entry ->
+                                                li(MiscUtils.mappingToBadge(entry.getKey()), text(entry.getValue()))
+                                        )
+                                        .toArray(DomContent[]::new)
+                        ).withClass("list-unstyled mb-0")
                 ))
-                .toArray(DomContent[]::new);
+                .collect(Collectors.toList());
     }
 
-    public DomContent[] getMethods() {
+    public List<Map<String, DomContent>> getMethods() {
         return definition.getMethods()
                 .stream()
-                .map(method -> tr(
-                        td(text(MiscUtils.getModifierString(method.getModifier())), linkIfNms(method.getReturnType())),
-                        td(
-                                ul(
-                                        method
-                                                .getMapping()
-                                                .entrySet()
-                                                .stream()
-                                                .map(entry ->
-                                                        li(text(entry.getKey() + ": " + entry.getValue()), generateMethodDescriptor(method, entry.getKey()))
-                                                )
-                                                .toArray(DomContent[]::new)
-                                )
+                .map(method -> Map.of(
+                        "Modifier and Type", (DomContent) span(text(MiscUtils.getModifierString(method.getModifier())), linkIfNms(method.getReturnType())),
+                        "Method", ul(
+                                method
+                                        .getMapping()
+                                        .entrySet()
+                                        .stream()
+                                        .map(entry ->
+                                                li(MiscUtils.mappingToBadge(entry.getKey()), text(entry.getValue()), generateMethodDescriptor(method, entry.getKey()))
+                                        )
+                                        .toArray(DomContent[]::new)
+                        ).withClass("list-unstyled mb-0")
                         )
-                ))
-                .toArray(DomContent[]::new);
+                )
+                .collect(Collectors.toList());
     }
 
-    public DomContent[] getConstructors() {
+    public List<Map<String, DomContent>> getConstructors() {
         return definition.getConstructors()
                 .stream()
-                .map(constructor -> tr(
-                        td(text(MiscUtils.getModifierString(constructor.getModifier()))),
-                        td(generateMethodDescriptor(constructor.getParameters(), defaultMapping))
-                ))
-                .toArray(DomContent[]::new);
+                .map(constructor -> Map.of(
+                        "Modifier", text(MiscUtils.getModifierString(constructor.getModifier())),
+                        "Constructor", generateMethodDescriptor(constructor.getParameters(), defaultMapping)
+                        )
+                )
+                .collect(Collectors.toList());
     }
 
     public DomContent generateMethodDescriptor(ClassDefinition.MethodDefinition method, MappingType mappingType) {
@@ -222,15 +177,18 @@ public class DescriptionPage implements WebsiteComponent {
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
             }
-            return span(a(mappings.get(type).getMapping().getOrDefault(mappingType, type))
-                    .withHref(generateLink(type)), text(suffix.toString()));
+            var mappingName = mappings.get(type).getMapping().getOrDefault(mappingType, type);
+
+            return span(a(mappingName.substring(mappingName.lastIndexOf(".") + 1))
+                    .withHref(generateLink(type))
+                    .withTitle(mappingName), text(suffix.toString()));
         } else {
             return text(link.getType());
         }
     }
 
     public DomContent linkIfNms(ClassDefinition.Link link) {
-       return convertToMapping(link, defaultMapping);
+        return convertToMapping(link, defaultMapping);
     }
 
     @SneakyThrows

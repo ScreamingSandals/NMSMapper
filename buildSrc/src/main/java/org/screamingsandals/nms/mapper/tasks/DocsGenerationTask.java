@@ -1,20 +1,23 @@
 package org.screamingsandals.nms.mapper.tasks;
 
+import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.VersionNumber;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 import org.screamingsandals.nms.mapper.web.*;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class DocsGenerationTask extends DefaultTask {
@@ -23,6 +26,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
     @Input
     public abstract Property<UtilsHolder> getUtils();
 
+    @SneakyThrows
     @TaskAction
     public void run() {
         System.out.println("Generating web docs");
@@ -35,10 +39,12 @@ public abstract class DocsGenerationTask extends DefaultTask {
         versions.forEach((version, defaultMapping) -> {
             System.out.println("Generating docs for version " + version);
 
+            var searchIndex = new ArrayList<Map<String, String>>();
+
             var versionDirectory = new File(outputFolder, version);
             versionDirectory.mkdirs();
 
-            var packages = new HashMap<String, List<String>>();
+            var packages = new HashMap<String, List<Map.Entry<ClassDefinition.Type, String>>>();
 
             mappings.get(version).forEach((key, classDefinition) -> {
                 var key2 = classDefinition.getMapping().getOrDefault(defaultMapping, key);
@@ -57,7 +63,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                     pathKey = "default-pkg/" + pathKey;
                 }
 
-                packages.get(packageStr).add(pathKey.substring(pathKey.lastIndexOf("/") + 1) + ".html");
+                packages.get(packageStr).add(Map.entry(classDefinition.getType(), pathKey.substring(pathKey.lastIndexOf("/") + 1) + ".html"));
 
                 classDefinition.setPathKey(pathKey + ".html");
 
@@ -65,6 +71,11 @@ public abstract class DocsGenerationTask extends DefaultTask {
 
                 var finalHtml = new File(versionDirectory, pathKey + ".html");
                 finalHtml.getParentFile().mkdirs();
+
+                searchIndex.add(Map.of(
+                    "label", key2,
+                    "value",  pathKey + ".html"
+                ));
 
                 var page = new DescriptionPage(key2, classDefinition, mappings.get(version), defaultMapping);
                 try (var fileWriter = new FileWriter(finalHtml)) {
@@ -99,6 +110,19 @@ public abstract class DocsGenerationTask extends DefaultTask {
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
+
+            try {
+                var saver = GsonConfigurationLoader.builder()
+                        .file(new File(versionDirectory, "search-index.json"))
+                        .build();
+
+                var node = saver.createNode();
+
+                node.set(searchIndex);
+                saver.save(node);
+            } catch (ConfigurateException e) {
+                e.printStackTrace();
+            }
         });
 
         System.out.println("Generating classes history");
@@ -124,5 +148,12 @@ public abstract class DocsGenerationTask extends DefaultTask {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+
+        System.out.println("Updating static contents...");
+        var staticFolder = new File(outputFolder, "static");
+        if (staticFolder.exists()) {
+            FileUtils.deleteDirectory(staticFolder);
+        }
+        FileUtils.copyDirectory(getProject().file("static"), staticFolder);
     }
 }

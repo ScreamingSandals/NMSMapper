@@ -3,10 +3,12 @@ package org.screamingsandals.nms.mapper.web;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,68 +18,25 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.a;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class HistoryPage implements WebsiteComponent {
+public class HistoryPage extends AbstractPage {
     private final String name;
     private final Map<String, String> joinedMappingsClassLinks;
     private final Map<String, JoinedClassDefinition> joinedMappings;
 
     @Override
-    public ContainerTag generate() {
-        return html(
-                head(
-                        title(name),
-                        link().withRel("stylesheet")
-                                .withHref("https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css")
-                                .attr("integrity", "sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x")
-                                .attr("crossorigin", "anonymous")
-                ),
-                body(
-                        div(
-                                nav(
-                                        div(
-                                                div(
-                                                        ul(
-                                                                li(
-                                                                        a(
-                                                                                "Main page"
-                                                                        )
-                                                                                .withClass("nav-link")
-                                                                                .withHref("../")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Overview"
-                                                                        )
-                                                                                .withClass("nav-link disabled")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        //.withHref("index.html") There's no overview page yet
-                                                                        a(
-                                                                                "Package"
-                                                                        ).withClass("nav-link disabled")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "Class"
-                                                                        ).withClass("nav-link disabled")
-                                                                ).withClass("nav-item"),
-                                                                li(
-                                                                        a(
-                                                                                "History"
-                                                                        ).withClass("nav-link active")
-                                                                ).withClass("nav-item")
-                                                        ).withClass("navbar-nav")
-                                                ).withClass("collapse navbar-collapse")
-                                        ).withClass("container-fluid")
-                                ).withClass("navbar navbar-light bg-light navbar-expand"),
-                                h1("History of " + name),
-                                div(
-                                        generateChangelogs()
-                                )
-                        ).withClass("main")
-                )
-        );
+    protected void configure() {
+        title = "History of " + name;
+        navbarPart = NavbarPart.builder()
+                .mainPageUrl("../")
+                .currentPage(NavbarPart.CurrentPage.HISTORY)
+                .build();
+    }
+
+    @Override
+    protected void constructContent(ContainerTag div) {
+        div.with(generateChangelogs());
     }
 
     private DomContent generateChangelogs() {
@@ -252,11 +211,11 @@ public class HistoryPage implements WebsiteComponent {
                                             return null;
                                         }),
                                 oldFields
-                                    .stream()
-                                    .filter(e -> fieldsMapping.stream().noneMatch(e2 -> e2.getValue() == e.getValue()))
-                                    .map(entry ->
-                                            div(text("- "), nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace")
-                                    )
+                                        .stream()
+                                        .filter(e -> fieldsMapping.stream().noneMatch(e2 -> e2.getValue() == e.getValue()))
+                                        .map(entry ->
+                                                div(text("- "), nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-danger font-monospace")
+                                        )
                         )
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());

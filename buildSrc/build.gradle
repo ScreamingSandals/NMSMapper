@@ -19,6 +19,7 @@ dependencies {
     implementation 'com.j2html:j2html:1.4.0'
     implementation 'org.apache.bcel:bcel:6.5.0'
     implementation 'net.minecraftforge:srgutils:0.4.3'
+    implementation 'commons-io:commons-io:2.10.0'
 }
 
 sourceCompatibility = '11.0'

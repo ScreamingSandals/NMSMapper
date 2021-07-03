@@ -70,22 +70,29 @@ public class MiscUtils {
             ).withClass("alert alert-danger");
         }
 
-        return text("");
+        return null;
+    }
+
+    public static String capitalizeFirst(String text) {
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
 
     public static DomContent mappingToBadge(MappingType mappingType) {
-        var capitalized = mappingType.name().substring(0, 1).toUpperCase() + mappingType.name().substring(1).toLowerCase();
+        return span(capitalizeFirst(mappingType.name())).withClass("badge me-2 bg-" + chooseBootstrapColor(mappingType));
+    }
+
+    public static String chooseBootstrapColor(MappingType mappingType) {
         switch (mappingType) {
             case MOJANG:
-                return span(capitalized).withClass("badge bg-success me-2");
+                return "success";
             case SPIGOT:
-                return span(capitalized).withClass("badge bg-warning me-2");
+                return "warning";
             case SEARGE:
-                return span(capitalized).withClass("badge bg-danger me-2");
+                return "danger";
             case OBFUSCATED:
-                return span(capitalized).withClass("badge bg-primary me-2");
+                return "primary";
             default:
-                return span(capitalized).withClass("badge bg-secondary me-2");
+                return "secondary";
         }
     }
 }

@@ -104,7 +104,13 @@ public abstract class DocsGenerationTask extends DefaultTask {
             var finalHtml = new File(versionDirectory, "index.html");
             finalHtml.getParentFile().mkdirs();
 
-            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), defaultMapping);
+            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), defaultMapping, getUtils().get()
+                    .getLicenses()
+                    .entrySet()
+                    .stream()
+                    .filter(e -> e.getKey().getKey().equals(version))
+                    .collect(Collectors.toMap(e -> e.getKey().getValue(), Map.Entry::getValue))
+            );
             try (var fileWriter = new FileWriter(finalHtml)) {
                 page.generate().render(fileWriter);
             } catch (IOException exception) {

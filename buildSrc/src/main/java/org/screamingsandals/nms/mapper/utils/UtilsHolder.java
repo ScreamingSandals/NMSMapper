@@ -23,4 +23,5 @@ public class UtilsHolder {
     private final Map<String, JoinedClassDefinition> joinedMappings = new HashMap<>();
     private final Map<String, String> spigotJoinedMappingsClassLinks = new HashMap<>();
     private final List<String> undefinedClassLinks = new ArrayList<>();
+    private final Map<Map.Entry<String, MappingType>, String> licenses = new HashMap<>();
 }

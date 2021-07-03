@@ -22,6 +22,7 @@ public class OverviewPage extends AbstractPage {
     private final String docsName;
     private final Set<String> packages;
     private final MappingType defaultMapping;
+    private final Map<MappingType, String> licenses;
 
     @Override
     protected void configure() {
@@ -35,19 +36,27 @@ public class OverviewPage extends AbstractPage {
 
     @Override
     protected void constructContent(ContainerTag div) {
+        div.with(MiscUtils.descriptions(defaultMapping));
+
+        licenses.forEach((mappingType, s) ->
+                div.with(div(
+                        div(MiscUtils.capitalizeFirst(mappingType.name()) + " license").withClass("card-header"),
+                        div(s.replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;")
+                ).withClass("card text-white mb-1 bg-" + MiscUtils.chooseBootstrapColor(mappingType)))
+        );
+
         div.with(
-                MiscUtils.descriptions(defaultMapping),
                 new CompactTablePart(
                         "Packages",
                         List.of("Package"),
                         packages.stream()
                                 .sorted()
                                 .map(key -> {
-                                    var pathKey = key
-                                            .replace(".", "/")
-                                            .replace("${V}", "VVV");
+                                            var pathKey = key
+                                                    .replace(".", "/")
+                                                    .replace("${V}", "VVV");
 
-                                    return Map.of(
+                                            return Map.of(
                                                     "Package", (DomContent) a(key)
                                                             .withHref(pathKey + "/index.html")
                                             );

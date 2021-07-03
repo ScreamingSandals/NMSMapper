@@ -11,9 +11,10 @@ import org.screamingsandals.nms.mapper.parser.SeargeMappingParser;
 import org.screamingsandals.nms.mapper.parser.SpigotMappingParser;
 import org.screamingsandals.nms.mapper.parser.VanillaJarParser;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 
-import java.io.FileInputStream;
+import java.util.Map;
 
 public abstract class RemappingTask extends DefaultTask {
     @Input
@@ -48,37 +49,49 @@ public abstract class RemappingTask extends DefaultTask {
 
         var defaultMappings = MappingType.SPIGOT;
 
+        var errors = new ErrorsLogger();
+
         if (version.getMojangMappings() != null && version.getMojangMappings().isPresent()) {
             System.out.println("Applying Mojang mapping ....");
             defaultMappings = MappingType.MOJANG;
 
-            var errors = MojangMappingParser.map(
+            var license = MojangMappingParser.map(
                     mapping,
-                    new FileInputStream(workspace.getFile(version.getMojangMappings(), "mojang.mapping")),
-                    excluded
+                    workspace.getFile(version.getMojangMappings(), "mojang.mapping"),
+                    excluded,
+                    errors
             );
 
-            if (errors > 0) {
-                System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.MOJANG), license);
             }
         }
 
         if (version.getSeargeMappings() != null && version.getSeargeMappings().isPresent()) {
             System.out.println("Applying Searge (Forge) mapping ....");
 
-            var errors = SeargeMappingParser.map(mapping, version, excluded);
+            var license = SeargeMappingParser.map(mapping, version, excluded, errors);
 
-            if (errors > 0) {
-                System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SEARGE), license);
             }
         }
 
         if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent() && version.getSpigotMemberMappings() != null && version.getSpigotMemberMappings().isPresent()) {
             System.out.println("Applying Spigot mapping ....");
-            var errors = SpigotMappingParser.mapTo(version, mapping, excluded);
+            var license = SpigotMappingParser.mapTo(version, mapping, excluded, errors);
 
-            if (errors > 0) {
-                System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SPIGOT), license);
             }
         }
 

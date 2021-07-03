@@ -20,6 +20,7 @@ dependencies {
     implementation 'org.apache.bcel:bcel:6.5.0'
     implementation 'net.minecraftforge:srgutils:0.4.3'
     implementation 'commons-io:commons-io:2.10.0'
+    implementation 'com.jcraft:jsch:0.1.55'
 }
 
 sourceCompatibility = '11.0'

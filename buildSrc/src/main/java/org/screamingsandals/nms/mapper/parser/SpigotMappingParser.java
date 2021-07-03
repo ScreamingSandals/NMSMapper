@@ -4,18 +4,16 @@ import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.extension.Version;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 // TODO: convert this mess to AnyMappingParser
 public class SpigotMappingParser {
     @SneakyThrows
-    public static int mapTo(Version version, Map<String, ClassDefinition> map,  List<String> excluded) {
-        var errors = new AtomicInteger();
-
+    public static String mapTo(Version version, Map<String, ClassDefinition> map, List<String> excluded, ErrorsLogger errorsLogger) {
         var workspace = version.getWorkspace();
 
         var cl = Files.readString(workspace.getFile(Objects.requireNonNull(version.getSpigotClassMappings()), "bukkit-cl.csrg").toPath());
@@ -126,8 +124,7 @@ public class SpigotMappingParser {
                             fieldDefinition.getMapping().put(MappingType.SPIGOT, split[2]);
                         }, () -> {
                              if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " field " + split[1])) {
-                                System.out.println(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": Missing " + split[1] + " -> " + split[2]);
-                                errors.incrementAndGet();
+                                 errorsLogger.log(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": Missing " + split[1] + " -> " + split[2]);
                             }
                         });
             } else if (split.length == 4) {
@@ -237,14 +234,13 @@ public class SpigotMappingParser {
                         }, () -> {
                             var s2 = String.join(",", allMatches);
                             if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " method " + split[1] + "(" + s2 + ")")) {
-                                System.out.println(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": missing " + split[1] + "(" + s2 + ") -> " + split[3]);
-                                errors.incrementAndGet();
+                                errorsLogger.log(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": missing " + split[1] + "(" + s2 + ") -> " + split[3]);
                             }
                         });
             }
         });
 
-        return errors.get();
+        return cl.lines().findFirst().map(e -> e.substring(1).trim()).orElse(null);
     }
 
     public static boolean isImplementing(Map<String,ClassDefinition> map, ClassDefinition definition, ClassDefinition.Link self) {

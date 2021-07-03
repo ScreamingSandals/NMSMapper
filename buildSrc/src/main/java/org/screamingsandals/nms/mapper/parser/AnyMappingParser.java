@@ -3,6 +3,7 @@ package org.screamingsandals.nms.mapper.parser;
 import net.minecraftforge.srgutils.IMappingFile;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,13 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 public class AnyMappingParser {
-    public static int map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted) throws IOException {
-        var errors = new AtomicInteger();
-
+    public static void map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted, ErrorsLogger errorsLogger) throws IOException {
         var mappingFile = IMappingFile.load(inputStream);
 
         var invertedBuffer = new HashMap<String, String>();
@@ -42,8 +40,7 @@ public class AnyMappingParser {
                             if (definition.getFields().containsKey(iFieldOriginal)) {
                                 definition.getFields().get(iFieldOriginal).getMapping().put(mappingType, iFieldMapped);
                             } else if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " field " + iFieldOriginal)) {
-                                System.out.println(definition.getMapping().get(MappingType.OBFUSCATED) + ": Missing " + iFieldOriginal + " -> " + iFieldMapped);
-                                errors.incrementAndGet();
+                                errorsLogger.log(definition.getMapping().get(MappingType.OBFUSCATED) + ": Missing " + iFieldOriginal + " -> " + iFieldMapped);
                             }
                         });
 
@@ -110,14 +107,11 @@ public class AnyMappingParser {
                                     }, () -> {
                                         var s = String.join(",", allMatches);
                                         if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " method " + iMethodOriginal + "(" + s + ")")) {
-                                            System.out.println(definition.getMapping().get(MappingType.OBFUSCATED) + ": missing " + iMethodOriginal + "(" + s + ") -> " + iMethodMapped);
-                                            errors.incrementAndGet();
+                                            errorsLogger.log(definition.getMapping().get(MappingType.OBFUSCATED) + ": missing " + iMethodOriginal + "(" + s + ") -> " + iMethodMapped);
                                         }
                                     });
                         });
                     }
                 });
-
-        return errors.get();
     }
 }

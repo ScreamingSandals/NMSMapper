@@ -25,7 +25,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
     static {
         try {
-            digest = MessageDigest.getInstance("sha256");
+            digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

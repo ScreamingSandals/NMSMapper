@@ -12,7 +12,7 @@ buildscript {
         maven { url 'https://repo.screamingsandals.org/public/' }
     }
     dependencies {
-		classpath 'org.screamingsandals.gradle.builder:screaming-plugin-builder:1.0.44'
+		classpath 'org.screamingsandals.gradle.builder:screaming-plugin-builder:1.0.46'
     }
 }
 

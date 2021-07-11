@@ -22,6 +22,7 @@ import static j2html.TagCreator.a;
 @Data
 public class HistoryPage extends AbstractPage {
     private final String name;
+    private final JoinedClassDefinition definition;
     private final Map<String, String> joinedMappingsClassLinks;
     private final Map<String, JoinedClassDefinition> joinedMappings;
 
@@ -40,8 +41,6 @@ public class HistoryPage extends AbstractPage {
     }
 
     private DomContent generateChangelogs() {
-        var definition = joinedMappings.get(joinedMappingsClassLinks.get(name));
-
         var versions = definition.getMapping()
                 .keySet()
                 .stream()

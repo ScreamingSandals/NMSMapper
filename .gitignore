@@ -1,5 +1,5 @@
 cache/
-src/main/resources/nms-mappings
+src/main/resources/nms-mappings/
 build/
 .gradle/
 .idea/

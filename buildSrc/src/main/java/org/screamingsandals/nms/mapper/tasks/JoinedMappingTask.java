@@ -12,11 +12,13 @@ import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -34,9 +36,16 @@ public abstract class JoinedMappingTask extends DefaultTask {
     @Input
     public abstract Property<UtilsHolder> getUtils();
 
+    @SneakyThrows
     @TaskAction
     public void run() {
         System.out.println("Generating joined mapping...");
+
+        var spigotForceMerge = Files.readAllLines(getProject().file("config/joined/spigot-class-force-merge.txt").toPath())
+                    .stream()
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank() && !s.startsWith("#"))
+                    .collect(Collectors.toList());
 
         var versions = getUtils().get().getNewlyGeneratedMappings()
                 .keySet()
@@ -58,7 +67,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
             mappings.get(version).forEach((key, classDefinition) -> {
                 try {
-                    var finalClassName = getJoinedClassName(classDefinition);
+                    var finalClassName = getJoinedClassName(classDefinition, spigotForceMerge);
                     if (!finalMapping.containsKey(finalClassName)) {
                         finalMapping.put(finalClassName, new JoinedClassDefinition());
                     }
@@ -77,7 +86,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                             .stream()
                             .filter(joinedConstructor -> constructorDefinition.getParameters()
                                     .stream()
-                                    .map(link -> remapParameterType(version, link))
+                                    .map(link -> remapParameterType(version, link, spigotForceMerge))
                                     .collect(Collectors.toList())
                                     .equals(joinedConstructor.getParameters())
                             )
@@ -87,7 +96,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                 constructor.getSupportedVersions().add(version);
                                 constructor.getParameters().addAll(constructorDefinition.getParameters()
                                         .stream()
-                                        .map(link -> remapParameterType(version, link))
+                                        .map(link -> remapParameterType(version, link, spigotForceMerge))
                                         .collect(Collectors.toList()));
                                 definition.getConstructors().add(constructor);
                             }));
@@ -95,7 +104,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     classDefinition.getFields().forEach((s, fieldDefinition) -> {
                         definition.getFields()
                                 .stream()
-                                .filter(joinedField -> joinedField.getType().equals(remapParameterType(version, fieldDefinition.getType()))
+                                .filter(joinedField -> joinedField.getType().equals(remapParameterType(version, fieldDefinition.getType(), spigotForceMerge))
                                         && compareMappings(joinedField.getMapping(), nextVersion.orElse(""), versionDefaultMapping, fieldDefinition.getMapping())
                                 )
                                 .findFirst()
@@ -110,7 +119,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                                             joinedField.getMapping().put(Map.entry(entry.getKey().getKey() + "," + version, entry.getKey().getValue()), entry.getValue());
                                                         },
                                                         () -> joinedField.getMapping().put(Map.entry(version, mappingType), s3))), () -> {
-                                    var joinedField = new JoinedClassDefinition.JoinedField(remapParameterType(version, fieldDefinition.getType()));
+                                    var joinedField = new JoinedClassDefinition.JoinedField(remapParameterType(version, fieldDefinition.getType(), spigotForceMerge));
                                     fieldDefinition.getMapping()
                                             .forEach((mappingType, s1) -> joinedField.getMapping().put(Map.entry(version, mappingType), s1));
 
@@ -122,11 +131,11 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     classDefinition.getMethods().forEach(methodDefinition -> {
                         definition.getMethods()
                                 .stream()
-                                .filter(joinedMethod -> joinedMethod.getReturnType().equals(remapParameterType(version, methodDefinition.getReturnType()))
+                                .filter(joinedMethod -> joinedMethod.getReturnType().equals(remapParameterType(version, methodDefinition.getReturnType(), spigotForceMerge))
                                         && compareMappings(joinedMethod.getMapping(), nextVersion.orElse(""), versionDefaultMapping, methodDefinition.getMapping())
                                         && methodDefinition.getParameters()
                                         .stream()
-                                        .map(link -> remapParameterType(version, link))
+                                        .map(link -> remapParameterType(version, link, spigotForceMerge))
                                         .collect(Collectors.toList())
                                         .equals(joinedMethod.getParameters()))
                                 .findFirst()
@@ -141,12 +150,12 @@ public abstract class JoinedMappingTask extends DefaultTask {
                                                             joinedMethod.getMapping().put(Map.entry(entry.getKey().getKey() + "," + version, entry.getKey().getValue()), entry.getValue());
                                                         },
                                                         () -> joinedMethod.getMapping().put(Map.entry(version, mappingType), s3))), () -> {
-                                    var joinedMethod = new JoinedClassDefinition.JoinedMethod(remapParameterType(version, methodDefinition.getReturnType()));
+                                    var joinedMethod = new JoinedClassDefinition.JoinedMethod(remapParameterType(version, methodDefinition.getReturnType(), spigotForceMerge));
                                     methodDefinition.getMapping()
                                             .forEach((mappingType, s1) -> joinedMethod.getMapping().put(Map.entry(version, mappingType), s1));
                                     joinedMethod.getParameters().addAll(methodDefinition.getParameters()
                                             .stream()
-                                            .map(link -> remapParameterType(version, link))
+                                            .map(link -> remapParameterType(version, link, spigotForceMerge))
                                             .collect(Collectors.toList()));
 
                                     definition.getMethods().add(joinedMethod);
@@ -159,16 +168,16 @@ public abstract class JoinedMappingTask extends DefaultTask {
         });
     }
 
-    public String getJoinedClassName(ClassDefinition classDefinition) throws DigestException {
+    public String getJoinedClassName(ClassDefinition classDefinition, List<String> spigotForceMerge) throws DigestException {
         if (classDefinition.getJoinedKey() != null) {
             return classDefinition.getJoinedKey();
         }
 
         var mojMap = classDefinition.getMapping().get(MappingType.MOJANG);
+        var spigotLinks = getUtils().get().getSpigotJoinedMappingsClassLinks();
 
         if (mojMap == null) {
             // YAY, we are on older version
-            var spigotLinks = getUtils().get().getSpigotJoinedMappingsClassLinks();
             var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
 
             if (spigot != null) {
@@ -230,8 +239,30 @@ public abstract class JoinedMappingTask extends DefaultTask {
         var links = getUtils().get().getJoinedMappingsClassLinks();
 
         if (links.containsKey(mojMap)) {
-            classDefinition.setJoinedKey(links.get(mojMap));
-            return links.get(mojMap);
+            var hash = links.get(mojMap);
+            classDefinition.setJoinedKey(hash);
+            var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
+            if (spigot != null) {
+                spigot = spigot.substring(spigot.lastIndexOf(".") + 1);
+                if (!spigotLinks.containsKey(spigot)) {
+                    spigotLinks.put(spigot, hash);
+                }
+            }
+            return hash;
+        }
+
+        // check if newer spigot thinks the class is still the same
+        var checkIfNewerSpigot = classDefinition.getMapping().get(MappingType.SPIGOT);
+        if (checkIfNewerSpigot != null && spigotForceMerge.contains(checkIfNewerSpigot)) { // also check if merge is allowed
+            checkIfNewerSpigot = checkIfNewerSpigot.substring(checkIfNewerSpigot.lastIndexOf(".") + 1);
+            var hash = spigotLinks.get(checkIfNewerSpigot);
+
+            if (hash != null) {
+                // Yay, Mojang mappings are another but Spigot same so we assume it's same class
+                links.put(mojMap, hash);
+                classDefinition.setJoinedKey(hash);
+                return hash;
+            }
         }
 
         var byteArray = digest.digest(mojMap.getBytes(StandardCharsets.UTF_8));
@@ -263,7 +294,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
     }
 
     @SneakyThrows
-    public ClassDefinition.Link remapParameterType(String version, ClassDefinition.Link link) {
+    public ClassDefinition.Link remapParameterType(String version, ClassDefinition.Link link, List<String> spigotForceMerge) {
         if (link.isNms()) {
             var type = link.getType();
             var suffix = new StringBuilder();
@@ -275,7 +306,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
             }
-            return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).get(type)) + suffix);
+            return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).get(type), spigotForceMerge) + suffix);
         }
         return link;
     }

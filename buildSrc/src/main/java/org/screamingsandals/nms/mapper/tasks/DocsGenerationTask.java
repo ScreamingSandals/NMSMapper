@@ -16,7 +16,6 @@ import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,11 +132,26 @@ public abstract class DocsGenerationTask extends DefaultTask {
 
         System.out.println("Generating classes history");
 
-        getUtils().get().getJoinedMappingsClassLinks().forEach((s, s2) -> {
-            var finalHtml = new File(outputFolder, "history/" + s2 + ".html");
+        getUtils().get().getJoinedMappings().forEach((s, m) -> {
+            var finalHtml = new File(outputFolder, "history/" + s + ".html");
             finalHtml.getParentFile().mkdirs();
 
-            var page = new HistoryPage(s, getUtils().get().getJoinedMappingsClassLinks(), getUtils().get().getJoinedMappings());
+            var l = getUtils().get()
+                    .getJoinedMappingsClassLinks()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().equals(s))
+                    .findFirst()
+                    .or(() -> getUtils().get()
+                            .getSpigotJoinedMappingsClassLinks()
+                            .entrySet()
+                            .stream()
+                            .filter(entry -> entry.getValue().equals(s))
+                            .findFirst()
+                    )
+                    .map(Map.Entry::getKey)
+                    .orElse(s);
+            var page = new HistoryPage(l, m, getUtils().get().getJoinedMappingsClassLinks(), getUtils().get().getJoinedMappings());
             try (var fileWriter = new FileWriter(finalHtml)) {
                 page.generate().render(fileWriter);
             } catch (IOException exception) {

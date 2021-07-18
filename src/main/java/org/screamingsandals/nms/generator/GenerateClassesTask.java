@@ -91,6 +91,8 @@ public abstract class GenerateClassesTask extends DefaultTask {
                     .build();
             builder.addMethod(typeMethod);
 
+            var nameCounter = new HashMap<String, Integer>();
+
             requiredClass.getFields().forEach(s1 -> {
                 var split = s1.split(":");
                 var type = "MOJANG";
@@ -99,13 +101,16 @@ public abstract class GenerateClassesTask extends DefaultTask {
                     type = split[0].toUpperCase();
                     fieldName = split[1];
                 }
+                var forceVersion = split.length > 2 ? split[2] : null;
 
                 var finalType = type;
                 var finalFieldName = fieldName;
                 typeMapping.node("fields")
                         .childrenList()
                         .stream()
-                        .filter(n -> n.node(finalType).childrenMap().entrySet().stream().anyMatch(n1 -> n1.getValue().getString("").equals(finalFieldName)))
+                        .filter(n -> n.node(finalType).childrenMap().entrySet().stream().anyMatch(n1 ->
+                                n1.getValue().getString("").equals(finalFieldName) && (forceVersion == null || Arrays.asList(n1.getKey().toString().split(",")).contains(forceVersion))
+                        ))
                         .findFirst()
                         .ifPresentOrElse(n -> {
                             var capitalized = finalFieldName.substring(0, 1).toUpperCase();
@@ -113,10 +118,19 @@ public abstract class GenerateClassesTask extends DefaultTask {
                                 capitalized += finalFieldName.substring(1);
                             }
 
-                            var method = MethodSpec.methodBuilder("getField" + capitalized)
+                            int count;
+                            if (!nameCounter.containsKey(finalFieldName)) {
+                                nameCounter.put(finalFieldName, 1);
+                                count = 1;
+                            } else {
+                                count = nameCounter.get(finalFieldName) + 1;
+                                nameCounter.put(finalFieldName, count);
+                            }
+
+                            var method = MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
                                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                                     .returns(Field.class)
-                                    .addStatement("return $T.$N($T.class, $S, $L)", accessorUtils, "getField", ClassName.get(basePackage, name), finalFieldName, generateMappings(n))
+                                    .addStatement("return $T.$N($T.class, $S, $L)", accessorUtils, "getField", ClassName.get(basePackage, name), finalFieldName + count, generateMappings(n))
                                     .build();
                             builder.addMethod(method);
                         }, () -> {
@@ -132,13 +146,16 @@ public abstract class GenerateClassesTask extends DefaultTask {
                     type = split[0].toUpperCase();
                     fieldName = split[1];
                 }
+                var forceVersion = split.length > 2 ? split[2] : null;
 
                 var finalType = type;
                 var finalFieldName = fieldName;
                 typeMapping.node("fields")
                         .childrenList()
                         .stream()
-                        .filter(n -> n.node(finalType).childrenMap().entrySet().stream().anyMatch(n1 -> n1.getValue().getString("").equals(finalFieldName)))
+                        .filter(n -> n.node(finalType).childrenMap().entrySet().stream().anyMatch(
+                                n1 -> n1.getValue().getString("").equals(finalFieldName) && (forceVersion == null || Arrays.asList(n1.getKey().toString().split(",")).contains(forceVersion))
+                        ))
                         .findFirst()
                         .ifPresentOrElse(n -> {
                             var capitalized = finalFieldName.substring(0, 1).toUpperCase();
@@ -146,10 +163,19 @@ public abstract class GenerateClassesTask extends DefaultTask {
                                 capitalized += finalFieldName.substring(1);
                             }
 
-                            var method = MethodSpec.methodBuilder("getField" + capitalized)
+                            int count;
+                            if (!nameCounter.containsKey(finalFieldName)) {
+                                nameCounter.put(finalFieldName, 1);
+                                count = 1;
+                            } else {
+                                count = nameCounter.get(finalFieldName) + 1;
+                                nameCounter.put(finalFieldName, count);
+                            }
+
+                            var method = MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
                                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                                     .returns(Object.class)
-                                    .addStatement("return $T.$N($T.class, $S, $L)", accessorUtils, "getEnumField", ClassName.get(basePackage, name), finalFieldName, generateMappings(n))
+                                    .addStatement("return $T.$N($T.class, $S, $L)", accessorUtils, "getEnumField", ClassName.get(basePackage, name), finalFieldName + count, generateMappings(n))
                                     .build();
                             builder.addMethod(method);
                         }, () -> {
@@ -280,6 +306,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
                     type = split[0].toUpperCase();
                     methodName = split[1];
                 }
+                var forceVersion = split.length > 2 ? split[2] : null;
 
                 var finalType = type;
                 var finalMethodName = methodName;
@@ -292,7 +319,8 @@ public abstract class GenerateClassesTask extends DefaultTask {
                                                 .childrenMap()
                                                 .entrySet()
                                                 .stream()
-                                                .anyMatch(n1 -> n1.getValue().getString("").equals(finalMethodName))
+                                                .anyMatch(n1 -> n1.getValue().getString("").equals(finalMethodName)
+                                                && (forceVersion == null || Arrays.asList(n1.getKey().toString().split(",")).contains(forceVersion)))
                                                 &&
                                                 Objects.equals(n.node("parameters").getList(String.class), params);
                                     } catch (SerializationException e) {

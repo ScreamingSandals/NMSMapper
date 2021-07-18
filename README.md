@@ -183,6 +183,13 @@ reqClass('spigot:EntityLiving')
 
 Methods generated with alternative mappings will also use alternative mappings in their names.
 
+> You can also specify which version of mappings have to be used for finding field, method or enum value
+> 
+> ```groovy
+>    reqClass('spigot:World')
+>       .reqField('spigot:methodProfiler:1.9.4')
+> ```
+
 ## Contributing
 
 ### How to add new minecraft version or update its info.json

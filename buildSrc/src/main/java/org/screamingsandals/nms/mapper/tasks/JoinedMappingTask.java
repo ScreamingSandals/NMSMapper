@@ -315,30 +315,23 @@ public abstract class JoinedMappingTask extends DefaultTask {
         return mapping
                 .entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().getValue() == baseMappingType
-                        && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion)
-                        && entry.getValue().equals(versionSpecificMapping.get(baseMappingType))
-                )
+                .filter(entry -> entry.getKey().getValue() == baseMappingType && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
                 .findFirst()
                 .or(() ->
-                    mapping
-                            .entrySet()
-                            .stream()
-                            .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE
-                                    && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion)
-                                    && entry.getValue().equals(versionSpecificMapping.get(MappingType.SEARGE))
-                            )
-                            .findFirst()
-                            .or(() -> mapping
-                                    .entrySet()
-                                    .stream()
-                                    .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED &&
-                                            Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion)
-                                            && entry.getValue().equals(versionSpecificMapping.get(MappingType.OBFUSCATED))
-                                    )
-                                    .findFirst()
-                            )
+                        mapping
+                                .entrySet()
+                                .stream()
+                                .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
+                                .findFirst()
+                                .or(() -> mapping
+                                        .entrySet()
+                                        .stream()
+                                        .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                        .findFirst()
+                                )
                 )
-                .isPresent();
+                .map(entry -> Map.entry(entry.getKey().getValue(), entry.getValue()))
+                .map(entry -> entry.getValue().equals(versionSpecificMapping.get(entry.getKey())))
+                .orElse(false);
     }
 }

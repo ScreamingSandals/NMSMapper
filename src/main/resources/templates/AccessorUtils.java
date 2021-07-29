@@ -210,16 +210,14 @@ public class AccessorUtils {
 
             try {
                 Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                Object[] enums = clazz.getEnumConstants();
-                if (enums != null) {
-                    for (Object enumeration : enums) {
-                        Object name = enumeration.getClass().getMethod("name").invoke(enumeration);
+                try {
+                    Field fieldC = clazz.getDeclaredField(res);
+                    fieldC.setAccessible(true);
 
-                        if (res.equals(name)) {
-                            enumCache.put(kvholder, enumeration);
-                            return enumeration;
-                        }
-                    }
+                    Object enumeration = fieldC.get(null);
+                    enumCache.put(kvholder, enumeration);
+                    return enumeration;
+                } catch (Throwable ignored2) {
                 }
             } catch (Throwable ignored) {}
         }
@@ -230,16 +228,14 @@ public class AccessorUtils {
 
             try {
                 Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                Object[] enums = clazz.getEnumConstants();
-                if (enums != null) {
-                    for (Object enumeration : enums) {
-                        Object name = enumeration.getClass().getMethod("name").invoke(enumeration);
+                try {
+                    Field fieldC = clazz.getDeclaredField(res);
+                    fieldC.setAccessible(true);
 
-                        if (res.equals(name)) {
-                            enumCache.put(kvholder, enumeration);
-                            return enumeration;
-                        }
-                    }
+                    Object enumeration = fieldC.get(null);
+                    enumCache.put(kvholder, enumeration);
+                    return enumeration;
+                } catch (Throwable ignored2) {
                 }
             } catch (Throwable ignored) {}
         }

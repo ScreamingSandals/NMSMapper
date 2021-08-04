@@ -3,3 +3,4 @@ net.minecraft.server.${V}.AttributeMapBase
 net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy
 net.minecraft.server.${V}.PacketPlayOutEntityDestroy
 net.minecraft.server.${V}.GenericAttributes
+net.minecraft.server.${V}.PacketPlayOutEntityEquipment

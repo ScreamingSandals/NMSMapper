@@ -1,0 +1,13 @@
+{
+  "version": "1.9.3",
+  "vanilla-jar": {
+    "url": "https://launcher.mojang.com/v1/objects/8e897b6b6d784f745332644f4d104f7a6e737ccf/server.jar",
+    "sha1": "8e897b6b6d784f745332644f4d104f7a6e737ccf"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/null?at=null"
+  },
+  "spigot-member-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/null?at=null"
+  }
+}

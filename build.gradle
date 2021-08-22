@@ -1,4 +1,7 @@
-import org.screamingsandals.nms.mapper.NMSMapper
+plugins {
+    id 'org.screamingsandals.plugin-builder-lite' version '1.0.49'
+    id 'java-gradle-plugin'
+}
 
 defaultTasks "saveNmsMappings", "screamCompile", "uploadNmsDocs" // order is important
 
@@ -7,22 +10,12 @@ allprojects {
     version = VERSION
 }
 
-buildscript {
-    repositories {
-        maven { url 'https://repo.screamingsandals.org/public/' }
-    }
-    dependencies {
-		classpath 'org.screamingsandals.gradle.builder:screaming-plugin-builder:1.0.46'
-    }
-}
-
-apply plugin: 'org.screamingsandals.gradle.builder.lite'
-apply plugin: NMSMapper
+apply plugin: org.screamingsandals.nms.mapper.NMSMapper
 
 enableShadowPlugin()
 
 dependencies {
-    compileOnly 'org.jetbrains:annotations:21.0.1'
+    compileOnly 'org.jetbrains:annotations:22.0.0'
     compileOnly gradleApi()
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
@@ -30,6 +23,15 @@ dependencies {
     implementation 'org.spongepowered:configurate-gson:4.1.1'
     implementation 'com.squareup:javapoet:1.13.0'
     implementation 'commons-io:commons-io:2.10.0'
+}
+
+gradlePlugin {
+    plugins {
+        nmsMapper {
+            id = 'org.screamingsandals.nms-mapper'
+            implementationClass = 'org.screamingsandals.nms.generator.ClassGenerator'
+        }
+    }
 }
 
 sourceCompatibility = '11.0'

@@ -256,6 +256,36 @@ public abstract class GenerateClassesTask extends DefaultTask {
                         var fistClassName = split[0];
                         var rest = Arrays.stream(split).skip(1).toArray(String[]::new);
 
+                        if (packageN.isEmpty()) { // fix primitive arrays
+
+                            switch (fistClassName) {
+                                case "I[]":
+                                    fistClassName = "int[]";
+                                    break;
+                                case "Z[]":
+                                    fistClassName = "boolean[]";
+                                    break;
+                                case "J[]":
+                                    fistClassName = "long[]";
+                                    break;
+                                case "B[]":
+                                    fistClassName = "byte[]";
+                                    break;
+                                case "D[]":
+                                    fistClassName = "double[]";
+                                    break;
+                                case "F[]":
+                                    fistClassName = "float[]";
+                                    break;
+                                case "C[]":
+                                    fistClassName = "char[]";
+                                    break;
+                                case "S[]":
+                                    fistClassName = "short[]";
+                                    break;
+                            }
+                        }
+
                         args.add(ClassName.get(packageN, fistClassName, rest));
                     }
                 });
@@ -364,6 +394,36 @@ public abstract class GenerateClassesTask extends DefaultTask {
                                     var sp = className.split("\\$");
                                     var fistClassName = sp[0];
                                     var rest = Arrays.stream(sp).skip(1).toArray(String[]::new);
+
+                                    if (packageN.isEmpty()) { // fix primitive arrays
+
+                                        switch (fistClassName) {
+                                            case "I[]":
+                                                fistClassName = "int[]";
+                                                break;
+                                            case "Z[]":
+                                                fistClassName = "boolean[]";
+                                                break;
+                                            case "J[]":
+                                                fistClassName = "long[]";
+                                                break;
+                                            case "B[]":
+                                                fistClassName = "byte[]";
+                                                break;
+                                            case "D[]":
+                                                fistClassName = "double[]";
+                                                break;
+                                            case "F[]":
+                                                fistClassName = "float[]";
+                                                break;
+                                            case "C[]":
+                                                fistClassName = "char[]";
+                                                break;
+                                            case "S[]":
+                                                fistClassName = "short[]";
+                                                break;
+                                        }
+                                    }
 
                                     args.add(ClassName.get(packageN, fistClassName, rest));
                                 }

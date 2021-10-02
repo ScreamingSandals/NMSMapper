@@ -3,7 +3,7 @@ plugins {
     id 'java-gradle-plugin'
 }
 
-defaultTasks "saveNmsMappings", "build", "shadowJar", "uploadNmsDocs" // order is important
+defaultTasks "saveNmsMappings", "screamCompile", "uploadNmsDocs" // order is important
 
 allprojects {
     group = 'org.screamingsandals.nms'
@@ -11,8 +11,6 @@ allprojects {
 }
 
 apply plugin: org.screamingsandals.nms.mapper.NMSMapper
-
-enableShadowPlugin()
 
 dependencies {
     compileOnly 'org.jetbrains:annotations:22.0.0'

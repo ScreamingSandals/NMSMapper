@@ -1,5 +1,5 @@
 plugins {
-    id 'org.screamingsandals.plugin-builder-lite' version '1.0.50'
+    id 'org.screamingsandals.plugin-builder-lite' version '1.0.51' apply false
     id 'java-gradle-plugin'
 }
 
@@ -10,6 +10,8 @@ allprojects {
     version = VERSION
 }
 
+System.setProperty("LITE_SKIP_PUBLICATION_CREATION", "yes")
+apply plugin: org.screamingsandals.gradle.builder.LiteBuilderPlugin
 apply plugin: org.screamingsandals.nms.mapper.NMSMapper
 
 dependencies {

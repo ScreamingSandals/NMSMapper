@@ -1,6 +1,6 @@
 # NMSMapper
 
-[![Build Status](https://ci.screamingsandals.org/job/NMSMapper/badge/icon)](https://ci.screamingsandals.org/job/NMSMapper/)
+[![NMS Mapper CI](https://github.com/ScreamingSandals/NMSMapper/actions/workflows/build.yml/badge.svg)](https://github.com/ScreamingSandals/NMSMapper/actions/workflows/build.yml)
 [![Repository version](https://img.shields.io/nexus/r/org.screamingsandals.nms/NMSMapper?server=https%3A%2F%2Frepo.screamingsandals.org)](https://repo.screamingsandals.org/#browse/browse:maven-releases:org%2Fscreamingsandals%2Fnms%2FNMSMapper)
 [![Discord](https://img.shields.io/discord/582271436845219842?logo=discord)](https://discord.gg/4xB54Ts)
 

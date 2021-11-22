@@ -15,6 +15,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 @AllArgsConstructor
 public class Version {
     private String version;
+    private String realVersion;
     private DownloadableContent vanillaJar;
     @Nullable
     private DownloadableContent mojangMappings;

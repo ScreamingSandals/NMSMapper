@@ -1,0 +1,15 @@
+{
+  "version": "1.18",
+  "real-version": "1.18-pre5",
+  "vanilla-jar": {
+    "url": "https://launcher.mojang.com/v1/objects/c29d03e9c6a21a3234a947e1025793c3cc40c13b/server.jar",
+    "sha1": "c29d03e9c6a21a3234a947e1025793c3cc40c13b"
+  },
+  "mojang-mappings": {
+    "url": "https://launcher.mojang.com/v1/objects/438bd2a54c066d09195c85c20cfd76818d725dde/server.txt",
+    "sha1": "438bd2a54c066d09195c85c20cfd76818d725dde"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-pre5-cl.csrg?at=b364c062bb9b9534c0dd34c7a46f3f1acbfb195d"
+  }
+}

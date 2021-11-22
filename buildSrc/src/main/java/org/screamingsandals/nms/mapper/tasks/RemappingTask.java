@@ -33,7 +33,9 @@ public abstract class RemappingTask extends DefaultTask {
         var newlyGeneratedMappings = utils.getNewlyGeneratedMappings();
         var workspace = version.getWorkspace();
 
-        System.out.println("======= Mapping " + version.getVersion() + " =======");
+        var realVersion = version.getRealVersion() != null ? version.getRealVersion() : version.getVersion();
+
+        System.out.println("======= Mapping " + realVersion + " =======");
 
         System.out.println("Getting base data from vanilla jar ....");
 
@@ -52,7 +54,7 @@ public abstract class RemappingTask extends DefaultTask {
         var errors = new ErrorsLogger();
 
         if (version.getMojangMappings() != null && version.getMojangMappings().isPresent()) {
-            System.out.println("Applying Mojang mapping ....");
+            System.out.println("Applying Mojang mappings ....");
             defaultMappings = MappingType.MOJANG;
 
             var license = MojangMappingParser.map(
@@ -71,7 +73,7 @@ public abstract class RemappingTask extends DefaultTask {
         }
 
         if (version.getSeargeMappings() != null && version.getSeargeMappings().isPresent()) {
-            System.out.println("Applying Searge (Forge) mapping ....");
+            System.out.println("Applying Searge (Forge) mappings ....");
 
             var license = SeargeMappingParser.map(mapping, version, excluded, errors);
 
@@ -83,8 +85,8 @@ public abstract class RemappingTask extends DefaultTask {
             }
         }
 
-        if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent() && version.getSpigotMemberMappings() != null && version.getSpigotMemberMappings().isPresent()) {
-            System.out.println("Applying Spigot mapping ....");
+        if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent()) {
+            System.out.println("Applying Spigot mappings ....");
             var license = SpigotMappingParser.mapTo(version, mapping, excluded, errors);
 
             errors.printWarn();

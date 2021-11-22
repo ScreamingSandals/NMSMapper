@@ -50,7 +50,7 @@ public class AccessorUtils {
             Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
             Method method = bukkitClass.getMethod("getServer");
             if (MAJOR_VERSION == 0) { // we don't know version yet, this server don't implement forge
-                Pattern versionPattern = Pattern.compile("\\(MC: (\\d+)\\.(\\d+)\\.?(\\d+?)?\\)");
+                Pattern versionPattern = Pattern.compile("\\(MC: (\\d+)\\.(\\d+)\\.?(\\d+?)?");
                 Matcher matcher = versionPattern.matcher(bukkitClass.getMethod("getVersion").invoke(null).toString());
                 int majorVersion = 1;
                 int minorVersion = 0;

@@ -546,6 +546,9 @@ public abstract class GenerateClassesTask extends DefaultTask {
 
             if (allSeargeMappings.containsKey(entry.getKey())) {
                 value = allSeargeMappings.get(entry.getKey());
+            } else if (seargeLatest.get() != null) {
+                // Searge mappings are usually consistent across versions, so skip the mapping if there's no value in mappings but there's value in the seargeLatest variable
+                return;
             }
 
             if (seargeLatest.get() == null || !seargeLatest.get().equals(value)) {

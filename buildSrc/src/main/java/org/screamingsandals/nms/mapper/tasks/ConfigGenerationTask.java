@@ -29,9 +29,16 @@ public abstract class ConfigGenerationTask extends DefaultTask {
             throw new GradleException("Minecraft version is not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version>");
         }
 
+        var customName = getProject().getProperties().get("customVersionString");
+        if (customName == null) {
+            customName = versionObj;
+        }
+
+        var customVersion = customName.toString();
+
         var version = versionObj.toString();
 
-        System.out.println("Generating new config for version " + version);
+        System.out.println("Generating new config for version " + version + " (will be saved as " + customName + ")");
 
         var httpClient = HttpClient.newHttpClient();
 
@@ -77,6 +84,11 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                             .sha1(vanillaJarSha1.getString())
                             .build()
                     );
+
+            if (!customVersion.equals(version)) {
+                versionBuilder.version(customVersion)
+                        .realVersion(version);
+            }
 
             var mojangMappings = n.node("downloads", "server_mappings", "url");
             var mojangMappingsSha1 = n.node("downloads", "server_mappings", "sha1");
@@ -137,23 +149,34 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                         .build()
                         .load();
 
-                System.out.println("Spigot Class Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision);
-                System.out.println("Spigot Member Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision);
+                if (!info.node("classMappings").getString("").isEmpty()) {
+                    System.out.println("Spigot Class Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision);
 
-                versionBuilder
-                        .spigotClassMappings(Version.DownloadableContent.builder()
-                                .url("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision)
-                                .build())
-                        .spigotMemberMappings(Version.DownloadableContent.builder()
-                                .url("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision)
-                                .build());
+                    versionBuilder
+                            .spigotClassMappings(Version.DownloadableContent.builder()
+                                    .url("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision)
+                                    .build());
+
+                    if (!info.node("memberMappings").getString("").isEmpty()) {
+                        System.out.println("Spigot Member Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision);
+
+                        versionBuilder
+                                .spigotMemberMappings(Version.DownloadableContent.builder()
+                                        .url("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision)
+                                        .build());
+                    } else {
+                        System.out.println("No Spigot Member Mappings found");
+                    }
+                } else {
+                    System.out.println("No spigot mappings found");
+                }
             } catch (IOException exception) {
                 System.out.println("No spigot mappings found");
             }
 
             var saver = GsonConfigurationLoader
                     .builder()
-                    .path(getConfigFolder().get().toPath().resolve(version + "/info.json"))
+                    .path(getConfigFolder().get().toPath().resolve(customName + "/info.json"))
                     .build();
 
             var node = saver.createNode();

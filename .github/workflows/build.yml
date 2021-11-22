@@ -23,5 +23,8 @@ jobs:
           NEXUS_URL_SNAPSHOT: ${{ secrets.NEXUS_URL_SNAPSHOT }}
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          NMSDOCS_HOST: ${{ secrets.NMSDOCS_HOST }}
+          NMSDOCS_USER: ${{ secrets.NMSDOCS_USER }}
+          NMSDOCS_SECRET: ${{ secrets.NMSDOCS_SECRET }}
           OPTIMIZE_FOR_CI_CD: "1"
 

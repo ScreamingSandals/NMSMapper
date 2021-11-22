@@ -3,7 +3,7 @@ plugins {
     id 'java-gradle-plugin'
 }
 
-defaultTasks "saveNmsMappings", "screamCompile", "uploadNmsDocs" // order is important
+defaultTasks "saveNmsMappings", "screamCompile", "generateNmsDocs" // order is important
 
 allprojects {
     group = 'org.screamingsandals.nms'

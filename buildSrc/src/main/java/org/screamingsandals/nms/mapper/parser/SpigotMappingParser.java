@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
-// TODO: convert this mess to AnyMappingParser
+// TODO: convert this mess to AnyMappingParser (maybe it won't be needed because spigot is dropping its own mapping slowly)
 public class SpigotMappingParser {
     @SneakyThrows
     public static String mapTo(Version version, Map<String, ClassDefinition> map, List<String> excluded, ErrorsLogger errorsLogger) {

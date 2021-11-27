@@ -8,6 +8,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 import org.screamingsandals.nms.mapper.web.*;
 import org.spongepowered.configurate.ConfigurateException;
@@ -16,6 +17,7 @@ import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
         var outputFolder = getOutputFolder().get();
         var versions = getUtils().get().getNewlyGeneratedMappings();
         var mappings = getUtils().get().getMappings();
+        var versionsWithMappings = getUtils().get().getAllMappingsByVersion();
 
         outputFolder.mkdirs();
 
@@ -162,7 +165,11 @@ public abstract class DocsGenerationTask extends DefaultTask {
         var finalHtml = new File(outputFolder, "index.html");
         finalHtml.getParentFile().mkdirs();
 
-        var page = new MainPage(versions.keySet().stream().sorted(Comparator.comparing(VersionNumber::parse)).collect(Collectors.toList()));
+        var page = new MainPage(versionsWithMappings.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(e -> VersionNumber.parse(e.getKey())))
+                .map(e -> Map.entry(e.getKey(), e.getValue()))
+                .collect(Collectors.toList()));
         try (var fileWriter = new FileWriter(finalHtml)) {
             page.generate().render(fileWriter);
         } catch (IOException exception) {
@@ -175,5 +182,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
             FileUtils.deleteDirectory(staticFolder);
         }
         FileUtils.copyDirectory(getProject().file("static"), staticFolder);
+        FileUtils.touch(new File(outputFolder, ".nojekyll"));
+        FileUtils.write(new File(outputFolder, "robots.txt"), "User-agent: *\nDisallow: /", StandardCharsets.UTF_8);
     }
 }

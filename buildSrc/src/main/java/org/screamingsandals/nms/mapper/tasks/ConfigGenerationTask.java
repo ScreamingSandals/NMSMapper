@@ -26,7 +26,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
         var versionObj = getProject().getProperties().get("minecraftVersion");
 
         if (versionObj == null) {
-            throw new GradleException("Minecraft version is not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version>");
+            throw new GradleException("Minecraft version is not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version> [-PcustomVersionString=<customVersion>]");
         }
 
         var customName = getProject().getProperties().get("customVersionString");
@@ -168,7 +168,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                         System.out.println("No Spigot Member Mappings found");
                     }
                 } else {
-                    System.out.println("No spigot mappings found");
+                    System.out.println("No Spigot Class Mappings found (they are not released yet or they are discontinued)");
                 }
             } catch (IOException exception) {
                 System.out.println("No spigot mappings found");

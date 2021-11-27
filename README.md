@@ -197,3 +197,8 @@ Methods generated with alternative mappings will also use alternative mappings i
 ```
 $ ./gradlew generateNmsConfig -PminecraftVersion=1.18
 ```
+
+or for pre-releases, release-candidates (you have to renamed it because currently it doesn't know how to deal with snapshots)
+```
+$ ./gradlew generateNmsConfig -PminecraftVersion=1.18-rc3 -PcustomVersionString=1.18
+```

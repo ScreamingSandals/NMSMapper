@@ -81,6 +81,10 @@ public class MiscUtils {
         return span(capitalizeFirst(mappingType.name())).withClass("badge me-2 bg-" + chooseBootstrapColor(mappingType));
     }
 
+    public static DomContent mappingToBadge(MappingType mappingType, String additionalClass) {
+        return span(capitalizeFirst(mappingType.name())).withClass("badge me-2 bg-" + chooseBootstrapColor(mappingType) + " " + additionalClass);
+    }
+
     public static String chooseBootstrapColor(MappingType mappingType) {
         switch (mappingType) {
             case MOJANG:

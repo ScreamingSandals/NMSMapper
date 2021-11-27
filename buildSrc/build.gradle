@@ -16,7 +16,7 @@ dependencies {
     compileOnly gradleApi()
 
     implementation 'org.spongepowered:configurate-gson:4.1.1'
-    implementation 'com.j2html:j2html:1.4.0'
+    implementation 'com.j2html:j2html:1.5.0'
     implementation 'org.apache.bcel:bcel:6.5.0'
     implementation 'net.minecraftforge:srgutils:0.4.3'
     implementation 'commons-io:commons-io:2.10.0'

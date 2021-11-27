@@ -14,6 +14,7 @@ import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public abstract class RemappingTask extends DefaultTask {
@@ -29,6 +30,7 @@ public abstract class RemappingTask extends DefaultTask {
         var version = getVersion().get();
         var utils = getUtils().get();
 
+        var allMappings = new ArrayList<MappingType>();
         var mappings = utils.getMappings();
         var newlyGeneratedMappings = utils.getNewlyGeneratedMappings();
         var workspace = version.getWorkspace();
@@ -48,6 +50,7 @@ public abstract class RemappingTask extends DefaultTask {
         System.out.println(mapping.size() + " classes mapped");
 
         mappings.put(version.getVersion(), mapping);
+        allMappings.add(MappingType.OBFUSCATED);
 
         var defaultMappings = MappingType.SPIGOT;
 
@@ -56,6 +59,7 @@ public abstract class RemappingTask extends DefaultTask {
         if (version.getMojangMappings() != null && version.getMojangMappings().isPresent()) {
             System.out.println("Applying Mojang mappings ....");
             defaultMappings = MappingType.MOJANG;
+            allMappings.add(MappingType.MOJANG);
 
             var license = MojangMappingParser.map(
                     mapping,
@@ -76,6 +80,7 @@ public abstract class RemappingTask extends DefaultTask {
             System.out.println("Applying Searge (Forge) mappings ....");
 
             var license = SeargeMappingParser.map(mapping, version, excluded, errors);
+            allMappings.add(MappingType.SEARGE);
 
             errors.printWarn();
             errors.reset();
@@ -88,6 +93,7 @@ public abstract class RemappingTask extends DefaultTask {
         if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent()) {
             System.out.println("Applying Spigot mappings ....");
             var license = SpigotMappingParser.mapTo(version, mapping, excluded, errors);
+            allMappings.add(MappingType.SPIGOT);
 
             errors.printWarn();
             errors.reset();
@@ -97,8 +103,11 @@ public abstract class RemappingTask extends DefaultTask {
             }
         }
 
+        // TODO: Fabric's Intermediary (that should also be used as a default mapping for creating the history instead of weird spigot/mcp combination)
+
         // TODO: Yarn
 
         newlyGeneratedMappings.put(version.getVersion(), defaultMappings);
+        utils.getAllMappingsByVersion().put(version.getVersion(), allMappings);
     }
 }

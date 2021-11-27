@@ -23,6 +23,15 @@ public class NavbarPart implements WebsiteComponent {
         return
                 nav(
                         div(
+                                button(
+                                    span().withClass("navbar-toggler-icon")
+                                )
+                                        .attr("aria-expanded", false)
+                                        .attr("aria-label", "Toggle navigation")
+                                        .withClass("navbar-toggler")
+                                        .withType("button")
+                                        .withData("bs-toggle", "collapse")
+                                        .withData("bs-target", "#mainNavbarCollapse"),
                                 div(
                                         ul(
                                                 createLink("Main page", mainPageUrl, currentPage == CurrentPage.MAIN),
@@ -31,14 +40,15 @@ public class NavbarPart implements WebsiteComponent {
                                                 createLink("Class", classUrl, currentPage == CurrentPage.CLASS),
                                                 createLink("History", historyUrl, currentPage == CurrentPage.HISTORY)
                                         ).withClass("navbar-nav me-auto"),
-                                        iff(currentPage != CurrentPage.MAIN,
+                                        iff(currentPage != CurrentPage.MAIN && currentPage != CurrentPage.HISTORY,
                                                 div(
                                                         input().withType("search").withPlaceholder("Search").withClass("form-control").withId("searchBar")
                                                 ).withClass("flex-d")
                                         )
                                 ).withClass("collapse navbar-collapse")
-                        ).withClass("container-fluid")
-                ).withClass("navbar navbar-light bg-light navbar-expand");
+                                        .withId("mainNavbarCollapse")
+                        ).withClass("container")
+                ).withClass("navbar navbar-light bg-light navbar-expand-lg");
     }
 
     private DomContent createLink(String title, String link, boolean active) {

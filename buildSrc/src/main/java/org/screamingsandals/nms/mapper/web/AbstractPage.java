@@ -1,6 +1,7 @@
 package org.screamingsandals.nms.mapper.web;
 
 import j2html.tags.ContainerTag;
+import org.screamingsandals.nms.mapper.web.parts.FooterPart;
 import org.screamingsandals.nms.mapper.web.parts.HeadPart;
 import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
 
@@ -17,9 +18,11 @@ public abstract class AbstractPage implements WebsiteComponent {
 
         var div = div(
                 h1(title)
-        ).withClass("container-fluid");
+        ).withClass("container");
 
         constructContent(div);
+
+        div.with(new FooterPart().generate());
 
         return html(
                 new HeadPart(title, basePath).generate(),

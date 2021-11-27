@@ -1,15 +1,15 @@
 {
   "version": "1.18",
-  "real-version": "1.18-pre5",
+  "real-version": "1.18-rc3",
   "vanilla-jar": {
-    "url": "https://launcher.mojang.com/v1/objects/c29d03e9c6a21a3234a947e1025793c3cc40c13b/server.jar",
-    "sha1": "c29d03e9c6a21a3234a947e1025793c3cc40c13b"
+    "url": "https://launcher.mojang.com/v1/objects/9a03d2c4ec2c737ce9d17a43d3774cdc0ea21030/server.jar",
+    "sha1": "9a03d2c4ec2c737ce9d17a43d3774cdc0ea21030"
   },
   "mojang-mappings": {
-    "url": "https://launcher.mojang.com/v1/objects/438bd2a54c066d09195c85c20cfd76818d725dde/server.txt",
-    "sha1": "438bd2a54c066d09195c85c20cfd76818d725dde"
+    "url": "https://launcher.mojang.com/v1/objects/a36b4033a861c6e9bd3ced78b267e6aeaa75b639/server.txt",
+    "sha1": "a36b4033a861c6e9bd3ced78b267e6aeaa75b639"
   },
   "spigot-class-mappings": {
-    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-pre5-cl.csrg?at=b364c062bb9b9534c0dd34c7a46f3f1acbfb195d"
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-rc3-cl.csrg?at=403e1fc440fdc9eeb6e854e6db1c1974034fccab"
   }
 }

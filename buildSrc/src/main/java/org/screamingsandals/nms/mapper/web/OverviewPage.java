@@ -5,6 +5,7 @@ import j2html.tags.DomContent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.License;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.screamingsandals.nms.mapper.web.parts.CompactTablePart;
 import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
@@ -22,7 +23,7 @@ public class OverviewPage extends AbstractPage {
     private final String docsName;
     private final Set<String> packages;
     private final MappingType defaultMapping;
-    private final Map<MappingType, String> licenses;
+    private final Map<MappingType, License> licenses;
 
     @Override
     protected void configure() {
@@ -41,7 +42,8 @@ public class OverviewPage extends AbstractPage {
         licenses.forEach((mappingType, s) ->
                 div.with(div(
                         div(MiscUtils.capitalizeFirst(mappingType.name()) + " license").withClass("card-header"),
-                        div(s.replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;")
+                        div(s.getLicense().replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;"),
+                        div(s.getLinks().stream().map(s1 -> a(s1).withHref(s1).withClass("d-block text-white")).toArray(DomContent[]::new)).withClass("card-footer")
                 ).withClass("card text-white mb-1 bg-" + MiscUtils.chooseBootstrapColor(mappingType)))
         );
 

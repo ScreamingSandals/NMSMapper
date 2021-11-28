@@ -41,7 +41,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
         versions.forEach((version, defaultMapping) -> {
             System.out.println("Generating docs for version " + version);
 
-            var searchIndex = new ArrayList<Map<String, String>>();
+            var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
 
             var versionDirectory = new File(outputFolder, version);
             versionDirectory.mkdirs();
@@ -74,10 +74,16 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 var finalHtml = new File(versionDirectory, pathKey + ".html");
                 finalHtml.getParentFile().mkdirs();
 
-                searchIndex.add(Map.of(
-                    "label", key2,
-                    "value",  pathKey + ".html"
-                ));
+                final var finalPathKey = pathKey;
+                classDefinition.getMapping().forEach((mappingType, s) -> {
+                    if (!searchIndex.containsKey(mappingType)) {
+                        searchIndex.put(mappingType, new ArrayList<>());
+                    }
+                    searchIndex.get(mappingType).add(Map.of(
+                            "label", s,
+                            "value",  finalPathKey + ".html"
+                    ));
+                });
 
                 var page = new DescriptionPage(key2, classDefinition, mappings.get(version), defaultMapping);
                 try (var fileWriter = new FileWriter(finalHtml)) {
@@ -126,7 +132,8 @@ public abstract class DocsGenerationTask extends DefaultTask {
 
                 var node = saver.createNode();
 
-                node.set(searchIndex);
+                node.node("index").set(searchIndex);
+                node.node("default-mapping").set(defaultMapping);
                 saver.save(node);
             } catch (ConfigurateException e) {
                 e.printStackTrace();

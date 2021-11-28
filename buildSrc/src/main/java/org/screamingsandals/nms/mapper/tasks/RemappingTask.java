@@ -12,9 +12,11 @@ import org.screamingsandals.nms.mapper.parser.SpigotMappingParser;
 import org.screamingsandals.nms.mapper.parser.VanillaJarParser;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
+import org.screamingsandals.nms.mapper.utils.License;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public abstract class RemappingTask extends DefaultTask {
@@ -72,7 +74,7 @@ public abstract class RemappingTask extends DefaultTask {
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.MOJANG), license);
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.MOJANG), new License(license, List.of(version.getMojangMappings().getUrl())));
             }
         }
 
@@ -86,7 +88,7 @@ public abstract class RemappingTask extends DefaultTask {
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SEARGE), license);
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SEARGE), new License(license, List.of(version.getSeargeMappings().getUrl())));
             }
         }
 
@@ -99,7 +101,13 @@ public abstract class RemappingTask extends DefaultTask {
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SPIGOT), license);
+                List<String> links;
+                if (version.getSpigotMemberMappings() != null && version.getSpigotMemberMappings().isPresent()) {
+                    links = List.of(version.getSpigotClassMappings().getUrl(), version.getSpigotMemberMappings().getUrl());
+                } else {
+                    links = List.of(version.getSpigotClassMappings().getUrl());
+                }
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SPIGOT), new License(license, links));
             }
         }
 

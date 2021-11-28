@@ -24,7 +24,7 @@ public class NavbarPart implements WebsiteComponent {
                 nav(
                         div(
                                 button(
-                                    span().withClass("navbar-toggler-icon")
+                                        span().withClass("navbar-toggler-icon")
                                 )
                                         .attr("aria-expanded", false)
                                         .attr("aria-label", "Toggle navigation")
@@ -42,7 +42,10 @@ public class NavbarPart implements WebsiteComponent {
                                         ).withClass("navbar-nav me-auto"),
                                         iff(currentPage != CurrentPage.MAIN && currentPage != CurrentPage.HISTORY,
                                                 div(
-                                                        input().withType("search").withPlaceholder("Search").withClass("form-control").withId("searchBar")
+                                                        div(
+                                                                select().withClass("form-select").withId("searchBarMappingSelect"),
+                                                                input().withType("search").withPlaceholder("Search").withClass("form-control w-50").withId("searchBar")
+                                                        ).withClass("input-group")
                                                 ).withClass("flex-d")
                                         )
                                 ).withClass("collapse navbar-collapse")

@@ -22,9 +22,9 @@ public class HeadPart implements WebsiteComponent {
                         .attr("integrity", "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3")
                         .attr("crossorigin", "anonymous"),
                 link().withRel("stylesheet")
-                        .withHref(basePath + "static/highlight/styles/default.min.css"),
+                        .withHref("https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"),
                 link().withRel("stylesheet")
-                        .withHref("//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css"),
+                        .withHref(basePath + "static/highlight/styles/default.min.css"),
                 script()
                         .withSrc("https://code.jquery.com/jquery-3.6.0.min.js")
                         .attr("integrity", "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=")

@@ -51,7 +51,7 @@ public class SpigotMappingParser {
             var tempMapping = map.get(split[0]).getMapping().get(MappingType.SPIGOT);
 
             if (tempMapping != null) {
-                // Nested class automatically got mapping but it's not valid
+                // Nested class automatically got mapping, but it's not valid
                 spigotToValue.remove(tempMapping);
             }
 
@@ -111,7 +111,7 @@ public class SpigotMappingParser {
                 split[0] = split[0].replace("/", ".");
 
                 if (spigotToValue.get(split[0]) == null) {
-                    System.out.println("can't get spigot class " + split[0]);
+                    System.out.println("Can't get Spigot class " + split[0] + "!");
                     return;
                 }
 

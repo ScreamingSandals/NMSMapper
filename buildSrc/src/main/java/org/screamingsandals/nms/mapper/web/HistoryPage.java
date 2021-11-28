@@ -55,7 +55,7 @@ public class HistoryPage extends AbstractPage {
         versions.forEach(s -> {
             var d = div(
                     h5(a(s).withHref("../" + s + "/" + definition.getPathKeys().get(s))).withClass("card-title")
-            ).withClass("card card-body m-5");
+            ).withClass("card card-body my-5");
 
             var changes = false;
 
@@ -93,11 +93,11 @@ public class HistoryPage extends AbstractPage {
                     .filter(l -> !l.getKey().isEmpty())
                     .collect(Collectors.toList());
 
-            if (previousVersion == null) { // Everything is change
+            if (previousVersion == null) { // Everything is changed
                 changes = true;
                 d.with(p(i("First known occurrence")));
 
-                d.with(h6("Name mapping").withClass("card-subtitle mb-2 text-muted"));
+                d.with(h6("Name mapping").withClass("card-subtitle mt-1 mb-2 text-muted"));
                 classMapping.forEach(entry ->
                         d.with(div(text(entry.getKey().getValue().name()), text(": "), text(entry.getValue())).withClass("alert-info font-monospace"))
                 );
@@ -148,7 +148,7 @@ public class HistoryPage extends AbstractPage {
 
                 if (!diffClassMapping.isEmpty()) {
                     changes = true;
-                    d.with(h6("Name mapping").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Name mapping").withClass("card-subtitle mt-1 mb-2 text-muted"));
                     diffClassMapping.forEach(d::with);
                 }
 

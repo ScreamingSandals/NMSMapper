@@ -18,8 +18,7 @@ public class VanillaJarParser {
 
         try (var zip = new ZipFile(vanillaJar)) {
             if (zip.getEntry("net/minecraft/bundler/Main.class") != null) {
-                // we are working with bundler file
-                ;
+                // we are working with a bundler file
                 String version = null;
                 try (var stream = zip.getInputStream(zip.getEntry("version.json"))) {
                     var versionJson = GsonConfigurationLoader.builder()
@@ -31,7 +30,7 @@ public class VanillaJarParser {
                 }
 
                 if (version == null) {
-                    throw new UnsupportedOperationException("Vanilla Bundler Jar is corrupted.");
+                    throw new UnsupportedOperationException("Corrupted vanilla bundler JAR!");
                 }
                 String url = null;
 
@@ -47,11 +46,11 @@ public class VanillaJarParser {
                     }
                 } catch (IOException exception) {
                     exception.printStackTrace();
-                    throw new UnsupportedOperationException("Vanilla Bundler Jar is corrupted.");
+                    throw new UnsupportedOperationException("Corrupted vanilla bundler JAR!");
                 }
 
                 if (url == null) {
-                    throw new UnsupportedOperationException("Vanilla Bundler Jar is corrupted.");
+                    throw new UnsupportedOperationException("Corrupted vanilla bundler JAR!");
                 }
 
                 var extract = new File(vanillaJar.getParentFile(), "extracted-" + vanillaJar.getName());
@@ -65,7 +64,7 @@ public class VanillaJarParser {
                     fos.close();
                 } catch (IOException exception) {
                     exception.printStackTrace();
-                    throw new UnsupportedOperationException("Vanilla Bundler Jar is corrupted.");
+                    throw new UnsupportedOperationException("Corrupted vanilla bundler JAR!");
                 }
 
                 try (var zip2 = new ZipFile(extract)) {

@@ -1,4 +1,4 @@
-name: NMS Mapper CI
+name: NMSMapper CI
 
 on:
   push:

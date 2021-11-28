@@ -28,7 +28,7 @@ public class SeargeMappingParser {
             AnyMappingParser.map(map, inputStream, excluded, MappingType.SEARGE, false, errorsLogger);
 
             return Files.readString(version.getWorkspace()
-                    .getFile("mcp-license.txt", "https://raw.githubusercontent.com/MinecraftForge/MCPConfig/master/LICENSE")// mcp.zip doesn't contain any license, so we read it from github
+                    .getFile("mcp-license.txt", "https://raw.githubusercontent.com/MinecraftForge/MCPConfig/master/LICENSE") // mcp.zip doesn't contain any license, so we read it from github
                     .toPath()
             );
         }

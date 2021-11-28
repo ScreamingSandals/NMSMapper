@@ -17,7 +17,7 @@ public abstract class AbstractPage implements WebsiteComponent {
         configure();
 
         var div = div(
-                h1(title)
+                h1(title).withClass("my-3")
         ).withClass("container");
 
         constructContent(div);

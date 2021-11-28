@@ -26,7 +26,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
         var versionObj = getProject().getProperties().get("minecraftVersion");
 
         if (versionObj == null) {
-            throw new GradleException("Minecraft version is not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version> [-PcustomVersionString=<customVersion>]");
+            throw new GradleException("Minecraft version not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version> [-PcustomVersionString=<customVersion>]");
         }
 
         var customName = getProject().getProperties().get("customVersionString");
@@ -38,11 +38,11 @@ public abstract class ConfigGenerationTask extends DefaultTask {
 
         var version = versionObj.toString();
 
-        System.out.println("Generating new config for version " + version + " (will be saved as " + customName + ")");
+        System.out.println("Generating new config for version " + version + "... (will be saved as " + customName + ")");
 
         var httpClient = HttpClient.newHttpClient();
 
-        System.out.println("Obtaining https://launchermeta.mojang.com/mc/game/version_manifest_v2.json");
+        System.out.println("Retrieving https://launchermeta.mojang.com/mc/game/version_manifest_v2.json...");
 
         try {
             var versionManifest = GsonConfigurationLoader.builder()
@@ -71,10 +71,10 @@ public abstract class ConfigGenerationTask extends DefaultTask {
             var vanillaJar = n.node("downloads", "server", "url");
             var vanillaJarSha1 = n.node("downloads", "server", "sha1");
             if (vanillaJar.empty()) {
-                throw new RuntimeException("Can't generate config without valid vanillaJar");
+                throw new RuntimeException("Can't generate config without a valid vanilla JAR!");
             }
             if (vanillaJarSha1.empty()) {
-                System.out.println("WARN: Vanilla jar doesn't have sha1!");
+                System.out.println("Warning: Vanilla JAR doesn't have sha1!");
             }
 
             var versionBuilder = Version.builder()
@@ -93,9 +93,9 @@ public abstract class ConfigGenerationTask extends DefaultTask {
             var mojangMappings = n.node("downloads", "server_mappings", "url");
             var mojangMappingsSha1 = n.node("downloads", "server_mappings", "sha1");
             if (!mojangMappings.empty()) {
-                System.out.println("Mojang Mappings found: " + mojangMappings.getString());
+                System.out.println("Mojang mappings found: " + mojangMappings.getString());
                 if (mojangMappingsSha1.empty()) {
-                    System.out.println("WARN: Mojang Mappings don't have sha1!");
+                    System.out.println("Warning: Mojang mappings don't have sha1!");
                 }
                 versionBuilder
                         .mojangMappings(Version.DownloadableContent.builder()
@@ -110,7 +110,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
             var seargeSha1 = httpClient.send(HttpRequest.newBuilder().uri(seargeUrl).build(), HttpResponse.BodyHandlers.ofString());
 
             if (seargeSha1.statusCode() < 400 && seargeSha1.statusCode() >= 200) {
-                System.out.println("MCP Mappings found: https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip");
+                System.out.println("MCP mappings found: https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip");
                 versionBuilder
                         .seargeMappings(Version.DownloadableContent.builder()
                                 .url("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip")
@@ -123,7 +123,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                 seargeSha1 = httpClient.send(HttpRequest.newBuilder().uri(seargeUrl).build(), HttpResponse.BodyHandlers.ofString());
 
                 if (seargeSha1.statusCode() < 400 && seargeSha1.statusCode() >= 200) {
-                    System.out.println("MCP Mappings found: https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/" + version + "/mcp-" + version + "-srg.zip");
+                    System.out.println("MCP mappings found: https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/" + version + "/mcp-" + version + "-srg.zip");
                     versionBuilder
                             .seargeMappings(Version.DownloadableContent.builder()
                                     .url("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/" + version + "/mcp-" + version + "-srg.zip")
@@ -131,7 +131,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                                     .build()
                             );
                 } else {
-                    System.out.println("No MCP mappings found");
+                    System.out.println("No MCP mappings found!");
                 }
             }
 
@@ -165,13 +165,13 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                                         .url("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision)
                                         .build());
                     } else {
-                        System.out.println("No Spigot Member Mappings found");
+                        System.out.println("No Spigot member mappings found!");
                     }
                 } else {
-                    System.out.println("No Spigot Class Mappings found (they are not released yet or they are discontinued)");
+                    System.out.println("No Spigot class mappings found! (not released yet or discontinued)");
                 }
             } catch (IOException exception) {
-                System.out.println("No spigot mappings found");
+                System.out.println("No Spigot mappings found!");
             }
 
             var saver = GsonConfigurationLoader
@@ -185,7 +185,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
 
             saver.save(node);
         } catch (Throwable e) {
-            throw new GradleException("An error occurred while retrieving version information", e);
+            throw new GradleException("An error occurred while retrieving version information.", e);
         }
     }
 }

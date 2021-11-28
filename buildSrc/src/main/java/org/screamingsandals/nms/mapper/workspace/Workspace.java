@@ -96,13 +96,13 @@ public class Workspace {
         if (file.exists() && origin.exists()) {
             var url2 = Files.readString(origin.toPath());
             if (!url.equals(url2)) {
-                System.out.println("Updating file " + version + "/" + name + " with new one from " + url);
+                System.out.println("Updating file " + version + "/" + name + " with a new one from " + url + "...");
                 client.send(HttpRequest.newBuilder().uri(new URI(url)).build(), HttpResponse.BodyHandlers.ofFile(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE));
                 Files.write(origin.toPath(), url.getBytes());
             }
         } else {
             file.getParentFile().mkdirs();
-            System.out.println("Downloading new file " + url + " to " + version + "/" + name);
+            System.out.println("Downloading a new file from " + url + " to " + version + "/" + name + "...");
             client.send(HttpRequest.newBuilder().uri(new URI(url)).build(), HttpResponse.BodyHandlers.ofFile(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE));
             Files.write(origin.toPath(), url.getBytes());
         }

@@ -177,7 +177,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
         var spigotLinks = getUtils().get().getSpigotJoinedMappingsClassLinks();
 
         if (mojMap == null) {
-            // YAY, we are on older version
+            // YAY, we are on an older version
             var spigot = classDefinition.getMapping().get(MappingType.SPIGOT);
 
             if (spigot != null) {
@@ -251,14 +251,14 @@ public abstract class JoinedMappingTask extends DefaultTask {
             return hash;
         }
 
-        // check if newer spigot thinks the class is still the same
+        // check if newer spigot thinks that the class is still the same
         var checkIfNewerSpigot = classDefinition.getMapping().get(MappingType.SPIGOT);
         if (checkIfNewerSpigot != null && spigotForceMerge.contains(checkIfNewerSpigot)) { // also check if merge is allowed
             checkIfNewerSpigot = checkIfNewerSpigot.substring(checkIfNewerSpigot.lastIndexOf(".") + 1);
             var hash = spigotLinks.get(checkIfNewerSpigot);
 
             if (hash != null) {
-                // Yay, Mojang mappings are another but Spigot same so we assume it's same class
+                // Yay, Mojang mappings are different, but Spigot mappings are the same, so we assume it's the same class
                 links.put(mojMap, hash);
                 classDefinition.setJoinedKey(hash);
                 return hash;

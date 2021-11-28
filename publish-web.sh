@@ -9,5 +9,5 @@ git rm -rf *
 git checkout HEAD -- CNAME
 cp -r ../docs/* .
 git add .
-git commit -m "Updated NMS Mapper website"
+git commit -m "Updated NMSMapper docs"
 git push

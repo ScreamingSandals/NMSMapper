@@ -59,7 +59,7 @@ public class ClassDefinition {
         }
     }
 
-    // TODO: figure out how to do custom serializer (configurate is refusing to do anything for some reason)
+    // TODO: figure out how to do a custom serializer (configurate is refusing to do anything for some reason)
     public ConfigurationNode asNode(ConfigurationNode node) throws SerializationException {
         node.node("mapping").set(mapping);
         node.node("modifier").set(modifier);

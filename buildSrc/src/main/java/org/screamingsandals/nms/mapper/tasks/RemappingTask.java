@@ -41,7 +41,7 @@ public abstract class RemappingTask extends DefaultTask {
 
         System.out.println("======= Mapping " + realVersion + " =======");
 
-        System.out.println("Getting base data from vanilla jar ....");
+        System.out.println("Getting base data from vanilla jar...");
 
         var entry = VanillaJarParser.map(workspace.getFile(version.getVanillaJar(), "minecraft_server.jar"));
 
@@ -59,7 +59,7 @@ public abstract class RemappingTask extends DefaultTask {
         var errors = new ErrorsLogger();
 
         if (version.getMojangMappings() != null && version.getMojangMappings().isPresent()) {
-            System.out.println("Applying Mojang mappings ....");
+            System.out.println("Applying Mojang mappings...");
             defaultMappings = MappingType.MOJANG;
             allMappings.add(MappingType.MOJANG);
 
@@ -79,7 +79,7 @@ public abstract class RemappingTask extends DefaultTask {
         }
 
         if (version.getSeargeMappings() != null && version.getSeargeMappings().isPresent()) {
-            System.out.println("Applying Searge (Forge) mappings ....");
+            System.out.println("Applying Searge (Forge) mappings...");
 
             var license = SeargeMappingParser.map(mapping, version, excluded, errors);
             allMappings.add(MappingType.SEARGE);
@@ -93,7 +93,7 @@ public abstract class RemappingTask extends DefaultTask {
         }
 
         if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent()) {
-            System.out.println("Applying Spigot mappings ....");
+            System.out.println("Applying Spigot mappings...");
             var license = SpigotMappingParser.mapTo(version, mapping, excluded, errors);
             allMappings.add(MappingType.SPIGOT);
 

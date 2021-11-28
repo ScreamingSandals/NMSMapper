@@ -110,11 +110,11 @@ public class DescriptionPage extends AbstractPage {
 
     private DomContent generateGradleCodeExample() {
         return div(
-                h5("Get the class using our Gradle plugin").withClass("card-title"),
+                h5("Using the mappings with NMSMapper (Gradle only)").withClass("card-title"),
                 div(
-                        text("Add our repository to your settings.gradle:"),
-                        button("Spoiler")
-                                .withClass("btn btn-link dropdown-toggle d-block")
+                        text("Add the repository to your settings.gradle:"),
+                        button("Example")
+                                .withClass("btn btn-link dropdown-toggle d-block my-2")
                                 .withData("bs-toggle", "collapse")
                                 .attr("aria-expanded", false)
                                 .withData("bs-target", "#collapseSettingsGradle")
@@ -138,9 +138,9 @@ public class DescriptionPage extends AbstractPage {
                         )
                                 .withClass("collapse")
                                 .withId("collapseSettingsGradle"),
-                        text("Configure the plugin:"),
-                        button("Spoiler")
-                                .withClass("btn btn-link dropdown-toggle d-block")
+                        text("Configuring the plugin:"),
+                        button("Example")
+                                .withClass("btn btn-link dropdown-toggle d-block my-2")
                                 .withData("bs-toggle", "collapse")
                                 .attr("aria-expanded", false)
                                 .withData("bs-target", "#collapseBuildGradle")
@@ -167,9 +167,9 @@ public class DescriptionPage extends AbstractPage {
                         )
                                 .withClass("collapse")
                                 .withId("collapseBuildGradle"),
-                        text("Then you can use it in your code:"),
-                        button("Spoiler")
-                                .withClass("btn btn-link dropdown-toggle d-block")
+                        text("Using the accessor:"),
+                        button("Example")
+                                .withClass("btn btn-link dropdown-toggle d-block my-2")
                                 .withData("bs-toggle", "collapse")
                                 .attr("aria-expanded", false)
                                 .withData("bs-target", "#collapseJavaExample")
@@ -185,9 +185,9 @@ public class DescriptionPage extends AbstractPage {
                         )
                                 .withClass("collapse")
                                 .withId("collapseJavaExample"),
-                        text("Learn more "), a("here").withHref("https://github.com/ScreamingSandals/NMSMapper/blob/master/README.md")
+                        text("Learn more "), a("here").withHref("https://docs.screamingsandals.org/ScreamingLib/2.0.1-SNAPSHOT/nmsmapper/"), text(".")
                 )
-        ).withClass("card-body").withStyle("width:min(500px, 95vw);");
+        ).withClass("card-body").withStyle("width:min(550px, 95vw);");
     }
 
     private String getRightReqClass() {

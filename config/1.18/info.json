@@ -9,6 +9,10 @@
     "url": "https://launcher.mojang.com/v1/objects/a36b4033a861c6e9bd3ced78b267e6aeaa75b639/server.txt",
     "sha1": "a36b4033a861c6e9bd3ced78b267e6aeaa75b639"
   },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18-rc3/mcp_config-1.18-rc3.zip",
+    "sha1": "76d7684a0a043e0e93af61f4034a00d95fdf80e6"
+  },
   "spigot-class-mappings": {
     "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-rc3-cl.csrg?at=403e1fc440fdc9eeb6e854e6db1c1974034fccab"
   }

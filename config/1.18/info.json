@@ -1,19 +1,18 @@
 {
   "version": "1.18",
-  "real-version": "1.18-rc3",
   "vanilla-jar": {
-    "url": "https://launcher.mojang.com/v1/objects/9a03d2c4ec2c737ce9d17a43d3774cdc0ea21030/server.jar",
-    "sha1": "9a03d2c4ec2c737ce9d17a43d3774cdc0ea21030"
+    "url": "https://launcher.mojang.com/v1/objects/3cf24a8694aca6267883b17d934efacc5e44440d/server.jar",
+    "sha1": "3cf24a8694aca6267883b17d934efacc5e44440d"
   },
   "mojang-mappings": {
-    "url": "https://launcher.mojang.com/v1/objects/a36b4033a861c6e9bd3ced78b267e6aeaa75b639/server.txt",
-    "sha1": "a36b4033a861c6e9bd3ced78b267e6aeaa75b639"
+    "url": "https://launcher.mojang.com/v1/objects/a8fe854e35a69df7289d3f03fc0821f6363f2238/server.txt",
+    "sha1": "a8fe854e35a69df7289d3f03fc0821f6363f2238"
   },
   "searge-mappings": {
-    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18-rc3/mcp_config-1.18-rc3.zip",
-    "sha1": "76d7684a0a043e0e93af61f4034a00d95fdf80e6"
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18/mcp_config-1.18.zip",
+    "sha1": "0630d060655ca299c90cf22208ccf02507800ae2"
   },
   "spigot-class-mappings": {
-    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-rc3-cl.csrg?at=403e1fc440fdc9eeb6e854e6db1c1974034fccab"
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-cl.csrg?at=8814411100e91e323a23a9a6355fa7d28e091054"
   }
 }

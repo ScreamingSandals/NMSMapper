@@ -1,0 +1,10 @@
+dependencies {
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    implementation 'org.spongepowered:configurate-gson:4.1.2'
+    implementation 'com.squareup:javapoet:1.13.0'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.apache.maven:maven-artifact:3.8.1'
+}

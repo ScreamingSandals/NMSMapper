@@ -1,11 +1,9 @@
 package org.screamingsandals.nms.generator;
 
 import com.squareup.javapoet.*;
-import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.TaskAction;
-import org.gradle.util.VersionNumber;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
 import org.spongepowered.configurate.BasicConfigurationNode;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
@@ -13,6 +11,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 
 import javax.lang.model.element.Modifier;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
@@ -25,29 +24,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public abstract class GenerateClassesTask extends DefaultTask {
+public class AccessorClassGenerator {
     @SuppressWarnings("unchecked")
-    @SneakyThrows
-    @TaskAction
-    public void run() {
-        var extension = getProject().getExtensions().getByType(ClassGeneratorExtension.class);
+    public static void run(NMSMapperConfiguration configuration, File projectFolder) throws IOException {
+        var neeededClasses = configuration.getNeededClasses();
+        var basePackage = configuration.getBasePackage();
+        System.out.println("Generated accessors will be saved in: " + projectFolder.toPath().resolve(configuration.getSourceSet() + "/" + basePackage.replace(".", "/")).toAbsolutePath().toString());
 
-        var neeededClasses = extension.getNeededClasses();
-        var basePackage = extension.getBasePackage();
-
-        if (extension.isCleanOnRebuild()) {
-            var file = getProject().file(extension.getSourceSet() + "/" + basePackage.replace(".", "/"));
+        if (configuration.isCleanOnRebuild()) {
+            System.out.println("Cleaning workspace");
+            var file = new File(projectFolder, configuration.getSourceSet() + "/" + basePackage.replace(".", "/"));
             if (file.exists()) {
                 FileUtils.deleteDirectory(file);
             }
         }
 
+        System.out.println("Loading joined mappings");
         var joinedMappings = GsonConfigurationLoader
                 .builder()
                 .source(() -> new BufferedReader(
                         new InputStreamReader(
                                 Objects.requireNonNull(
-                                        GenerateClassesTask.class.getResourceAsStream("/nms-mappings/joined.json")
+                                        AccessorClassGenerator.class.getResourceAsStream("/nms-mappings/joined.json")
                                 )
                         )
                 ))
@@ -57,9 +55,12 @@ public abstract class GenerateClassesTask extends DefaultTask {
         var mojangClassNameTranslate = joinedMappings.node("classNames");
         var spigotClassNameTranslate = joinedMappings.node("spigotNames");
 
+        System.out.println("Copying AccessorUtils");
         var accessorUtils = ClassName.get(basePackage, "AccessorUtils");
 
         var classAccessors = new HashMap<String, Map.Entry<String, TypeSpec.Builder>>();
+
+        System.out.println("Generating accessors for classes and their fields");
 
         // First iteration: adding required classes and their fields
         neeededClasses.forEach(requiredClass -> {
@@ -71,6 +72,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
             } else {
                 translated = mojangClassNameTranslate.node(requiredClass.getClazz()).getString();
             }
+            System.out.println("Generating accessor for " + requiredClass.getClazz());
 
             if (translated == null) {
                 throw new IllegalArgumentException("Can't find class: " + requiredClass.getClazz());
@@ -201,8 +203,12 @@ public abstract class GenerateClassesTask extends DefaultTask {
             });
         });
 
+        System.out.println("Generating constructors and methods accessors");
+
         // third iteration: adding constructors and methods
         neeededClasses.forEach(requiredClass -> {
+            System.out.println("Processing " + requiredClass.getClazz());
+
             String translated;
             if (requiredClass.getClazz().startsWith("spigot:")) {
                 translated = spigotClassNameTranslate.node(requiredClass.getClazz().substring(7)).getString();
@@ -350,7 +356,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
                                                 .entrySet()
                                                 .stream()
                                                 .anyMatch(n1 -> n1.getValue().getString("").equals(finalMethodName)
-                                                && (forceVersion == null || Arrays.asList(n1.getKey().toString().split(",")).contains(forceVersion)))
+                                                        && (forceVersion == null || Arrays.asList(n1.getKey().toString().split(",")).contains(forceVersion)))
                                                 &&
                                                 Objects.equals(n.node("parameters").getList(String.class), params);
                                     } catch (SerializationException e) {
@@ -445,7 +451,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
             try {
                 JavaFile.builder(basePackage, builder.getValue().build())
                         .build()
-                        .writeTo(getProject().file(extension.getSourceSet()));
+                        .writeTo(new File(projectFolder, configuration.getSourceSet()));
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
@@ -454,16 +460,16 @@ public abstract class GenerateClassesTask extends DefaultTask {
         // Adding AccessorUtils to the generated folder
         var str = new BufferedReader(
                 new InputStreamReader(
-                        Objects.requireNonNull(GenerateClassesTask.class.getResourceAsStream("/templates/AccessorUtils.java"))
+                        Objects.requireNonNull(AccessorClassGenerator.class.getResourceAsStream("/templates/AccessorUtils.java"))
                 ))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        var ac = getProject().file(extension.getSourceSet() + "/" + basePackage.replace(".", "/") + "/AccessorUtils.java");
+        var ac = new File(projectFolder, configuration.getSourceSet() + "/" + basePackage.replace(".", "/") + "/AccessorUtils.java");
         Files.writeString(ac.toPath(), "package " + basePackage + ";\n\n" + str, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
-    private void addMissingClasses(String basePackage, BasicConfigurationNode joinedMappings, BasicConfigurationNode mojangClassNameTranslate, BasicConfigurationNode spigotClassNameTranslate, ClassName accessorUtils, HashMap<String, Map.Entry<String, TypeSpec.Builder>> classAccessors, String str) {
+    private static void addMissingClasses(String basePackage, BasicConfigurationNode joinedMappings, BasicConfigurationNode mojangClassNameTranslate, BasicConfigurationNode spigotClassNameTranslate, ClassName accessorUtils, HashMap<String, Map.Entry<String, TypeSpec.Builder>> classAccessors, String str) {
         if (str.startsWith("&")) {
             String translated2;
             if (str.startsWith("&spigot:")) {
@@ -479,6 +485,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
             }
 
             if (!classAccessors.containsKey(translated2)) {
+                System.out.println("Generating accessor for " + translated2);
                 var li = str.lastIndexOf(".");
                 var name = (str.substring(li < 0 ? (str.startsWith("&spigot:") ? 8 : (str.startsWith("&hash:") ? 6 : 1)) : (li + 1)) + "Accessor").replace("$", "_i_");
 
@@ -499,7 +506,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
         }
     }
 
-    public CodeBlock generateMappings(ConfigurationNode node) {
+    public static CodeBlock generateMappings(ConfigurationNode node) {
         var codeBlock = CodeBlock.builder()
                 .add("mapper -> {\n")
                 .indent();
@@ -509,7 +516,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
                 .entrySet()
                 .stream()
                 .flatMap(entry -> Arrays.stream(entry.getKey().toString().split(",")).map(s1 -> Map.entry(s1, entry.getValue().getString(""))))
-                .sorted(Comparator.comparing(o -> VersionNumber.parse(o.getKey())))
+                .sorted(Comparator.comparing(o -> new ComparableVersion(o.getKey())))
                 .collect(Collectors.toList());
 
         // currently support spigot and searge. vanilla servers are not supported
@@ -566,10 +573,10 @@ public abstract class GenerateClassesTask extends DefaultTask {
 
     public static String convertInternal(String type) {
         // here just arrays
-            if (type.startsWith("[")) {
-                return convertInternal(type.substring(1)) + "[]";
-            } else {
-                return type;
-            }
+        if (type.startsWith("[")) {
+            return convertInternal(type.substring(1)) + "[]";
+        } else {
+            return type;
+        }
     }
 }

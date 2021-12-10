@@ -1,6 +1,7 @@
+import org.screamingsandals.nms.mapper.NMSMapper
+
 plugins {
     id 'org.screamingsandals.plugin-builder-lite' version '1.0.51' apply false
-    id 'java-gradle-plugin'
 }
 
 defaultTasks "saveNmsMappings", "screamCompile", "generateNmsDocs" // order is important
@@ -10,32 +11,19 @@ allprojects {
     version = VERSION
 }
 
-System.setProperty("LITE_SKIP_PUBLICATION_CREATION", "yes")
-apply plugin: org.screamingsandals.gradle.builder.LiteBuilderPlugin
-apply plugin: org.screamingsandals.nms.mapper.NMSMapper
+apply plugin: NMSMapper
 
-dependencies {
-    compileOnly 'org.jetbrains:annotations:23.0.0'
-    compileOnly gradleApi()
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    implementation 'org.spongepowered:configurate-gson:4.1.2'
-    implementation 'com.squareup:javapoet:1.13.0'
-    implementation 'commons-io:commons-io:2.11.0'
-}
-
-gradlePlugin {
-    plugins {
-        nmsMapper {
-            id = 'org.screamingsandals.nms-mapper'
-            implementationClass = 'org.screamingsandals.nms.generator.ClassGenerator'
-        }
+subprojects {
+    if (project.name == 'nms-mapper-plugin') {
+        System.setProperty("LITE_SKIP_PUBLICATION_CREATION", "yes") // Another plugin is used to create an publication
+    } else {
+        System.clearProperty("LITE_SKIP_PUBLICATION_CREATION")
     }
-}
 
-sourceCompatibility = '11.0'
+    apply plugin: 'org.screamingsandals.plugin-builder-lite'
+    sourceCompatibility = '11.0'
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
 }

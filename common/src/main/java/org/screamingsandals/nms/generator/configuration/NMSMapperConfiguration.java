@@ -1,4 +1,4 @@
-package org.screamingsandals.nms.generator;
+package org.screamingsandals.nms.generator.configuration;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class ClassGeneratorExtension {
+public class NMSMapperConfiguration {
     private final List<RequiredClass> neededClasses = new ArrayList<>();
 
     private String sourceSet = "src/main/java";

@@ -1,0 +1,17 @@
+enableShadowPlugin()
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    implementation project(':nms-mapper-common')
+    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
+    implementation 'net.sf.jopt-simple:jopt-simple:5.0.4'
+}
+
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.screamingsandals.nms.generator.standalone.Main'
+    }
+}

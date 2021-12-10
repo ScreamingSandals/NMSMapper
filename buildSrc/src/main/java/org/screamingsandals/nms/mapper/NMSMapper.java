@@ -24,7 +24,7 @@ public class NMSMapper implements Plugin<Project> {
         );
 
         var utilsHolder = new UtilsHolder(
-                project.file("src/main/resources/nms-mappings")
+                project.file("common/src/main/resources/nms-mappings")
         );
 
         var configFolder = project.file("config");

@@ -1,7 +1,7 @@
 # NMSMapper
 
 [![NMS Mapper CI](https://github.com/ScreamingSandals/NMSMapper/actions/workflows/build.yml/badge.svg)](https://github.com/ScreamingSandals/NMSMapper/actions/workflows/build.yml)
-[![Repository version](https://img.shields.io/nexus/r/org.screamingsandals.nms/NMSMapper?server=https%3A%2F%2Frepo.screamingsandals.org)](https://repo.screamingsandals.org/#browse/browse:maven-releases:org%2Fscreamingsandals%2Fnms%2FNMSMapper)
+<!--[![Repository version](https://img.shields.io/nexus/r/org.screamingsandals.nms/NMSMapper?server=https%3A%2F%2Frepo.screamingsandals.org)](https://repo.screamingsandals.org/#browse/browse:maven-releases:org%2Fscreamingsandals%2Fnms%2FNMSMapper)-->
 [![Discord](https://img.shields.io/discord/582271436845219842?logo=discord)](https://discord.gg/4xB54Ts)
 
 A Gradle plugin for generating multi-version NMS accessors.
@@ -33,20 +33,37 @@ A Gradle plugin for generating multi-version NMS accessors.
 
 ## Usage
 
+### Gradle
 > This project requires Gradle >= 7.0. Maven is not supported. At least JDK 11 is needed for compiling, however the compiled classes use only Java 8 methods.
 
+settings.gradle file:
 ```groovy
-buildscript {
+pluginManagement {
     repositories {
-        maven { url 'https://repo.screamingsandals.org/public/' }
-    }
-    dependencies {
-        classpath 'org.screamingsandals.nms:NMSMapper:1.0.1-SNAPSHOT'
+        maven {
+            url = "https://repo.screamingsandals.org/public/"
+        }
+
+        gradlePluginPortal()
     }
 }
 
-apply plugin: 'org.screamingsandals.nms'
+rootProject.name = 'YourProject'
 ```
+
+Build.gradle file:
+```groovy
+plugins {
+    id 'org.screamingsandals.nms-mapper' version 'LATEST_VERSION_HERE'
+}
+```
+
+### Standalone
+
+Download the latest file from releases and save it in your project.  
+Create a groovy file (example: `nms.groovy`). Contents of this file will be similar like when using Gradle, however this time only nmsGen section and its content is present.   
+Run the generation using:  
+`java -jar nms-mapper-standalone.jar -b nms.groovy`
 
 ## Examples
 

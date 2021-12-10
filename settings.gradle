@@ -8,4 +8,11 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'NMSMapper'
+rootProject.name = 'nms-mapper'
+
+include(':nms-mapper-common')
+project(':nms-mapper-common').projectDir = file('common')
+include(':nms-mapper-plugin')
+project(':nms-mapper-plugin').projectDir = file('plugin')
+include(':nms-mapper-standalone')
+project(':nms-mapper-standalone').projectDir= file('standalone')

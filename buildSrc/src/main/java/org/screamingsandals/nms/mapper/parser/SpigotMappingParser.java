@@ -48,6 +48,11 @@ public class SpigotMappingParser {
             split[1] = split[1].replace("/", ".");
             split[0] = split[0].replace("/", ".");
 
+            // let's skip anonymous classes in very old spigot mappings
+            if (version.getVersion().equals("1.8.8") && split[0].matches(".*\\$\\d+|.*\\$a") && map.get(split[0]) == null) {
+                return;
+            }
+
             var tempMapping = map.get(split[0]).getMapping().get(MappingType.SPIGOT);
 
             if (tempMapping != null) {
@@ -111,6 +116,9 @@ public class SpigotMappingParser {
                 split[0] = split[0].replace("/", ".");
 
                 if (spigotToValue.get(split[0]) == null) {
+                    if (version.getVersion().equals("1.8.8") && split[0].matches(".*\\$\\d+|.*\\$a")) {
+                        return; // Silent
+                    }
                     System.out.println("Can't get Spigot class " + split[0] + "!");
                     return;
                 }

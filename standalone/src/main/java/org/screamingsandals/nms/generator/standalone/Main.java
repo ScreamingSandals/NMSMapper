@@ -8,6 +8,8 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.screamingsandals.nms.generator.AccessorClassGenerator;
+import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
+import org.screamingsandals.nms.generator.configuration.NewNMSMapperConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +20,11 @@ import static java.util.Arrays.asList;
 
 public class Main {
     public static void main(String[] args) {
+        System.out.println("Starting NMSMapper...");
+
         OptionParser parser = new OptionParser() {
             {
-                acceptsAll(asList("?", "help"), "Shows the help");
+                acceptsAll(asList("?", "help"), "Show the help");
                 acceptsAll(asList("b", "build-file"), "Sets the build file")
                         .withRequiredArg()
                         .ofType(File.class);
@@ -36,15 +40,16 @@ public class Main {
         }
         if (options != null && options.has("b")) {
             File buildFile = ((File) options.valueOf("b")).getAbsoluteFile();
-            if (!buildFile.isFile()) {
-                System.out.println("ERROR: The build file does not exist or is not a file!");
+            if (!buildFile.exists() || !buildFile.isFile()) {
+                System.out.println("ERR: The build file does not exist or is not a file!");
                 return;
             }
 
             System.out.println("Source file: " + buildFile.getAbsolutePath());
             System.out.println("Working directory: " + buildFile.getParentFile().getAbsolutePath());
 
-            StandaloneConfiguration configuration = new StandaloneConfiguration();
+            //NewNMSMapperConfiguration configuration = new NewNMSMapperConfiguration();
+            NMSMapperConfiguration configuration = new NMSMapperConfiguration();
             Binding binding = new Binding();
             binding.setProperty("nmsGen", configuration);
 
@@ -53,7 +58,7 @@ public class Main {
                 engine.run(buildFile.getName(), binding);
             } catch (MalformedURLException | ScriptException | ResourceException e) {
                 e.printStackTrace();
-                System.out.println("ERROR: Can't load the build file!");
+                System.out.println("ERR: Can't load the build file!");
             }
 
             try {
@@ -61,9 +66,8 @@ public class Main {
                 System.out.println("Generation finished!");
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("ERROR: Generation failed!");
+                System.out.println("ERR: Generation failed!");
             }
-
         } else {
             try {
                 parser.printHelpOn(System.out);

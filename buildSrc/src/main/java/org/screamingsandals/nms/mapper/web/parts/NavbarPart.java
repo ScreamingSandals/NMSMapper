@@ -51,7 +51,7 @@ public class NavbarPart implements WebsiteComponent {
                                 ).withClass("collapse navbar-collapse")
                                         .withId("mainNavbarCollapse")
                         ).withClass("container")
-                ).withClass("navbar navbar-light bg-light navbar-expand-lg");
+                ).withClass("navbar navbar-light navbar-expand-lg");
     }
 
     private DomContent createLink(String title, String link, boolean active) {
@@ -77,6 +77,6 @@ public class NavbarPart implements WebsiteComponent {
         OVERVIEW,
         PACKAGE,
         CLASS,
-        HISTORY;
+        HISTORY
     }
 }

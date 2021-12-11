@@ -20,11 +20,9 @@ import static java.util.Arrays.asList;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Starting NMSMapper...");
-
         OptionParser parser = new OptionParser() {
             {
-                acceptsAll(asList("?", "help"), "Show the help");
+                acceptsAll(asList("?", "help"), "Shows the help");
                 acceptsAll(asList("b", "build-file"), "Sets the build file")
                         .withRequiredArg()
                         .ofType(File.class);
@@ -40,8 +38,8 @@ public class Main {
         }
         if (options != null && options.has("b")) {
             File buildFile = ((File) options.valueOf("b")).getAbsoluteFile();
-            if (!buildFile.exists() || !buildFile.isFile()) {
-                System.out.println("ERR: The build file does not exist or is not a file!");
+            if (!buildFile.isFile()) {
+                System.out.println("ERROR: The build file does not exist or is not a file!");
                 return;
             }
 
@@ -58,7 +56,7 @@ public class Main {
                 engine.run(buildFile.getName(), binding);
             } catch (MalformedURLException | ScriptException | ResourceException e) {
                 e.printStackTrace();
-                System.out.println("ERR: Can't load the build file!");
+                System.out.println("ERROR: Can't load the build file!");
             }
 
             try {
@@ -66,7 +64,7 @@ public class Main {
                 System.out.println("Generation finished!");
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("ERR: Generation failed!");
+                System.out.println("ERROR: Generation failed!");
             }
         } else {
             try {

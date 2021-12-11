@@ -1,10 +1,14 @@
 package org.screamingsandals.nms.generator.configuration;
 
 import lombok.Data;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.ApiStatus;
+import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Data
 public class NMSMapperConfiguration {
@@ -68,5 +72,13 @@ public class NMSMapperConfiguration {
             return this;
         }
 
+    }
+
+    @SneakyThrows
+    @ApiStatus.Internal
+    public NMSMapperConfiguration call(Consumer<NMSMapperConfiguration> closure) {
+        GroovyUtils.hackClosure(closure, this);
+        closure.accept(this);
+        return this;
     }
 }

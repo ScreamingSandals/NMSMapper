@@ -1,7 +1,6 @@
 package org.screamingsandals.nms.generator.standalone;
 
 import groovy.lang.Binding;
-import groovy.lang.Closure;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
@@ -10,6 +9,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.screamingsandals.nms.generator.AccessorClassGenerator;
 import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
+import org.screamingsandals.nms.generator.configuration.NewNMSMapperConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,8 @@ public class Main {
             System.out.println("Source file: " + buildFile.getAbsolutePath());
             System.out.println("Working directory: " + buildFile.getParentFile().getAbsolutePath());
 
-            StandaloneConfiguration configuration = new StandaloneConfiguration();
+            //NewNMSMapperConfiguration configuration = new NewNMSMapperConfiguration();
+            NMSMapperConfiguration configuration = new NMSMapperConfiguration();
             Binding binding = new Binding();
             binding.setProperty("nmsGen", configuration);
 
@@ -67,7 +68,6 @@ public class Main {
                 e.printStackTrace();
                 System.out.println("ERR: Generation failed!");
             }
-
         } else {
             try {
                 parser.printHelpOn(System.out);

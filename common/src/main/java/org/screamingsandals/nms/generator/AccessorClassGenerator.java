@@ -263,12 +263,11 @@ public class AccessorClassGenerator {
                 classes.forEach(s -> {
                     strBuilder.append(", ");
                     if (s instanceof Map) {
-                        strBuilder.append("$T.$N($T.$N(), $L).$N()");
+                        strBuilder.append("$T.$N($T.$N(), " + String.join(", ", "0".repeat((int) ((Map<?, ?>) s).get("dimensions")).split("")) + ").$N()");
                         args.add(Array.class);
                         args.add("newInstance");
                         args.add(ClassName.get(basePackage, ((Map.Entry<String, ?>) ((Map<?, ?>) s).get("data")).getKey()));
                         args.add("getType");
-                        args.add((int) ((Map<?, ?>) s).get("dimensions"));
                         args.add("getClass");
                     } else if (s instanceof Map.Entry) {
                         strBuilder.append("$T.$N()");
@@ -423,12 +422,11 @@ public class AccessorClassGenerator {
                             classes.forEach(s -> {
                                 strBuilder.append(", ");
                                 if (s instanceof Map) {
-                                    strBuilder.append("$T.$N($T.$N(), $L).$N()");
+                                    strBuilder.append("$T.$N($T.$N(),  " + String.join(", ", "0".repeat((int) ((Map<?, ?>) s).get("dimensions")).split("")) + ").$N()");
                                     args.add(Array.class);
                                     args.add("newInstance");
                                     args.add(ClassName.get(basePackage, ((Map.Entry<String, ?>) ((Map<?, ?>) s).get("data")).getKey()));
                                     args.add("getType");
-                                    args.add((int) ((Map<?, ?>) s).get("dimensions"));
                                     args.add("getClass");
                                 } else  if (s instanceof Map.Entry) {
                                     strBuilder.append("$T.$N()");

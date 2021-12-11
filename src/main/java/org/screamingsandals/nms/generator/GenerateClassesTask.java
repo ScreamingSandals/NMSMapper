@@ -15,6 +15,7 @@ import javax.lang.model.element.Modifier;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -222,10 +223,23 @@ public abstract class GenerateClassesTask extends DefaultTask {
                 var classes = Arrays.stream(strings)
                         .map(s -> {
                             if (s.startsWith("&")) {
-                                if (s.startsWith("&spigot:")) {
-                                    return classAccessors.get(spigotClassNameTranslate.node(s.substring(8)).getString());
+                                if (getArrayDimensionsCount(s) > 0) {
+                                    Map.Entry<String, TypeSpec.Builder> data;
+                                    var map = new HashMap<>();
+                                    if (s.startsWith("&spigot:")) {
+                                        data = classAccessors.get(spigotClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(8))).getString());
+                                    } else {
+                                        data = classAccessors.get(mojangClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(1))).getString());
+                                    }
+                                    map.put("data", data);
+                                    map.put("dimensions", getArrayDimensionsCount(s));
+                                    return map;
                                 } else {
-                                    return classAccessors.get(mojangClassNameTranslate.node(s.substring(1)).getString());
+                                    if (s.startsWith("&spigot:")) {
+                                        return classAccessors.get(spigotClassNameTranslate.node(s.substring(8)).getString());
+                                    } else {
+                                        return classAccessors.get(mojangClassNameTranslate.node(s.substring(1)).getString());
+                                    }
                                 }
                             } else {
                                 return s;
@@ -236,13 +250,21 @@ public abstract class GenerateClassesTask extends DefaultTask {
                 // TODO: check existence of constructor
 
                 var id = constructorCounter.getAndIncrement();
-                var args = new ArrayList<>(List.of(accessorUtils, "getConstructor", ClassName.get(basePackage, name), id));
+                var args = new ArrayList<Object>(List.of(accessorUtils, "getConstructor", ClassName.get(basePackage, name), id));
 
                 var strBuilder = new StringBuilder();
 
                 classes.forEach(s -> {
                     strBuilder.append(", ");
-                    if (s instanceof Map.Entry) {
+                    if (s instanceof Map) {
+                        strBuilder.append("$T.$N($T.$N(), $L).$N()");
+                        args.add(Array.class);
+                        args.add("newInstance");
+                        args.add(ClassName.get(basePackage, ((Map.Entry<String, ?>) ((Map<?, ?>) s).get("data")).getKey()));
+                        args.add("getType");
+                        args.add((int) ((Map<?, ?>) s).get("dimensions"));
+                        args.add("getClass");
+                    } else if (s instanceof Map.Entry) {
                         strBuilder.append("$T.$N()");
                         args.add(ClassName.get(basePackage, ((Map.Entry<String, ?>) s).getKey()));
                         args.add("getType");
@@ -304,10 +326,23 @@ public abstract class GenerateClassesTask extends DefaultTask {
                 var classes = Arrays.stream(method.getValue())
                         .map(s -> {
                             if (s.startsWith("&")) {
-                                if (s.startsWith("&spigot:")) {
-                                    return classAccessors.get(spigotClassNameTranslate.node(s.substring(8)).getString());
+                                if (getArrayDimensionsCount(s) > 0) {
+                                    Map.Entry<String, TypeSpec.Builder> data;
+                                    var map = new HashMap<>();
+                                    if (s.startsWith("&spigot:")) {
+                                        data = classAccessors.get(spigotClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(8))).getString());
+                                    } else {
+                                        data = classAccessors.get(mojangClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(1))).getString());
+                                    }
+                                    map.put("data", data);
+                                    map.put("dimensions", getArrayDimensionsCount(s));
+                                    return map;
                                 } else {
-                                    return classAccessors.get(mojangClassNameTranslate.node(s.substring(1)).getString());
+                                    if (s.startsWith("&spigot:")) {
+                                        return classAccessors.get(spigotClassNameTranslate.node(s.substring(8)).getString());
+                                    } else {
+                                        return classAccessors.get(mojangClassNameTranslate.node(s.substring(1)).getString());
+                                    }
                                 }
                             } else {
                                 return s;
@@ -319,9 +354,9 @@ public abstract class GenerateClassesTask extends DefaultTask {
                         .map(s -> {
                             if (s.startsWith("&")) {
                                 if (s.startsWith("&spigot:")) {
-                                    return "&" + spigotClassNameTranslate.node(s.substring(8)).getString();
+                                    return "&" + spigotClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(8))).getString() + "[]".repeat(getArrayDimensionsCount(s.substring(8)));
                                 } else {
-                                    return "&" + mojangClassNameTranslate.node(s.substring(1)).getString();
+                                    return "&" + mojangClassNameTranslate.node(removeArrayDimensionsFromArgument(s.substring(1))).getString() + "[]".repeat(getArrayDimensionsCount(s.substring(1)));
                                 }
                             } else {
                                 return s;
@@ -381,7 +416,15 @@ public abstract class GenerateClassesTask extends DefaultTask {
 
                             classes.forEach(s -> {
                                 strBuilder.append(", ");
-                                if (s instanceof Map.Entry) {
+                                if (s instanceof Map) {
+                                    strBuilder.append("$T.$N($T.$N(), $L).$N()");
+                                    args.add(Array.class);
+                                    args.add("newInstance");
+                                    args.add(ClassName.get(basePackage, ((Map.Entry<String, ?>) ((Map<?, ?>) s).get("data")).getKey()));
+                                    args.add("getType");
+                                    args.add((int) ((Map<?, ?>) s).get("dimensions"));
+                                    args.add("getClass");
+                                } else if (s instanceof Map.Entry) {
                                     strBuilder.append("$T.$N()");
                                     args.add(ClassName.get(basePackage, ((Map.Entry) s).getKey().toString()));
                                     args.add("getType");
@@ -466,6 +509,7 @@ public abstract class GenerateClassesTask extends DefaultTask {
     private void addMissingClasses(String basePackage, BasicConfigurationNode joinedMappings, BasicConfigurationNode mojangClassNameTranslate, BasicConfigurationNode spigotClassNameTranslate, ClassName accessorUtils, HashMap<String, Map.Entry<String, TypeSpec.Builder>> classAccessors, String str) {
         if (str.startsWith("&")) {
             String translated2;
+            str = removeArrayDimensionsFromArgument(str);
             if (str.startsWith("&spigot:")) {
                 translated2 = spigotClassNameTranslate.node(str.substring(8)).getString();
             } else if (str.startsWith("&hash:")) {
@@ -561,6 +605,22 @@ public abstract class GenerateClassesTask extends DefaultTask {
                 .unindent()
                 .add("}")
                 .build();
+    }
+
+    public static String removeArrayDimensionsFromArgument(String string) {
+        while (string.endsWith("[]")) {
+            string = string.substring(0, string.length() - 2);
+        }
+        return string;
+    }
+
+    public static int getArrayDimensionsCount(String string) {
+        int dimensions = 0;
+        while (string.endsWith("[]")) {
+            string = string.substring(0, string.length() - 2);
+            dimensions++;
+        }
+        return dimensions;
     }
 
 

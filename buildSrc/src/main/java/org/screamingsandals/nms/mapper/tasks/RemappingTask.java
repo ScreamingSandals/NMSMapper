@@ -6,10 +6,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.extension.Version;
-import org.screamingsandals.nms.mapper.parser.MojangMappingParser;
-import org.screamingsandals.nms.mapper.parser.SeargeMappingParser;
-import org.screamingsandals.nms.mapper.parser.SpigotMappingParser;
-import org.screamingsandals.nms.mapper.parser.VanillaJarParser;
+import org.screamingsandals.nms.mapper.parser.*;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 import org.screamingsandals.nms.mapper.utils.License;
@@ -111,7 +108,18 @@ public abstract class RemappingTask extends DefaultTask {
             }
         }
 
-        // TODO: Fabric's Intermediary (that should also be used as a default mapping for creating the history instead of weird spigot/mcp combination)
+        if (version.getIntermediaryMappings() != null && version.getIntermediaryMappings().isPresent()) {
+            System.out.println("Applying Intermediary mappings...");
+            var license = IntermediaryMappingParser.map(mapping, version, excluded, errors);
+            allMappings.add(MappingType.INTERMEDIARY);
+
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.INTERMEDIARY), new License(license, List.of(version.getIntermediaryMappings().getUrl())));
+            }
+        }
 
         // TODO: Yarn
 

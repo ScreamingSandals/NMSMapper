@@ -95,6 +95,8 @@ public class MiscUtils {
                 return "danger";
             case OBFUSCATED:
                 return "primary";
+            case INTERMEDIARY:
+                return "info";
             default:
                 return "secondary";
         }

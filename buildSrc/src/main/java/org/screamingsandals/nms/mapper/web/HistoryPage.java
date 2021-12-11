@@ -97,27 +97,27 @@ public class HistoryPage extends AbstractPage {
                 changes = true;
                 d.with(p(i("First known occurrence")));
 
-                d.with(h6("Name mapping").withClass("card-subtitle mt-1 mb-2 text-muted"));
+                d.with(h6("Name mapping").withClass("card-subtitle mt-1 my-2 text-muted"));
                 classMapping.forEach(entry ->
                         d.with(div(text(entry.getKey().getValue().name()), text(": "), text(entry.getValue())).withClass("alert-info font-monospace"))
                 );
 
                 if (!constructorsMapping.isEmpty()) {
-                    d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Constructors").withClass("card-subtitle my-2 text-muted"));
                     constructorsMapping.forEach(entry ->
                             d.with(div(renderMethodParameters(entry.getParameters())).withClass("alert-info font-monospace"))
                     );
                 }
 
                 if (!fieldsMapping.isEmpty()) {
-                    d.with(h6("Fields").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Fields").withClass("card-subtitle my-2 text-muted"));
                     fieldsMapping.forEach(entry ->
                             d.with(div(nmsLink(entry.getValue().getType()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-info font-monospace"))
                     );
                 }
 
                 if (!methodsMapping.isEmpty()) {
-                    d.with(h6("Methods").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Methods").withClass("card-subtitle my-2 text-muted"));
                     methodsMapping.forEach(entry ->
                             d.with(div(nmsLink(entry.getValue().getReturnType()), renderMethodParameters(entry.getValue().getParameters()), text(" " + entry.getKey().stream().map(e -> e.getKey().getValue() + ": " + e.getValue()).collect(Collectors.joining(", ")))).withClass("alert-info font-monospace"))
                     );
@@ -148,7 +148,7 @@ public class HistoryPage extends AbstractPage {
 
                 if (!diffClassMapping.isEmpty()) {
                     changes = true;
-                    d.with(h6("Name mapping").withClass("card-subtitle mt-1 mb-2 text-muted"));
+                    d.with(h6("Name mapping").withClass("card-subtitle mt-1 my-2 text-muted"));
                     diffClassMapping.forEach(d::with);
                 }
 
@@ -173,7 +173,7 @@ public class HistoryPage extends AbstractPage {
 
                 if (!diffConstructors.isEmpty()) {
                     changes = true;
-                    d.with(h6("Constructors").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Constructors").withClass("card-subtitle my-2 text-muted"));
                     diffConstructors.forEach(d::with);
                 }
 
@@ -221,7 +221,7 @@ public class HistoryPage extends AbstractPage {
 
                 if (!diffFieldsMapping.isEmpty()) {
                     changes = true;
-                    d.with(h6("Fields").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Fields").withClass("card-subtitle my-2 text-muted"));
                     diffFieldsMapping.forEach(d::with);
                 }
 
@@ -269,13 +269,13 @@ public class HistoryPage extends AbstractPage {
 
                 if (!diffMethodsMapping.isEmpty()) {
                     changes = true;
-                    d.with(h6("Methods").withClass("card-subtitle mb-2 text-muted"));
+                    d.with(h6("Methods").withClass("card-subtitle my-2 text-muted"));
                     diffMethodsMapping.forEach(d::with);
                 }
             }
 
             if (!changes) {
-                d.with(i("No changes so far"));
+                d.with(i("No changes so far."));
             }
 
             mainContent.with(d);

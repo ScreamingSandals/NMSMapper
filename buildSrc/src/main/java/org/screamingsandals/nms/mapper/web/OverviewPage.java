@@ -39,13 +39,23 @@ public class OverviewPage extends AbstractPage {
     protected void constructContent(ContainerTag div) {
         div.with(MiscUtils.descriptions(defaultMapping));
 
-        licenses.forEach((mappingType, s) ->
-                div.with(div(
-                        div(MiscUtils.capitalizeFirst(mappingType.name()) + " license").withClass("card-header"),
-                        div(s.getLicense().replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;"),
-                        div(s.getLinks().stream().map(s1 -> a(s1).withHref(s1).withClass("d-block text-white")).toArray(DomContent[]::new)).withClass("card-footer")
-                ).withClass("card text-white mb-1 bg-" + MiscUtils.chooseBootstrapColor(mappingType)))
+        div.with(
+                button("Show/hide licenses")
+                        .withClass("btn btn-primary btn-sm btn-block mb-2 w-100")
+                        .attr("onClick", "document.getElementById('licenses').classList.toggle('d-none')")
         );
+
+        div.with(div(
+                licenses.entrySet().stream().map(entry -> {
+                    var mappingType = entry.getKey();
+                    var s = entry.getValue();
+                    return div(
+                            div(MiscUtils.capitalizeFirst(mappingType.name()) + " license").withClass("card-header"),
+                            div(s.getLicense().replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;"),
+                            div(s.getLinks().stream().map(s1 -> a(s1).withHref(s1).withClass("d-block text-white")).toArray(DomContent[]::new)).withClass("card-footer")
+                    ).withClass("card text-white mb-1 bg-" + MiscUtils.chooseBootstrapColor(mappingType));
+                }).toArray(DomContent[]::new)
+        ).withClass("d-none").withId("licenses"));
 
         div.with(
                 new CompactTablePart(

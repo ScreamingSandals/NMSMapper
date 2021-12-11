@@ -63,7 +63,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     .filter(a -> VersionNumber.parse(a).compareTo(VersionNumber.parse(version)) > 0)
                     .min(Comparator.comparing(VersionNumber::parse));
 
-            System.out.println("Applying version " + version);
+            System.out.println("Applying version " + version + "...");
 
             mappings.get(version).forEach((key, classDefinition) -> {
                 try {
@@ -321,13 +321,19 @@ public abstract class JoinedMappingTask extends DefaultTask {
                         mapping
                                 .entrySet()
                                 .stream()
-                                .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
+                                .filter(entry -> entry.getKey().getValue() == MappingType.INTERMEDIARY && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
                                 .findFirst()
                                 .or(() -> mapping
                                         .entrySet()
                                         .stream()
-                                        .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                        .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
                                         .findFirst()
+                                        .or(() -> mapping
+                                                .entrySet()
+                                                .stream()
+                                                .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                                .findFirst()
+                                        )
                                 )
                 )
                 .map(entry -> Map.entry(entry.getKey().getValue(), entry.getValue()))

@@ -33,14 +33,14 @@ public class AccessorClassGenerator {
         System.out.println("Generated accessors will be saved in: " + projectFolder.toPath().resolve(configuration.getSourceSet() + "/" + basePackage.replace(".", "/")).toAbsolutePath().toString());
 
         if (configuration.isCleanOnRebuild()) {
-            System.out.println("Cleaning workspace");
+            System.out.println("Cleaning workspace...");
             var file = new File(projectFolder, configuration.getSourceSet() + "/" + basePackage.replace(".", "/"));
             if (file.exists()) {
                 FileUtils.deleteDirectory(file);
             }
         }
 
-        System.out.println("Loading joined mappings");
+        System.out.println("Loading joined mappings...");
         var joinedMappings = GsonConfigurationLoader
                 .builder()
                 .source(() -> new BufferedReader(
@@ -56,12 +56,12 @@ public class AccessorClassGenerator {
         var mojangClassNameTranslate = joinedMappings.node("classNames");
         var spigotClassNameTranslate = joinedMappings.node("spigotNames");
 
-        System.out.println("Copying AccessorUtils");
+        System.out.println("Copying AccessorUtils...");
         var accessorUtils = ClassName.get(basePackage, "AccessorUtils");
 
         var classAccessors = new HashMap<String, Map.Entry<String, TypeSpec.Builder>>();
 
-        System.out.println("Generating accessors for classes and their fields");
+        System.out.println("Generating accessors for classes and their fields...");
 
         // First iteration: adding required classes and their fields
         neeededClasses.forEach(requiredClass -> {
@@ -73,7 +73,7 @@ public class AccessorClassGenerator {
             } else {
                 translated = mojangClassNameTranslate.node(requiredClass.getClazz()).getString();
             }
-            System.out.println("Generating accessor for " + requiredClass.getClazz());
+            System.out.println("Generating accessor for " + requiredClass.getClazz() + "...");
 
             if (translated == null) {
                 throw new IllegalArgumentException("Can't find class: " + requiredClass.getClazz());
@@ -204,11 +204,11 @@ public class AccessorClassGenerator {
             });
         });
 
-        System.out.println("Generating constructors and methods accessors");
+        System.out.println("Generating constructors and methods accessors...");
 
         // third iteration: adding constructors and methods
         neeededClasses.forEach(requiredClass -> {
-            System.out.println("Processing " + requiredClass.getClazz());
+            System.out.println("Processing " + requiredClass.getClazz() + "...");
 
             String translated;
             if (requiredClass.getClazz().startsWith("spigot:")) {
@@ -528,7 +528,7 @@ public class AccessorClassGenerator {
             }
 
             if (!classAccessors.containsKey(translated2)) {
-                System.out.println("Generating accessor for " + translated2);
+                System.out.println("Generating accessor for " + translated2 + "...");
                 var li = str.lastIndexOf(".");
                 var name = (str.substring(li < 0 ? (str.startsWith("&spigot:") ? 8 : (str.startsWith("&hash:") ? 6 : 1)) : (li + 1)) + "Accessor").replace("$", "_i_");
 

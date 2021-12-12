@@ -386,4 +386,12 @@ public class AccessorUtils {
             return this;
         }
     }
+
+    public static Class<?> getOrCatch(String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+    }
 }

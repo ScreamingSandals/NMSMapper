@@ -26,7 +26,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
         var versionObj = getProject().getProperties().get("minecraftVersion");
 
         if (versionObj == null) {
-            throw new GradleException("Minecraft version not specified! Use ./gradlew generateNmsConfig -PminecraftVersion=<version> [-PcustomVersionString=<customVersion>]");
+            throw new GradleException("Minecraft version not specified! ./gradlew generateNmsConfig -PminecraftVersion=<version> [-PcustomVersionString=<customVersion>]");
         }
 
         var customName = getProject().getProperties().get("customVersionString");
@@ -105,6 +105,22 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                         );
             }
 
+            var intermediaryUrl = new URI("https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/" + version + ".tiny");
+
+            var intermediaryMappings = httpClient.send(HttpRequest.newBuilder().uri(intermediaryUrl).build(), HttpResponse.BodyHandlers.ofString());
+
+            if (intermediaryMappings.statusCode() < 400 && intermediaryMappings.statusCode() >= 200) {
+                System.out.println("Intermediary mappings found: https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/" + version + ".tiny");
+                versionBuilder
+                        .intermediaryMappings(Version.DownloadableContent.builder()
+                                .url("https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/" + version + ".tiny")
+                                .sha1(null)
+                                .build()
+                        );
+            } else {
+                System.out.println("No Intermediary mappings found!");
+            }
+
             var seargeUrl = new URI("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip.sha1");
 
             var seargeSha1 = httpClient.send(HttpRequest.newBuilder().uri(seargeUrl).build(), HttpResponse.BodyHandlers.ofString());
@@ -136,8 +152,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
             }
 
             try {
-                var loader = GsonConfigurationLoader
-                        .builder()
+                var loader = GsonConfigurationLoader.builder()
                         .url(new URL("https://hub.spigotmc.org/versions/" + version + ".json"))
                         .build();
 
@@ -150,7 +165,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                         .load();
 
                 if (!info.node("classMappings").getString("").isEmpty()) {
-                    System.out.println("Spigot Class Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision);
+                    System.out.println("Spigot class mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("classMappings").getString() + "?at=" + buildDataRevision);
 
                     versionBuilder
                             .spigotClassMappings(Version.DownloadableContent.builder()
@@ -158,7 +173,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                                     .build());
 
                     if (!info.node("memberMappings").getString("").isEmpty()) {
-                        System.out.println("Spigot Member Mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision);
+                        System.out.println("Spigot member mappings found: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/" + info.node("memberMappings").getString() + "?at=" + buildDataRevision);
 
                         versionBuilder
                                 .spigotMemberMappings(Version.DownloadableContent.builder()

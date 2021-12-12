@@ -30,7 +30,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
     @SneakyThrows
     @TaskAction
     public void run() {
-        System.out.println("Generating web docs");
+        System.out.println("Generating docs...");
         var outputFolder = getOutputFolder().get();
         var versions = getUtils().get().getNewlyGeneratedMappings();
         var mappings = getUtils().get().getMappings();
@@ -39,7 +39,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
         outputFolder.mkdirs();
 
         versions.forEach((version, defaultMapping) -> {
-            System.out.println("Generating docs for version " + version);
+            System.out.println("Generating docs for version " + version + "...");
 
             var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
 

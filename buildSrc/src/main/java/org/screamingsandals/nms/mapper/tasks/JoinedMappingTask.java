@@ -16,12 +16,10 @@ import java.nio.file.Files;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO: Rewrite this fucking mess from scratch
 public abstract class JoinedMappingTask extends DefaultTask {
     private static MessageDigest digest;
 
@@ -63,7 +61,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     .filter(a -> VersionNumber.parse(a).compareTo(VersionNumber.parse(version)) > 0)
                     .min(Comparator.comparing(VersionNumber::parse));
 
-            System.out.println("Applying version " + version);
+            System.out.println("Applying version " + version + "...");
 
             mappings.get(version).forEach((key, classDefinition) -> {
                 try {
@@ -164,6 +162,27 @@ public abstract class JoinedMappingTask extends DefaultTask {
                 } catch (DigestException e) {
                     e.printStackTrace();
                 }
+            });
+        });
+
+        finalMapping.forEach((s, joinedClassDefinition) -> {
+            joinedClassDefinition.getMapping().forEach((stringMappingTypeEntry, s1) -> {
+                if (stringMappingTypeEntry.getValue() == MappingType.SEARGE) {
+                    getUtils().get().getSeargeJoinedMappingsClassLinks().put(s1, s);
+                } else if (stringMappingTypeEntry.getValue() == MappingType.INTERMEDIARY) {
+                    getUtils().get().getIntermediaryJoinedMappingsClassLinks().put(s1, s);
+                }
+
+                Arrays.stream(stringMappingTypeEntry.getKey().split(",")).forEach(s2 -> {
+                    var map = getUtils().get().getMappingTypeLinks().computeIfAbsent(s2, k -> new HashMap<>());
+                    var mappingType = map.computeIfAbsent(stringMappingTypeEntry.getValue(), k -> new HashMap<>());
+                    if (stringMappingTypeEntry.getValue() == MappingType.SPIGOT) {
+                        var dot = s1.lastIndexOf(".");
+                        mappingType.put(dot < 0 ? s1 : s1.substring(dot + 1), s);
+                    } else {
+                        mappingType.put(s1, s);
+                    }
+                });
             });
         });
     }
@@ -321,13 +340,19 @@ public abstract class JoinedMappingTask extends DefaultTask {
                         mapping
                                 .entrySet()
                                 .stream()
-                                .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
+                                .filter(entry -> entry.getKey().getValue() == MappingType.INTERMEDIARY && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
                                 .findFirst()
                                 .or(() -> mapping
                                         .entrySet()
                                         .stream()
-                                        .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                        .filter(entry -> entry.getKey().getValue() == MappingType.SEARGE && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion) && versionSpecificMapping.containsKey(entry.getKey().getValue()))
                                         .findFirst()
+                                        .or(() -> mapping
+                                                .entrySet()
+                                                .stream()
+                                                .filter(entry -> entry.getKey().getValue() == MappingType.OBFUSCATED && Arrays.asList(entry.getKey().getKey().split(",")).contains(anotherVersion))
+                                                .findFirst()
+                                        )
                                 )
                 )
                 .map(entry -> Map.entry(entry.getKey().getValue(), entry.getValue()))

@@ -17,7 +17,7 @@ public class ErrorsLogger {
 
     public void printWarn() {
         if (errors > 0) {
-            System.out.println(errors + " symbols (fields, methods) not found but they are not excluded");
+            System.out.println(errors + " symbols (fields, methods) not found, but they are not excluded.");
         }
     }
 }

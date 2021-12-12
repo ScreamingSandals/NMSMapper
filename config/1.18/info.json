@@ -14,5 +14,8 @@
   },
   "spigot-class-mappings": {
     "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18-cl.csrg?at=059e48d0b4666138c4a8330ee38310d74824a848"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.18.tiny"
   }
 }

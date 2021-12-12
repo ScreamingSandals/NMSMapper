@@ -20,7 +20,7 @@ public abstract class SaveMappingsTask extends DefaultTask {
     @TaskAction
     public void run() {
         getUtils().get().getNewlyGeneratedMappings().keySet().forEach(version -> {
-            System.out.println("Saving " + version + " mappings");
+            System.out.println("Saving " + version + " mappings...");
             var saver = GsonConfigurationLoader.builder()
                     .file(new File(getUtils().get().getResourceDir(), version + ".json"))
                     .build();
@@ -40,9 +40,30 @@ public abstract class SaveMappingsTask extends DefaultTask {
             } catch (ConfigurateException e) {
                 e.printStackTrace();
             }
+
+            var classLinks = getUtils().get().getMappingTypeLinks().get(version);
+            if (classLinks != null && !classLinks.isEmpty()) {
+                var saver2 = GsonConfigurationLoader.builder()
+                        .file(new File(getUtils().get().getResourceDir(), version + "-joined-class-links.json"))
+                        .build();
+
+                var mainNode2 = saver2.createNode();
+
+                try {
+                    mainNode2.set(classLinks);
+                } catch (SerializationException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    saver2.save(mainNode2);
+                } catch (ConfigurateException e) {
+                    e.printStackTrace();
+                }
+            }
         });
 
-        System.out.println("Saving joined mappings");
+        System.out.println("Saving joined mappings...");
 
         var saver = GsonConfigurationLoader.builder()
                 .file(new File(getUtils().get().getResourceDir(), "joined.json"))
@@ -61,6 +82,10 @@ public abstract class SaveMappingsTask extends DefaultTask {
         mainNode.node("classNames").set(getUtils().get().getJoinedMappingsClassLinks());
 
         mainNode.node("spigotNames").set(getUtils().get().getSpigotJoinedMappingsClassLinks());
+
+        mainNode.node("seargeNames").set(getUtils().get().getSeargeJoinedMappingsClassLinks());
+
+        mainNode.node("intermediaryNames").set(getUtils().get().getIntermediaryJoinedMappingsClassLinks());
 
         try {
             saver.save(mainNode);

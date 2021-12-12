@@ -1,6 +1,7 @@
 cache/
-src/main/resources/nms-mappings/
-build/
+common/src/main/resources/nms-mappings/
+/build/
+/*/build/
 .gradle/
 .idea/
 work/

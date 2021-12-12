@@ -1,0 +1,18 @@
+apply plugin: 'java-gradle-plugin'
+
+dependencies {
+    compileOnly gradleApi()
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    implementation project(':nms-mapper-common')
+}
+
+gradlePlugin {
+    plugins {
+        nmsMapper {
+            id = 'org.screamingsandals.nms-mapper'
+            implementationClass = 'org.screamingsandals.nms.generator.gradle.NMSMapperGradlePlugin'
+        }
+    }
+}

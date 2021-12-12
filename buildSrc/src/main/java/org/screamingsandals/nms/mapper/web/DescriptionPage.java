@@ -220,7 +220,7 @@ public class DescriptionPage extends AbstractPage {
                 .values()
                 .stream()
                 .map(field -> Map.of(
-                        "Modifier and type", (DomContent) span(text(MiscUtils.getModifierString(field.getModifier())), linkIfNms(field.getType())),
+                        "Modifier and Type", (DomContent) span(text(MiscUtils.getModifierString(field.getModifier())), linkIfNms(field.getType())),
                         "Field", ul(
                                 field
                                         .getMapping()

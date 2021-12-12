@@ -1,19 +1,23 @@
 package org.screamingsandals.nms.generator.configuration;
 
+import com.squareup.javapoet.ClassName;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.screamingsandals.nms.generator.build.Accessor;
+import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
 import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class RequiredClass extends RequiredSymbol implements RequiredArgumentType {
+    @Getter
     private final List<RequiredClassMember> requiredSymbols = new ArrayList<>();
 
     @EqualsAndHashCode.Exclude
@@ -29,9 +33,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
     public RequiredClass reqField(String unifiedString) {
         var split = unifiedString.split(":");
         if (split.length == 1) {
-            return reqField(split[0], NewNMSMapperConfiguration.DEFAULT_MAPPING, null);
+            return reqField(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion());
         } else if (split.length == 2) {
-            return reqField(split[1], split[0], null);
+            return reqField(split[1], split[0], context.getDefaultForcedVersion());
         } else if (split.length == 3) {
             return reqField(split[1], split[0], split[2]);
         } else {
@@ -47,9 +51,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
     public RequiredClass reqEnumField(String unifiedString) {
         var split = unifiedString.split(":");
         if (split.length == 1) {
-            return reqEnumField(split[0], NewNMSMapperConfiguration.DEFAULT_MAPPING, null);
+            return reqEnumField(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion());
         } else if (split.length == 2) {
-            return reqEnumField(split[1], split[0], null);
+            return reqEnumField(split[1], split[0], context.getDefaultForcedVersion());
         } else if (split.length == 3) {
             return reqEnumField(split[1], split[0], split[2]);
         } else {
@@ -70,9 +74,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
     public RequiredClass reqMethod(String unifiedString, Object... params) {
         var split = unifiedString.split(":");
         if (split.length == 1) {
-            return reqMethod(split[0], NewNMSMapperConfiguration.DEFAULT_MAPPING, null, params);
+            return reqMethod(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion(), params);
         } else if (split.length == 2) {
-            return reqMethod(split[1], split[0], null, params);
+            return reqMethod(split[1], split[0], context.getDefaultForcedVersion(), params);
         } else if (split.length == 3) {
             return reqMethod(split[1], split[0], split[2], params);
         } else {
@@ -118,6 +122,7 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                     unifiedString = unifiedString.substring(1);
 
                     var split = unifiedString.split(":");
+                    // TODO: check if the class already exists in the context to avoid duplication
                     if (split.length == 1) {
                         String copy = split[0];
                         int arrayDimensions = 0;
@@ -127,9 +132,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                             arrayDimensions++;
                         }
                         if (arrayDimensions > 0) {
-                            list.add(new RequiredClass(copy, NewNMSMapperConfiguration.DEFAULT_MAPPING, null, context).array(arrayDimensions));
+                            list.add(new RequiredClass(copy, context.getDefaultMapping(), context.getDefaultForcedVersion(), context).array(arrayDimensions));
                         } else {
-                            list.add(new RequiredClass(copy, NewNMSMapperConfiguration.DEFAULT_MAPPING, null, context));
+                            list.add(new RequiredClass(copy, context.getDefaultMapping(), context.getDefaultForcedVersion(), context));
                         }
                     } else if (split.length == 2) {
                         String copy = split[1];
@@ -140,9 +145,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                             arrayDimensions++;
                         }
                         if (arrayDimensions > 0) {
-                            list.add(new RequiredClass(copy, split[0], null, context).array(arrayDimensions));
+                            list.add(new RequiredClass(copy, split[0], context.getDefaultForcedVersion(), context).array(arrayDimensions));
                         } else {
-                            list.add(new RequiredClass(copy, split[0], null, context));
+                            list.add(new RequiredClass(copy, split[0], context.getDefaultForcedVersion(), context));
                         }
                     } else if (split.length == 3) {
                         String copy = split[1];
@@ -174,5 +179,12 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         GroovyUtils.hackClosure(closure, this);
         closure.accept(this);
         return this;
+    }
+
+    @Override
+    @ApiStatus.Internal
+    public void generateClassGetter(AccessorClassGenerator generator, Accessor accessor, StringBuilder expression, List<Object> params) {
+        expression.append("$T.getType()");
+        params.add(ClassName.get(generator.getBasePackage(), generator.getRequiredClassAccessorMap().get(this).getClassName()));
     }
 }

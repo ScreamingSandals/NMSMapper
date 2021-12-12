@@ -3,75 +3,59 @@ package org.screamingsandals.nms.generator.configuration;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 @Data
 public class NMSMapperConfiguration {
-    private final List<RequiredClass> neededClasses = new ArrayList<>();
+    public static final String DEFAULT_MAPPING = "mojang";
+
+    private final ClassContext classContext = new ClassContext();
 
     private String sourceSet = "src/main/java";
     private String basePackage = "com.example.nms";
     private boolean cleanOnRebuild = false;
+    private String minMinecraftVersion = "1.9.4";
+    @Nullable
+    private String maxMinecraftVersion = null;
 
-    public RequiredClass reqClass(String clazz) {
-        var cl = new RequiredClass(clazz);
-        neededClasses.add(cl);
-        return cl;
+    public RequiredClass reqClass(String unifiedString) {
+        var split = unifiedString.split(":");
+        if (split.length == 1) {
+            return reqClass(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion());
+        } else if (split.length == 2) {
+            return reqClass(split[1], split[0], classContext.getDefaultForcedVersion());
+        } else if (split.length == 3) {
+            return reqClass(split[1], split[0], split[2]);
+        } else {
+            throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
+        }
     }
 
-    @Data
-    public static class RequiredClass {
-        private final String clazz;
-        private final List<String> fields = new ArrayList<>();
-        private final List<String> enumFields = new ArrayList<>();
-        private final List<Map.Entry<String, String[]>> methods = new ArrayList<>();
-        private final List<String[]> constructors = new ArrayList<>();
-
-        public RequiredClass reqField(String field) {
-            fields.add(field);
-            return this;
+    public RequiredClass reqClass(String unifiedString, Consumer<RequiredClass> consumer) {
+        var split = unifiedString.split(":");
+        if (split.length == 1) {
+            return reqClass(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion(), consumer);
+        } else if (split.length == 2) {
+            return reqClass(split[1], split[0], classContext.getDefaultForcedVersion(), consumer);
+        } else if (split.length == 3) {
+            return reqClass(split[1], split[0], split[2], consumer);
+        } else {
+            throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
 
-        public RequiredClass reqEnumField(String field) {
-            enumFields.add(field);
-            return this;
-        }
+    public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion) {
+        return new RequiredClass(mapping, className, forcedVersion, classContext);
+    }
 
-        public RequiredClass reqConstructor(Object... params) {
-            var converted = new String[params.length];
-            for (var i = 0; i < params.length; i++) {
-                if (params[i] instanceof RequiredClass) {
-                    converted[i] = "&" + ((RequiredClass) params[i]).getClazz();
-                } else if (params[i] instanceof Class) {
-                    converted[i] = ((Class<?>) params[i]).getName();
-                } else {
-                    converted[i] = params[i].toString();
-                }
-            }
-            constructors.add(converted);
-            return this;
-        }
-
-        public RequiredClass reqMethod(String method, Object... params) {
-            var converted = new String[params.length];
-            for (var i = 0; i < params.length; i++) {
-                if (params[i] instanceof RequiredClass) {
-                    converted[i] = "&" + ((RequiredClass) params[i]).getClazz();
-                } else if (params[i] instanceof Class) {
-                    converted[i] = ((Class<?>) params[i]).getName();
-                } else {
-                    converted[i] = params[i].toString();
-                }
-            }
-            methods.add(Map.entry(method, converted));
-            return this;
-        }
-
+    public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion, Consumer<RequiredClass> consumer) {
+        var required = reqClass(className, mapping, forcedVersion);
+        GroovyUtils.hackClosure(consumer, required);
+        consumer.accept(required);
+        return required;
     }
 
     @SneakyThrows
@@ -81,4 +65,5 @@ public class NMSMapperConfiguration {
         closure.accept(this);
         return this;
     }
+
 }

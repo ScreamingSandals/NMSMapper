@@ -7,9 +7,8 @@ import groovy.util.ScriptException;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.screamingsandals.nms.generator.AccessorClassGenerator;
+import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
 import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
-import org.screamingsandals.nms.generator.configuration.NewNMSMapperConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +45,6 @@ public class Main {
             System.out.println("Source file: " + buildFile.getAbsolutePath());
             System.out.println("Working directory: " + buildFile.getParentFile().getAbsolutePath());
 
-            //NewNMSMapperConfiguration configuration = new NewNMSMapperConfiguration();
             NMSMapperConfiguration configuration = new NMSMapperConfiguration();
             Binding binding = new Binding();
             binding.setProperty("nmsGen", configuration);
@@ -60,7 +58,8 @@ public class Main {
             }
 
             try {
-                AccessorClassGenerator.run(configuration, buildFile.getParentFile());
+                var generator = new AccessorClassGenerator(configuration, buildFile.getParentFile());
+                generator.run();
                 System.out.println("Generation finished!");
             } catch (IOException e) {
                 e.printStackTrace();

@@ -1,6 +1,7 @@
 package org.screamingsandals.nms.generator.configuration;
 
 import lombok.Data;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,9 @@ import java.util.List;
 @Data
 public class ClassContext {
     private final List<RequiredClass> requiredClasses = new ArrayList<>();
+    private String defaultMapping = NMSMapperConfiguration.DEFAULT_MAPPING;
+    @Nullable
+    private String defaultForcedVersion = null;
 
     public void addClass(RequiredClass requiredClass) {
         this.requiredClasses.add(requiredClass);

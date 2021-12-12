@@ -7,6 +7,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
 import org.screamingsandals.nms.generator.configuration.RequiredClass;
+import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
@@ -55,8 +56,7 @@ public class AccessorClassGenerator {
                 .build()
                 .load();
 
-        var mojangClassNameTranslate = joinedMappings.node("classNames");
-        var spigotClassNameTranslate = joinedMappings.node("spigotNames");
+        var forcedVersions = new HashMap<String, ConfigurationNode>();
 
         System.out.println("Copying AccessorUtils...");
         accessorUtils = ClassName.get(basePackage, "AccessorUtils");
@@ -65,35 +65,36 @@ public class AccessorClassGenerator {
 
         System.out.println("Generating accessors for classes...");
         configuration.getClassContext().getAllClasses().forEach(requiredClass -> {
-            String mapping = requiredClass.getMapping();
+            String mapping = requiredClass.getMapping().toLowerCase();
             String className = requiredClass.getName();
             @Nullable
             String forcedVersion = requiredClass.getForcedVersion();
 
-            // TODO: use forcedVersion
-            String classHash = null;
-            switch (mapping.toLowerCase()) {
-                case "hash":
-                    classHash = className;
-                    break;
-                case "spigot":
-                    classHash = spigotClassNameTranslate.node(className).getString();
-                    break;
-                case "mojang":
-                    classHash = mojangClassNameTranslate.node(className).getString();
-                    break;
-                case "searge":
-                    // TODO
-                    break;
-                case "intermediary":
-                    // TODO
-                    break;
-                case "obfuscated":
-                    if (forcedVersion == null) {
-                        throw new UnsupportedOperationException("Can't use an obfuscated name when the forced version is not specified!");
+            String classHash;
+            if ("hash".equals(mapping)) {
+                classHash = mapping;
+            } else if (forcedVersion != null) {
+                classHash = forcedVersions.computeIfAbsent(forcedVersion, s -> {
+                    try {
+                        return GsonConfigurationLoader
+                                .builder()
+                                .source(() -> new BufferedReader(
+                                        new InputStreamReader(
+                                                Objects.requireNonNull(
+                                                        AccessorClassGenerator.class.getResourceAsStream("/nms-mappings/" + s + "-joined-class-links.json")
+                                                )
+                                        )
+                                ))
+                                .build()
+                                .load();
+                    } catch (ConfigurateException e) {
+                        throw new RuntimeException(e);
                     }
-                    // TODO
-                    break;
+                }).node(mapping.toUpperCase(), className).getString();
+            } else if ("obfuscated".equals(mapping)) {
+                throw new UnsupportedOperationException("Can't use an obfuscated name when the forced version is not specified!");
+            } else {
+                classHash = joinedMappings.node((mapping.equals("mojang") ? "class" : mapping) + "Names", className).getString();
             }
             System.out.println("Generating accessor for " + className + "...");
 

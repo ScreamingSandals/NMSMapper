@@ -31,12 +31,12 @@ public class DescriptionPage extends AbstractPage {
     @Override
     protected void configure() {
         title = MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + keyName.substring(keyName.lastIndexOf(".") + 1);
-        basePath = "../".repeat(keyName.split("\\.").length);
+        basePath = "../".repeat(keyName.split("\\.").length + (keyName.split("\\.").length == 1 ? 1 : 0));
         navbarPart = NavbarPart.builder()
-                .mainPageUrl("../".repeat(keyName.split("\\.").length))
-                .overviewUrl("../".repeat(keyName.split("\\.").length - 1))
+                .mainPageUrl("../".repeat(keyName.split("\\.").length + (keyName.split("\\.").length == 1 ? 1 : 0)))
+                .overviewUrl("../".repeat(keyName.split("\\.").length - 1 + (keyName.split("\\.").length == 1 ? 1 : 0)))
                 .packageUrl("index.html")
-                .historyUrl("../".repeat(keyName.split("\\.").length) + "history/" + definition.getJoinedKey() + ".html")
+                .historyUrl("../".repeat(keyName.split("\\.").length + (keyName.split("\\.").length == 1 ? 1 : 0)) + "history/" + definition.getJoinedKey() + ".html")
                 .currentPage(NavbarPart.CurrentPage.CLASS)
                 .build();
     }
@@ -315,12 +315,14 @@ public class DescriptionPage extends AbstractPage {
     public String generateLink(String clazz) {
         // TODO: Generate better links
         var moj = clazz.replaceAll("\\[]", "");
-
-        return "../".repeat(keyName.split("\\.").length - 1) + mappings
+        var map = mappings
                 .get(moj)
                 .getMapping()
-                .getOrDefault(defaultMapping, moj)
-                .replace(".", "/")
+                .getOrDefault(defaultMapping, moj);
+
+        return "../".repeat(keyName.split("\\.").length - 1 + (keyName.split("\\.").length == 1 ? 1 : 0)) +
+                (map.split("\\.").length == 1 ? "default-pkg/" : "") +
+                map.replace(".", "/")
                 .replace("${V}", "VVV")
                 + ".html";
     }

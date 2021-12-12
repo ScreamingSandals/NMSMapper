@@ -16,12 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 @Data
 public class UtilsHolder {
     private final Map<String, Map<String, ClassDefinition>> mappings = new HashMap<>();
+    private final Map<String, Map<MappingType, Map<String, String>>> mappingTypeLinks = new HashMap<>();
     private final File resourceDir;
     private final Map<String, MappingType> newlyGeneratedMappings = new HashMap<>();
     private final AtomicReference<ConfigurationNode> versionManifest = new AtomicReference<>();
     private final Map<String, String> joinedMappingsClassLinks = new HashMap<>();
     private final Map<String, JoinedClassDefinition> joinedMappings = new HashMap<>();
     private final Map<String, String> spigotJoinedMappingsClassLinks = new HashMap<>();
+    private final Map<String, String> seargeJoinedMappingsClassLinks = new HashMap<>();
+    private final Map<String, String> intermediaryJoinedMappingsClassLinks = new HashMap<>();
     private final List<String> undefinedClassLinks = new ArrayList<>();
     private final Map<Map.Entry<String, MappingType>, License> licenses = new HashMap<>();
     private final Map<String, List<MappingType>> allMappingsByVersion = new HashMap<>();

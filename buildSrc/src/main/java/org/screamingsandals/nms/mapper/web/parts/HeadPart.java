@@ -47,6 +47,8 @@ public class HeadPart implements WebsiteComponent {
                 ),
                 link().withRel("stylesheet")
                         .withHref("https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css")
+                        .withId("darkModeCss")
+                        .attr("disabled")
         );
     }
 }

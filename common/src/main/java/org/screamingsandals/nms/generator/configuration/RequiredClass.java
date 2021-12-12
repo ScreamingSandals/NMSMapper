@@ -166,7 +166,18 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                         throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
                     }
                 } else {
-                    list.add(new RequiredArgumentStringClass(unifiedString));
+                    String copy = unifiedString;
+                    int arrayDimensions = 0;
+
+                    while (copy.endsWith("[]")) {
+                        copy = copy.substring(0, copy.length() - 2);
+                        arrayDimensions++;
+                    }
+                    if (arrayDimensions > 0) {
+                        list.add(new RequiredArgumentStringClass(copy).array(arrayDimensions));
+                    } else {
+                        list.add(new RequiredArgumentStringClass(copy));
+                    }
                 }
             }
         }

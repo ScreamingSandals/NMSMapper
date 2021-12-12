@@ -14,8 +14,21 @@ public class RequiredArgumentStringClass implements RequiredArgumentType {
     @Override
     @ApiStatus.Internal
     public void generateClassGetter(AccessorClassGenerator generator, Accessor accessor, StringBuilder expression, List<Object> params) {
-        expression.append("$T.forName($S)");
-        params.add(Class.class);
-        params.add(className);
+        switch (className) {
+            case "int":
+            case "byte":
+            case "short":
+            case "long":
+            case "char":
+            case "float":
+            case "double":
+            case "boolean":
+                expression.append(className).append(".class");
+                break;
+            default:
+                expression.append("$T.getOrCatch($S)");
+                params.add(generator.getAccessorUtils());
+                params.add(className);
+        }
     }
 }

@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.JavadocIndexer;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.screamingsandals.nms.mapper.web.parts.CompactTablePart;
 import org.screamingsandals.nms.mapper.web.parts.NavbarPart;
@@ -23,6 +24,7 @@ import static j2html.TagCreator.*;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class DescriptionPage extends AbstractPage {
+    private static final JavadocIndexer INDEXER = new JavadocIndexer();
     private final String keyName;
     private final ClassDefinition definition;
     private final Map<String, ClassDefinition> mappings;
@@ -286,13 +288,13 @@ public class DescriptionPage extends AbstractPage {
     }
 
     public DomContent convertToMapping(ClassDefinition.Link link, MappingType mappingType) {
+        var type = link.getType();
+        var suffix = new StringBuilder();
+        while (type.endsWith("[]")) {
+            suffix.append("[]");
+            type = type.substring(0, type.length() - 2);
+        }
         if (link.isNms()) {
-            var type = link.getType();
-            var suffix = new StringBuilder();
-            while (type.endsWith("[]")) {
-                suffix.append("[]");
-                type = type.substring(0, type.length() - 2);
-            }
             if (type.matches(".*\\$\\d+")) { // WTF? How
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
@@ -303,6 +305,15 @@ public class DescriptionPage extends AbstractPage {
                     .withHref(generateLink(type))
                     .withTitle(mappingName), text(suffix.toString()));
         } else {
+            // not a primitive type
+            if (type.contains(".")) {
+                var result = INDEXER.linkFor(type);
+                if (result != null) {
+                    return span(a(type.substring(type.lastIndexOf(".") + 1))
+                            .withHref(result)
+                            .withTitle(type), text(suffix.toString()));
+                }
+            }
             return text(link.getType());
         }
     }

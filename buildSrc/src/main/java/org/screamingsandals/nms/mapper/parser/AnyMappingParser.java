@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class AnyMappingParser {
     public static void map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted, ErrorsLogger errorsLogger) throws IOException {
-        var mappingFile = IMappingFile.load(inputStream);
+        var mappingFile = IMappingFile.load(inputStream, mappingType == MappingType.SPIGOT);
 
         var invertedBuffer = new HashMap<String, String>();
         if (inverted) {

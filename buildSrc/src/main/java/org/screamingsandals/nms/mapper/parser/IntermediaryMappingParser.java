@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 public class IntermediaryMappingParser {
     public static String map(Map<String, ClassDefinition> map, Version version, List<String> excluded, ErrorsLogger errorsLogger) throws IOException, URISyntaxException, InterruptedException {
         var file = version.getWorkspace().getFile(Objects.requireNonNull(version.getIntermediaryMappings()), "fabric.tiny");
-        // stripping comments to workaround srgutils incompetency
-        var filteredContent = Files.readAllLines(file.toPath()).stream().filter(e -> !e.startsWith("#")).collect(Collectors.joining("\n"));
-        AnyMappingParser.map(map, new ByteArrayInputStream(filteredContent.getBytes(StandardCharsets.UTF_8)), excluded, MappingType.INTERMEDIARY, false, errorsLogger);
+        AnyMappingParser.map(map, new ByteArrayInputStream(Files.readString(file.toPath()).getBytes(StandardCharsets.UTF_8)), excluded, MappingType.INTERMEDIARY, false, errorsLogger);
 
         return Files.readAllLines(
                 version.getWorkspace()

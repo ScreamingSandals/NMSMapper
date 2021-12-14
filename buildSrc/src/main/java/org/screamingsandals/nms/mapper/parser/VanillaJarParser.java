@@ -4,7 +4,6 @@ import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.generic.Type;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
-import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.*;
@@ -132,7 +131,7 @@ public class VanillaJarParser {
                     continue;
                 }
 
-                var type = MiscUtils.convertInternal(field.getType().getSignature().replaceAll("<[^>]>", ""));
+                var type = SpigotMappingParser.convertInternal(field.getType().getSignature().replaceAll("<[^>]>", ""));
 
                 ClassDefinition.Link link;
                 if (map.containsKey(type.replaceAll("\\[]", ""))) {
@@ -157,7 +156,7 @@ public class VanillaJarParser {
                     var constrcutorDef = new ClassDefinition.ConstructorDefinition();
                     constrcutorDef.setModifier(method.getModifiers());
                     Arrays.stream(method.getArgumentTypes()).map(type -> {
-                        var rType = MiscUtils.convertInternal(type.getSignature().replaceAll("<[^>]>", ""));
+                        var rType = SpigotMappingParser.convertInternal(type.getSignature().replaceAll("<[^>]>", ""));
                         if (map.containsKey(rType.replaceAll("\\[]", ""))) {
                             return ClassDefinition.Link.nmsLink(rType);
                         } else {
@@ -168,12 +167,12 @@ public class VanillaJarParser {
                 } else {
 
                     if (method.isSynthetic()) {
-                        excludedSynthetic.add(javaClass.getClassName() + " method " + method.getName() + "(" + Arrays.stream(method.getArgumentTypes()).map(Type::getSignature).map(MiscUtils::convertInternal).collect(Collectors.joining(",")) + ")");
+                        excludedSynthetic.add(javaClass.getClassName() + " method " + method.getName() + "(" + Arrays.stream(method.getArgumentTypes()).map(Type::getSignature).map(SpigotMappingParser::convertInternal).collect(Collectors.joining(",")) + ")");
                         continue;
                     }
 
                     // Method
-                    var returnType = MiscUtils.convertInternal(method.getReturnType().getSignature().replaceAll("<[^>]>", ""));
+                    var returnType = SpigotMappingParser.convertInternal(method.getReturnType().getSignature().replaceAll("<[^>]>", ""));
 
                     ClassDefinition.Link link;
                     if (map.containsKey(returnType.replaceAll("\\[]", ""))) {
@@ -186,7 +185,7 @@ public class VanillaJarParser {
                     methodDef.getMapping().put(MappingType.OBFUSCATED, method.getName());
                     methodDef.setModifier(method.getModifiers());
                     Arrays.stream(method.getArgumentTypes()).map(type -> {
-                        var rType = MiscUtils.convertInternal(type.getSignature().replaceAll("<[^>]>", ""));
+                        var rType = SpigotMappingParser.convertInternal(type.getSignature().replaceAll("<[^>]>", ""));
                         if (map.containsKey(rType.replaceAll("\\[]", ""))) {
                             return ClassDefinition.Link.nmsLink(rType);
                         } else {

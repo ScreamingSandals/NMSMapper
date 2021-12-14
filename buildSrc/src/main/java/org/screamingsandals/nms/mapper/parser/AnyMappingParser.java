@@ -4,7 +4,6 @@ import net.minecraftforge.srgutils.IMappingFile;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
-import org.screamingsandals.nms.mapper.utils.MiscUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class AnyMappingParser {
     public static void map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted, ErrorsLogger errorsLogger) throws IOException {
-        var mappingFile = IMappingFile.load(inputStream, mappingType == MappingType.SPIGOT);
+        var mappingFile = IMappingFile.load(inputStream);
 
         var invertedBuffer = new HashMap<String, String>();
         if (inverted) {
@@ -62,7 +61,7 @@ public class AnyMappingParser {
                             while (matcher.find()) {
                                 var matched = matcher.group();
                                 matched = matched.replace("/", ".");
-                                matched = MiscUtils.convertInternal(matched);
+                                matched = SpigotMappingParser.convertInternal(matched);
 
                                 if (inverted) {
                                     var type = matched;
@@ -103,7 +102,9 @@ public class AnyMappingParser {
                                         return true;
                                     })
                                     .findFirst()
-                                    .ifPresentOrElse(methodDefinition -> methodDefinition.getMapping().put(mappingType, iMethodMapped), () -> {
+                                    .ifPresentOrElse(methodDefinition -> {
+                                        methodDefinition.getMapping().put(mappingType, iMethodMapped);
+                                    }, () -> {
                                         var s = String.join(",", allMatches);
                                         if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " method " + iMethodOriginal + "(" + s + ")")) {
                                             errorsLogger.log(definition.getMapping().get(MappingType.OBFUSCATED) + ": missing " + iMethodOriginal + "(" + s + ") -> " + iMethodMapped);

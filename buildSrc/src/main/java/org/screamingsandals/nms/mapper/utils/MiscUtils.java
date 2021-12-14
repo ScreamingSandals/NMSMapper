@@ -101,4 +101,36 @@ public class MiscUtils {
                 return "secondary";
         }
     }
+
+    public static String convertInternal(String type) {
+        switch (type) {
+            case "B":
+                return "byte";
+            case "C":
+                return "char";
+            case "D":
+                return "double";
+            case "F":
+                return "float";
+            case "I":
+                return "int";
+            case "J":
+                return "long";
+            case "S":
+                return "short";
+            case "Z":
+                return "boolean";
+            case "V":
+                return "void";
+            default:
+                if (type.startsWith("[")) {
+                    return convertInternal(type.substring(1)) + "[]";
+                } else if (type.endsWith(";")) {
+                    return type.substring(1, type.length() - 1).replace("/", ".");
+                } else {
+                    return type.substring(1).replace("/", ".");
+                }
+
+        }
+    }
 }

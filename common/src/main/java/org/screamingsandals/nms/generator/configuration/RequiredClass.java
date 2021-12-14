@@ -132,9 +132,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                             arrayDimensions++;
                         }
                         if (arrayDimensions > 0) {
-                            list.add(new RequiredClass(copy, context.getDefaultMapping(), context.getDefaultForcedVersion(), context).array(arrayDimensions));
+                            list.add(new RequiredClass(context.getDefaultMapping(), copy, context.getDefaultForcedVersion(), context).array(arrayDimensions));
                         } else {
-                            list.add(new RequiredClass(copy, context.getDefaultMapping(), context.getDefaultForcedVersion(), context));
+                            list.add(new RequiredClass(context.getDefaultMapping(), copy, context.getDefaultForcedVersion(), context));
                         }
                     } else if (split.length == 2) {
                         String copy = split[1];
@@ -145,9 +145,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                             arrayDimensions++;
                         }
                         if (arrayDimensions > 0) {
-                            list.add(new RequiredClass(copy, split[0], context.getDefaultForcedVersion(), context).array(arrayDimensions));
+                            list.add(new RequiredClass(split[0], copy, context.getDefaultForcedVersion(), context).array(arrayDimensions));
                         } else {
-                            list.add(new RequiredClass(copy, split[0], context.getDefaultForcedVersion(), context));
+                            list.add(new RequiredClass(split[0], copy, context.getDefaultForcedVersion(), context));
                         }
                     } else if (split.length == 3) {
                         String copy = split[1];
@@ -158,9 +158,9 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                             arrayDimensions++;
                         }
                         if (arrayDimensions > 0) {
-                            list.add(new RequiredClass(copy, split[0], split[2], context).array(arrayDimensions));
+                            list.add(new RequiredClass(split[0], copy, split[2], context).array(arrayDimensions));
                         } else {
-                            list.add(new RequiredClass(copy, split[0], split[2], context));
+                            list.add(new RequiredClass(split[0], copy, split[2], context));
                         }
                     } else {
                         throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);

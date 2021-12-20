@@ -110,6 +110,7 @@ public abstract class RemappingTask extends DefaultTask {
 
         if (version.getIntermediaryMappings() != null && version.getIntermediaryMappings().isPresent()) {
             System.out.println("Applying Intermediary mappings...");
+            errors.setSilent(true); // it spams the console for no reason, maybe we will fix it later
             var license = IntermediaryMappingParser.map(mapping, version, excluded, errors);
             allMappings.add(MappingType.INTERMEDIARY);
 

@@ -9,6 +9,7 @@ import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // TODO: convert this mess to AnyMappingParser (maybe it won't be needed because spigot is dropping its own mapping slowly)
 public class SpigotMappingParser {
@@ -243,6 +244,50 @@ public class SpigotMappingParser {
                                                     });
 
                                         });
+
+                                // Try to find strangely overridden methods
+                                if (methodDefinition.getMapping().containsKey(MappingType.SEARGE)) {
+                                    map.entrySet()
+                                            .stream()
+                                            .filter(entry -> isImplementing(map, entry.getValue(), selfLink))
+                                            .forEach(entry -> {
+                                                entry.getValue()
+                                                        .getMethods()
+                                                        .stream()
+                                                        .filter(m -> {
+                                                            if (!m.getMapping().containsKey(MappingType.SEARGE) || m.getMapping().containsKey(MappingType.SPIGOT)) {
+                                                                return false;
+                                                            }
+                                                            if (!m.getMapping().get(MappingType.SEARGE).equals(methodDefinition.getMapping().get(MappingType.SEARGE))) {
+                                                                return false;
+                                                            }
+                                                            if (m.getParameters().size() != allMatches.size()) {
+                                                                return false;
+                                                            }
+
+                                                            for (var i = 0; i < m.getParameters().size(); i++) {
+                                                                var par = m.getParameters().get(i);
+                                                                var spar = allMatches.get(i);
+
+                                                                if (!par.getType().equals(spar)) {
+                                                                    return false;
+                                                                }
+                                                            }
+
+                                                            return true;
+                                                        })
+                                                        .findFirst()
+                                                        .ifPresent(md -> {
+                                                            System.out.println("Strange Spigot mapping fixed: "
+                                                                    + entry.getValue().getMapping().get(MappingType.OBFUSCATED) + "#" + md.getMapping().get(MappingType.OBFUSCATED) + "(" + md.getParameters().stream().map(ClassDefinition.Link::getType).collect(Collectors.joining(", ")) + ")"
+                                                                    + " overrides " + spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + "#" + methodDefinition.getMapping().get(MappingType.OBFUSCATED) + "(" + methodDefinition.getParameters().stream().map(ClassDefinition.Link::getType).collect(Collectors.joining(", ")) + ")"
+                                                                    + "\n\tSpigot name: " +  entry.getValue().getMapping().getOrDefault(MappingType.SPIGOT, entry.getValue().getMapping().get(MappingType.OBFUSCATED)) + "#" + split[3] + "\n\tSearge name: " + entry.getValue().getMapping().getOrDefault(MappingType.SEARGE, entry.getValue().getMapping().get(MappingType.OBFUSCATED)) + "#" + methodDefinition.getMapping().get(MappingType.SEARGE)
+                                                            );
+                                                            md.getMapping().put(MappingType.SPIGOT, split[3]);
+                                                        });
+
+                                            });
+                                }
                             }, () -> {
                                 var s2 = String.join(",", allMatches);
                                 if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " method " + split[1] + "(" + s2 + ")")) {

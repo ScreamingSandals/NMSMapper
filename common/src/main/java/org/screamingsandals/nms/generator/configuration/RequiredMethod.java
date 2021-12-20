@@ -9,6 +9,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.build.Accessor;
 import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
+import org.screamingsandals.nms.generator.utils.MiscUtils;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import javax.lang.model.element.Modifier;
@@ -45,7 +46,7 @@ public class RequiredMethod extends RequiredSymbol implements RequiredClassMembe
                     } else if (s2 instanceof RequiredArgumentStringClass) {
                         build = ((RequiredArgumentStringClass) s2).getClassName();
                     } else if (s2 instanceof RequiredArgumentJvmClass) {
-                        build = ((RequiredArgumentJvmClass) s2).getTheClass().getName();
+                        build = MiscUtils.convertWeirdResultOfClassName(((RequiredArgumentJvmClass) s2).getTheClass().getName());
                     } else {
                         throw new UnsupportedOperationException("Don't know what " + s.getClass() + " is!");
                     }

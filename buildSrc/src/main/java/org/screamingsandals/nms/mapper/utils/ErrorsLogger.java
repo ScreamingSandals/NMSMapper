@@ -5,14 +5,18 @@ import lombok.Data;
 @Data
 public class ErrorsLogger {
     private int errors;
+    private boolean silent;
 
     public void log(String error) {
         errors++;
-        System.out.println(error);
+        if (!silent) {
+            System.out.println(error);
+        }
     }
 
     public void reset() {
         errors = 0;
+        silent = false;
     }
 
     public void printWarn() {

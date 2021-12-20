@@ -40,6 +40,7 @@ settings.gradle file:
 ```groovy
 pluginManagement {
     repositories {
+        mavenCentral()
         maven {
             url = "https://repo.screamingsandals.org/public/"
         }

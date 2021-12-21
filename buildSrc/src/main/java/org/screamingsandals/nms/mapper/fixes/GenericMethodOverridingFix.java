@@ -16,7 +16,10 @@ public class GenericMethodOverridingFix extends AbstractSingleFix {
         // Try to find overridden methods
         map.forEach((s, classDefinition) -> {
             var selfLink = ClassDefinition.Link.nmsLink(classDefinition.getMapping().get(MappingType.OBFUSCATED));
-            classDefinition.getMethods().forEach(methodDefinition -> map.entrySet()
+            classDefinition.getMethods()
+                    .stream()
+                    .filter(methodDefinition -> methodDefinition.getMapping().containsKey(MappingType.INTERMEDIARY))
+                    .forEach(methodDefinition -> map.entrySet()
                     .stream()
                     .filter(entry -> SpigotMappingParser.isImplementing(map, entry.getValue(), selfLink))
                     .forEach(entry -> entry.getValue()

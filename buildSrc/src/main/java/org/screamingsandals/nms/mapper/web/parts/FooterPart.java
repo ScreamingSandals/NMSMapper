@@ -33,25 +33,7 @@ public class FooterPart implements WebsiteComponent {
                                         "</svg>"
                         )
                 ).withClass("nav col-md-4 justify-content-end list-unstyled d-flex"),
-                script(
-                        "            let darkMode = localStorage.getItem('nms-dark-mode') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);\n" +
-                        "            if (darkMode) {\n" +
-                        "                $('#darkModeCss')[0].disabled = false;\n" +
-                        "                $('nav').removeClass('bg-light');\n" +
-                        "            }\n" +
-                        "\n" +
-                        "            function toggleDarkMode() {\n" +
-                        "                let current = $('#darkModeCss')[0].disabled;\n" +
-                        "                if (!current) {\n" +
-                        "                    $('#darkModeCss')[0].disabled = true;\n" +
-                        "                    $('nav').addClass('bg-light');\n" +
-                        "                    localStorage.setItem('nms-dark-mode', false);\n" +
-                        "                } else {\n" +
-                        "                    $('#darkModeCss')[0].disabled = false;\n" +
-                        "                    $('nav').removeClass('bg-light');\n" +
-                        "                    localStorage.setItem('nms-dark-mode', true);\n" +
-                        "                }\n" +
-                        "            }")
+                script("let darkMode=localStorage.getItem(\"nms-dark-mode\");function toggleDarkMode(){let e=localStorage.getItem(\"nms-dark-mode\");null===e&&(e=window.matchMedia&&window.matchMedia(\"(prefers-color-scheme: dark)\").matches),\"false\"===e?(window.matchMedia&&window.matchMedia(\"(prefers-color-scheme: dark)\").matches||$(\"#darkModeCss\").removeAttr(\"media\"),$(\"#darkModeCss\")[0].disabled=!1,$(\"nav\").removeClass(\"bg-light\"),localStorage.setItem(\"nms-dark-mode\",!0)):($(\"#darkModeCss\")[0].disabled=!0,$(\"nav\").addClass(\"bg-light\"),localStorage.setItem(\"nms-dark-mode\",!1))}console.log(darkMode),null!==darkMode&&(\"true\"===darkMode?(window.matchMedia&&window.matchMedia(\"(prefers-color-scheme: dark)\").matches||$(\"#darkModeCss\").removeAttr(\"media\"),$(\"#darkModeCss\")[0].disabled=!1,$(\"nav\").removeClass(\"bg-light\")):($(\"#darkModeCss\")[0].disabled=!0,$(\"nav\").addClass(\"bg-light\")));")
         ).withClass("d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top");
     }
 

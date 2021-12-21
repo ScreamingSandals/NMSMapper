@@ -1,6 +1,7 @@
 package org.screamingsandals.nms.mapper.parser;
 
 import org.screamingsandals.nms.mapper.extension.Version;
+import org.screamingsandals.nms.mapper.fixes.GenericMethodOverridingFix;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
@@ -19,6 +20,8 @@ public class IntermediaryMappingParser {
     public static String map(Map<String, ClassDefinition> map, Version version, List<String> excluded, ErrorsLogger errorsLogger) throws IOException, URISyntaxException, InterruptedException {
         var file = version.getWorkspace().getFile(Objects.requireNonNull(version.getIntermediaryMappings()), "fabric.tiny");
         AnyMappingParser.map(map, new ByteArrayInputStream(Files.readString(file.toPath()).getBytes(StandardCharsets.UTF_8)), excluded, MappingType.INTERMEDIARY, false, errorsLogger);
+
+        new GenericMethodOverridingFix(MappingType.INTERMEDIARY).fix(map);
 
         return Files.readAllLines(
                 version.getWorkspace()

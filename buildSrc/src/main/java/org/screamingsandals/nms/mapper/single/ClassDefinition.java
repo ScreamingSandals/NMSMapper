@@ -1,13 +1,15 @@
 package org.screamingsandals.nms.mapper.single;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import lombok.Data;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 @Data
-public class ClassDefinition {
+public class ClassDefinition implements ProblemLocation {
     private int modifier;
     private Type type = Type.CLASS;
     private Link superclass = null;
@@ -20,25 +22,69 @@ public class ClassDefinition {
     private transient String joinedKey;
     private transient String pathKey;
 
-    @Data
-    public static class FieldDefinition {
-        private int modifier;
-        private final Link type;
-        private final Map<MappingType, String> mapping = new HashMap<>();
+    @Override
+    public String printProblemLocation() {
+        return mapping.get(MappingType.OBFUSCATED);
+    }
+
+    @Override
+    @Nullable
+    public String printProblemLocationUsing(MappingType mappingType) {
+        return mapping.get(mappingType);
     }
 
     @Data
-    public static class MethodDefinition {
+    public static class FieldDefinition implements ProblemLocation {
+        private int modifier;
+        private final Link type;
+        private final Map<MappingType, String> mapping = new HashMap<>();
+
+        @Override
+        public String printProblemLocation() {
+            return mapping.get(MappingType.OBFUSCATED);
+        }
+
+        @Override
+        @Nullable
+        public String printProblemLocationUsing(MappingType mappingType) {
+            return mapping.get(mappingType);
+        }
+    }
+
+    @Data
+    public static class MethodDefinition implements ProblemLocation {
         private int modifier;
         private final Link returnType;
         private final Map<MappingType, String> mapping = new HashMap<>();
         private final List<Link> parameters = new ArrayList<>();
+
+        @Override
+        public String printProblemLocation() {
+            return mapping.get(MappingType.OBFUSCATED) + "(" + parameters.stream().map(Link::getType).collect(Collectors.joining(", ")) + ")";
+        }
+
+        @Override
+        @Nullable
+        public String printProblemLocationUsing(MappingType mappingType) {
+            return mapping.get(mappingType);
+        }
     }
 
     @Data
-    public static class ConstructorDefinition {
+    public static class ConstructorDefinition implements ProblemLocation {
         private int modifier;
         private final List<Link> parameters = new ArrayList<>();
+
+        @Override
+        public String printProblemLocation() {
+            return "<init>(" + parameters.stream().map(Link::getType).collect(Collectors.joining(", ")) + ")";
+        }
+
+        @Override
+        @Nullable
+        public String printProblemLocationUsing(MappingType mappingType) {
+            return null;
+        }
     }
 
     @Data

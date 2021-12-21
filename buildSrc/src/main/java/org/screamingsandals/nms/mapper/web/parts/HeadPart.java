@@ -23,8 +23,10 @@ public class HeadPart implements WebsiteComponent {
                         .attr("crossorigin", "anonymous"),
                 link().withRel("stylesheet")
                         .withHref("https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"),
-                link().withRel("stylesheet")
-                        .withHref(basePath + "static/highlight/styles/default.min.css"),
+                iff(basePath != null,
+                    link().withRel("stylesheet")
+                            .withHref(basePath + "static/highlight/styles/default.min.css")
+                ),
                 script()
                         .withSrc("https://code.jquery.com/jquery-3.6.0.min.js")
                         .attr("integrity", "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=")
@@ -35,8 +37,10 @@ public class HeadPart implements WebsiteComponent {
                         .withSrc("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js")
                         .attr("integrity", "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p")
                         .attr("crossorigin", "anonymous"),
-                script()
-                        .withSrc(basePath + "static/highlight/highlight.min.js"),
+                iff(basePath != null,
+                    script()
+                            .withSrc(basePath + "static/highlight/highlight.min.js")
+                ),
                 iff(basePath != null,
                         link().withRel("stylesheet")
                                 .withHref(basePath + "static/css/search.css")
@@ -48,7 +52,7 @@ public class HeadPart implements WebsiteComponent {
                 link().withRel("stylesheet")
                         .withHref("https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css")
                         .withId("darkModeCss")
-                        .attr("disabled")
+                        .attr("media", "(prefers-color-scheme: dark)")
         );
     }
 }

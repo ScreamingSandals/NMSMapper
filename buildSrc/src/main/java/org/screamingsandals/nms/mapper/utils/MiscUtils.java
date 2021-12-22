@@ -88,4 +88,8 @@ public class MiscUtils {
     public static String chooseBootstrapColor(MappingType mappingType) {
         return mappingType.getBootstrapColor();
     }
+
+    public static String classNameToUrl(String name) {
+        return (name.split("\\.").length == 1 ? "default-pkg/" : "") + name.replace(".", "/").replace("${V}", "VVV") + ".html";
+    }
 }

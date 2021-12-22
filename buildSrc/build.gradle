@@ -21,6 +21,7 @@ dependencies {
     implementation 'net.minecraftforge:srgutils:0.4.11-SNAPSHOT'
     implementation 'commons-io:commons-io:2.10.0'
     implementation 'com.jcraft:jsch:0.1.55'
+    implementation 'org.thymeleaf:thymeleaf:3.0.14.RELEASE'
 }
 
 sourceCompatibility = '11.0'

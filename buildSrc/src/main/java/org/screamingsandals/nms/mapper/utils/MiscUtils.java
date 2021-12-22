@@ -86,19 +86,6 @@ public class MiscUtils {
     }
 
     public static String chooseBootstrapColor(MappingType mappingType) {
-        switch (mappingType) {
-            case MOJANG:
-                return "success";
-            case SPIGOT:
-                return "warning";
-            case SEARGE:
-                return "danger";
-            case OBFUSCATED:
-                return "primary";
-            case INTERMEDIARY:
-                return "info";
-            default:
-                return "secondary";
-        }
+        return mappingType.getBootstrapColor();
     }
 }

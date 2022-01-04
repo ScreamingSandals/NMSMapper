@@ -1,5 +1,8 @@
+// TODO: Composite build
+
 plugins {
     id 'java'
+    id 'org.cadixdev.licenser' version '0.6.1'
 }
 
 repositories {
@@ -25,3 +28,13 @@ dependencies {
 }
 
 sourceCompatibility = '11.0'
+
+license {
+    header = project.file('../license_header.txt')
+    properties {
+        year = Calendar.getInstance().get(Calendar.YEAR)
+    }
+    ignoreFailures = true
+}
+
+tasks.compileJava.dependsOn += 'updateLicenses'

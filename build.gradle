@@ -2,6 +2,7 @@ import org.screamingsandals.nms.mapper.NMSMapper
 
 plugins {
     id 'org.screamingsandals.plugin-builder-lite' version '1.0.51' apply false
+    id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
 defaultTasks "saveNmsMappings", "screamCompile", "generateNmsDocs" // order is important
@@ -15,15 +16,24 @@ apply plugin: NMSMapper
 
 subprojects {
     if (project.name == 'nms-mapper-plugin') {
-        System.setProperty("LITE_SKIP_PUBLICATION_CREATION", "yes") // Another plugin is used to create an publication
+        System.setProperty("LITE_SKIP_PUBLICATION_CREATION", "yes") // Another plugin is used to create a publication
     } else {
         System.clearProperty("LITE_SKIP_PUBLICATION_CREATION")
     }
 
     apply plugin: 'org.screamingsandals.plugin-builder-lite'
+    apply plugin: 'org.cadixdev.licenser'
     sourceCompatibility = '11.0'
 
     repositories {
         mavenCentral()
+    }
+
+    license {
+        header = project.rootProject.file('license_header.txt')
+        properties {
+            year = Calendar.getInstance().get(Calendar.YEAR)
+        }
+        ignoreFailures = true
     }
 }

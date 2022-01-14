@@ -48,13 +48,12 @@ public abstract class DocsGenerationTask extends DefaultTask {
     public void run() {
         System.out.println("Generating docs...");
         var outputFolder = getOutputFolder().get();
-        var versions = getUtils().get().getNewlyGeneratedMappings();
+        var versions = getUtils().get().getMappings();
         var mappings = getUtils().get().getMappings();
-        var versionsWithMappings = getUtils().get().getAllMappingsByVersion();
 
         outputFolder.mkdirs();
 
-        versions.forEach((version, defaultMapping) -> {
+        versions.forEach((version, mapping) -> {
             System.out.println("Generating docs for version " + version + "...");
 
             var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
@@ -64,8 +63,8 @@ public abstract class DocsGenerationTask extends DefaultTask {
 
             var packages = new HashMap<String, List<Map.Entry<ClassDefinition.Type, String>>>();
 
-            mappings.get(version).forEach((key, classDefinition) -> {
-                var key2 = classDefinition.getMapping().getOrDefault(defaultMapping, key);
+            mapping.getMappings().forEach((key, classDefinition) -> {
+                var key2 = classDefinition.getMapping().getOrDefault(mapping.getDefaultMapping(), key);
 
                 var pathKey = key2
                         .replace(".", "/")
@@ -101,7 +100,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                     ));
                 });
 
-                var page = new DescriptionPage(key2, classDefinition, mappings.get(version), defaultMapping);
+                var page = new DescriptionPage(key2, classDefinition, mapping.getMappings(), mapping.getDefaultMapping());
                 try (var fileWriter = new FileWriter(finalHtml)) {
                     page.generate().render(fileWriter);
                 } catch (IOException exception) {
@@ -117,7 +116,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 var finalHtml = new File(versionDirectory, pathKey + "/index.html");
                 finalHtml.getParentFile().mkdirs();
 
-                var page = new PackageInfoPage(key, paths, defaultMapping);
+                var page = new PackageInfoPage(key, paths, mapping.getDefaultMapping());
                 try (var fileWriter = new FileWriter(finalHtml)) {
                     page.generate().render(fileWriter);
                 } catch (IOException exception) {
@@ -128,13 +127,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
             var finalHtml = new File(versionDirectory, "index.html");
             finalHtml.getParentFile().mkdirs();
 
-            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), defaultMapping, getUtils().get()
-                    .getLicenses()
-                    .entrySet()
-                    .stream()
-                    .filter(e -> e.getKey().getKey().equals(version))
-                    .collect(Collectors.toMap(e -> e.getKey().getValue(), Map.Entry::getValue))
-            );
+            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), mapping.getDefaultMapping(), mapping.getLicenses());
             try (var fileWriter = new FileWriter(finalHtml)) {
                 page.generate().render(fileWriter);
             } catch (IOException exception) {
@@ -149,7 +142,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
                 var node = saver.createNode();
 
                 node.node("index").set(searchIndex);
-                node.node("default-mapping").set(defaultMapping);
+                node.node("default-mapping").set(mapping);
                 saver.save(node);
             } catch (ConfigurateException e) {
                 e.printStackTrace();
@@ -188,10 +181,11 @@ public abstract class DocsGenerationTask extends DefaultTask {
         var finalHtml = new File(outputFolder, "index.html");
         finalHtml.getParentFile().mkdirs();
 
-        var page = new MainPage(versionsWithMappings.entrySet()
+        var page = new MainPage(mappings
+                .values()
                 .stream()
-                .sorted(Comparator.comparing(e -> VersionNumber.parse(e.getKey())))
-                .map(e -> Map.entry(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparing(e -> VersionNumber.parse(e.getVersion())))
+                .map(e -> Map.entry(e.getVersion(), e.getSupportedMappings()))
                 .collect(Collectors.toList()));
         try (var fileWriter = new FileWriter(finalHtml)) {
             page.generate().render(fileWriter);

@@ -5,8 +5,21 @@
         <nav th:replace="~{fragments/nav}"></nav>
 
         <div class="container">
-            <h1></h1>
+            <h1 th:text="${pageTitle}"></h1>
+            <p th:if="${extends}">extends
+                <a th:if="${extends.link}" th:href="${extends.link}" th:text="${extends.name}"></a>
+                <span th:unless="${extends.link}" th:text="${extends.name}"></span>
+                <span th:if="${extends.suffix}" th:replace="${extends.suffix}"></span>
+            </p>
 
+            <div class="row">
+                <div class="col-sm-11">
+
+                </div>
+                <div class="col-sm-1">
+                    <div th:replace="~{fragments/usage}"></div>
+                </div>
+            </div>
             <!-- TODO -->
 
             <footer th:replace="~{fragments/footer}"></footer>

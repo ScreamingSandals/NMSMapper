@@ -23,14 +23,13 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.extension.Version;
 import org.screamingsandals.nms.mapper.parser.*;
+import org.screamingsandals.nms.mapper.single.Mapping;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 import org.screamingsandals.nms.mapper.utils.License;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class RemappingTask extends DefaultTask {
     @Input
@@ -44,40 +43,37 @@ public abstract class RemappingTask extends DefaultTask {
     public void run() {
         var version = getVersion().get();
         var utils = getUtils().get();
-
-        var allMappings = new ArrayList<MappingType>();
-        var mappings = utils.getMappings();
-        var newlyGeneratedMappings = utils.getNewlyGeneratedMappings();
         var workspace = version.getWorkspace();
 
-        var realVersion = version.getRealVersion() != null ? version.getRealVersion() : version.getVersion();
+        var mapping = new Mapping(version.getVersion());
+        utils.getMappings().put(mapping.getVersion(), mapping);
 
-        System.out.println("======= Mapping " + realVersion + " =======");
+        System.out.println("======= Mapping " + (version.getRealVersion() != null ? version.getRealVersion() : version.getVersion()) + " =======");
 
         System.out.println("Getting base data from vanilla jar...");
 
         var entry = VanillaJarParser.map(workspace.getFile(version.getVanillaJar(), "minecraft_server.jar"));
 
-        var mapping = entry.getKey();
+        mapping.getMappings().putAll(entry.getKey());
+
         var excluded = entry.getValue();
 
         System.out.println(excluded.size() + " symbols (fields, methods) excluded from final mapping: synthetic");
-        System.out.println(mapping.size() + " classes mapped");
+        System.out.println(mapping.getMappings().size() + " classes mapped");
 
-        mappings.put(version.getVersion(), mapping);
-        allMappings.add(MappingType.OBFUSCATED);
+        mapping.getSupportedMappings().add(MappingType.OBFUSCATED);
 
-        var defaultMappings = MappingType.SPIGOT;
+        mapping.setDefaultMapping(MappingType.SPIGOT);
 
         var errors = new ErrorsLogger();
 
         if (version.getMojangMappings() != null && version.getMojangMappings().isPresent()) {
             System.out.println("Applying Mojang mappings...");
-            defaultMappings = MappingType.MOJANG;
-            allMappings.add(MappingType.MOJANG);
+            mapping.setDefaultMapping(MappingType.MOJANG);
+            mapping.getSupportedMappings().add(MappingType.MOJANG);
 
             var license = MojangMappingParser.map(
-                    mapping,
+                    mapping.getMappings(),
                     workspace.getFile(version.getMojangMappings(), "mojang.mapping"),
                     excluded,
                     errors
@@ -87,28 +83,28 @@ public abstract class RemappingTask extends DefaultTask {
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.MOJANG), new License(license, List.of(version.getMojangMappings().getUrl())));
+                mapping.getLicenses().add(new License(MappingType.MOJANG, license, List.of(version.getMojangMappings().getUrl())));
             }
         }
 
         if (version.getSeargeMappings() != null && version.getSeargeMappings().isPresent()) {
             System.out.println("Applying Searge (Forge) mappings...");
 
-            var license = SeargeMappingParser.map(mapping, version, excluded, errors);
-            allMappings.add(MappingType.SEARGE);
+            var license = SeargeMappingParser.map(mapping.getMappings(), version, excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.SEARGE);
 
             errors.printWarn();
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SEARGE), new License(license, List.of(version.getSeargeMappings().getUrl())));
+                mapping.getLicenses().add(new License(MappingType.SEARGE, license, List.of(version.getSeargeMappings().getUrl())));
             }
         }
 
         if (version.getSpigotClassMappings() != null && version.getSpigotClassMappings().isPresent()) {
             System.out.println("Applying Spigot mappings...");
-            var license = SpigotMappingParser.mapTo(version, mapping, excluded, errors);
-            allMappings.add(MappingType.SPIGOT);
+            var license = SpigotMappingParser.mapTo(version, mapping.getMappings(), excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.SPIGOT);
 
             errors.printWarn();
             errors.reset();
@@ -120,27 +116,24 @@ public abstract class RemappingTask extends DefaultTask {
                 } else {
                     links = List.of(version.getSpigotClassMappings().getUrl());
                 }
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.SPIGOT), new License(license, links));
+                mapping.getLicenses().add(new License(MappingType.SPIGOT, license, links));
             }
         }
 
         if (version.getIntermediaryMappings() != null && version.getIntermediaryMappings().isPresent()) {
             System.out.println("Applying Intermediary mappings...");
             errors.setSilent(true); // it spams the console for no reason, maybe we will fix it later
-            var license = IntermediaryMappingParser.map(mapping, version, excluded, errors);
-            allMappings.add(MappingType.INTERMEDIARY);
+            var license = IntermediaryMappingParser.map(mapping.getMappings(), version, excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.INTERMEDIARY);
 
             errors.printWarn();
             errors.reset();
 
             if (license != null) {
-                getUtils().get().getLicenses().put(Map.entry(version.getVersion(), MappingType.INTERMEDIARY), new License(license, List.of(version.getIntermediaryMappings().getUrl())));
+                mapping.getLicenses().add(new License(MappingType.INTERMEDIARY, license, List.of(version.getIntermediaryMappings().getUrl())));
             }
         }
 
         // TODO: Yarn
-
-        newlyGeneratedMappings.put(version.getVersion(), defaultMappings);
-        utils.getAllMappingsByVersion().put(version.getVersion(), allMappings);
     }
 }

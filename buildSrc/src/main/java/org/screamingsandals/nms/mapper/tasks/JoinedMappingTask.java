@@ -61,7 +61,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                     .filter(s -> !s.isBlank() && !s.startsWith("#"))
                     .collect(Collectors.toList());
 
-        var versions = getUtils().get().getNewlyGeneratedMappings()
+        var versions = getUtils().get().getMappings()
                 .keySet()
                 .stream()
                 .sorted(Comparator.comparing(VersionNumber::parse).reversed())
@@ -71,7 +71,8 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
         var finalMapping = getUtils().get().getJoinedMappings();
         versions.forEach(version -> {
-            var versionDefaultMapping = getUtils().get().getNewlyGeneratedMappings().get(version);
+            var mapping = getUtils().get().getMappings().get(version);
+            var versionDefaultMapping = mapping.getDefaultMapping();
 
             var nextVersion = versions.stream()
                     .filter(a -> VersionNumber.parse(a).compareTo(VersionNumber.parse(version)) > 0)
@@ -79,7 +80,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
 
             System.out.println("Applying version " + version + "...");
 
-            mappings.get(version).forEach((key, classDefinition) -> {
+            mapping.getMappings().forEach((key, classDefinition) -> {
                 try {
                     var finalClassName = getJoinedClassName(classDefinition, spigotForceMerge);
                     if (!finalMapping.containsKey(finalClassName)) {
@@ -341,7 +342,7 @@ public abstract class JoinedMappingTask extends DefaultTask {
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
             }
-            return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).get(type), spigotForceMerge) + suffix);
+            return ClassDefinition.Link.nmsLink(getJoinedClassName(getUtils().get().getMappings().get(version).getMappings().get(type), spigotForceMerge) + suffix);
         }
         return link;
     }

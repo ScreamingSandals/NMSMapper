@@ -35,7 +35,7 @@ public abstract class SaveMappingsTask extends DefaultTask {
     @SneakyThrows
     @TaskAction
     public void run() {
-        getUtils().get().getNewlyGeneratedMappings().keySet().forEach(version -> {
+        getUtils().get().getMappings().keySet().forEach(version -> {
             System.out.println("Saving " + version + " mappings...");
             var saver = GsonConfigurationLoader.builder()
                     .file(new File(getUtils().get().getResourceDir(), version + ".json"))
@@ -43,7 +43,7 @@ public abstract class SaveMappingsTask extends DefaultTask {
 
             var mainNode = saver.createNode();
 
-            getUtils().get().getMappings().get(version).forEach((k, v) -> {
+            getUtils().get().getMappings().get(version).getMappings().forEach((k, v) -> {
                 try {
                     v.asNode(mainNode.node(k));
                 } catch (SerializationException e) {

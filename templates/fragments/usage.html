@@ -1,0 +1,87 @@
+<div xmlns:th="http://www.thymeleaf.org" class="dropdown">
+    <!-- TODO: Add standalone -->
+    <button class="btn btn-outline-secondary" data-bs-toggle="dropdown" data-bs-auto-close="false"
+            aria-expanded="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-code-slash"
+             viewBox="0 0 16 16">
+            <path d="M10.478 1.647a.5.5 0 1 0-.956-.294l-4 13a.5.5 0 0 0 .956.294l4-13zM4.854 4.146a.5.5 0 0 1 0 .708L1.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0zm6.292 0a.5.5 0 0 0 0 .708L14.293 8l-3.147 3.146a.5.5 0 0 0 .708.708l3.5-3.5a.5.5 0 0 0 0-.708l-3.5-3.5a.5.5 0 0 0-.708 0z"></path>
+        </svg>
+    </button>
+    <div class="dropdown-menu dropdown-menu-end">
+        <div class="card-body" style="width:min(550px, 95vw);">
+            <h5 class="card-title">Using the mappings with NMSMapper (Gradle only)</h5>
+            <div>
+                Add the repository to your settings.gradle:
+                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                        aria-expanded="false" data-bs-target="#collapseSettingsGradle" type="button">
+                    Example
+                </button>
+                <div class="collapse" id="collapseSettingsGradle">
+                    <pre>
+                        <code class="language-groovy">
+pluginManagement {
+    repositories {
+        maven {
+            url = "https://repo.screamingsandals.org/public/"
+        }
+
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'YourProject'
+                        </code>
+                    </pre>
+                </div>
+                Configuring the plugin:
+                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                        aria-expanded="false" data-bs-target="#collapseBuildGradle" type="button">
+                    Example
+                </button>
+                <div class="collapse" id="collapseBuildGradle">
+                    <pre>
+                    <code class="language-groovy hljs">
+plugins {
+	// Other plugins
+	id 'org.screamingsandals.nms-mapper'
+}
+
+
+/* ... Other stuff ... */
+
+sourceSets.main.java.srcDirs = ['src/generated/java', 'src/main/java']
+
+nmsGen {
+	basePackage = "com.example.nms.accessors"
+	sourceSet = "src/generated/java"
+	cleanOnRebuild = true
+
+	reqClass('<span th:replace="${accessorRequireClass}"></span>')
+	/* ... Other classes ... */
+}
+
+tasks.getByName('compileJava').dependsOn('generateNmsComponents')
+                    </code>
+                    </pre>
+                </div>
+                Using the accessor:
+                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                        aria-expanded="false" data-bs-target="#collapseJavaExample" type="button">
+                    Example
+                </button>
+                <div class="collapse" id="collapseJavaExample">
+                    <pre>
+                        <code class="language-java hljs">
+import com.example.nms.accessors.<span th:replace="${accessorName}"></span>;
+
+// ...
+
+Class&lt;?&gt; theClass = <span th:replace="${accessorName}"></span>.getType();
+                        </code>
+                    </pre>
+                </div>
+                Learn more <a href="https://docs.screamingsandals.org/ScreamingLib/2.0.1-SNAPSHOT/nmsmapper/">here</a>.
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,14 +1,40 @@
+/*
+ * Copyright 2022 ScreamingSandals
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.screamingsandals.nms.mapper.newweb.pages;
 
+import lombok.SneakyThrows;
+import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
 import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.Mapping;
+import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.utils.JavadocIndexer;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
 
 public class DescriptionPage extends AbstractPage {
-    public DescriptionPage(String className, ClassDefinition definition, String title) {
+    private static final JavadocIndexer INDEXER = new JavadocIndexer();
+    private final Mapping mapping;
+    private final ClassDefinition definition;
+    private final String className;
+
+    public DescriptionPage(Mapping mapping, String className, ClassDefinition definition, String title) {
         super(
                 "description",
                 MiscUtils.classNameToUrl(className),
@@ -22,10 +48,79 @@ public class DescriptionPage extends AbstractPage {
                 ),
                 true
         );
+        this.mapping = mapping;
+        this.definition = definition;
+        this.className = className;
     }
 
     @Override
     public void fillContext(Context context) {
+        if (definition.getType() != ClassDefinition.Type.INTERFACE) {
+            context.setVariable("extends", convertToMapping(definition.getSuperclass(), mapping.getDefaultMapping()));
+        }
+        context.setVariable("accessorName", getAccessorName());
+        context.setVariable("accessorRequireClass", getRightReqClass());
+    }
 
+    private String getRightReqClass() {
+        switch (mapping.getDefaultMapping()) {
+            case MOJANG:
+                return className;
+            case SPIGOT:
+                return "spigot:" + className.substring(className.lastIndexOf(".") + 1);
+            default:
+                return mapping.getDefaultMapping().name().toLowerCase() + ":" + className;
+        }
+    }
+
+    private String getAccessorName() {
+        var clazz = getRightReqClass();
+        var li = clazz.lastIndexOf(".");
+        return (clazz.substring(li < 0 ? (clazz.startsWith("spigot:") ? 7 : 0) : (li + 1)) + "Accessor").replace("$", "_i_");
+    }
+
+    public ClassNameLink convertToMapping(ClassDefinition.Link link, MappingType mappingType) {
+        var type = link.getType();
+        var suffix = new StringBuilder();
+        while (type.endsWith("[]")) {
+            suffix.append("[]");
+            type = type.substring(0, type.length() - 2);
+        }
+        if (link.isNms()) {
+            if (type.matches(".*\\$\\d+")) { // WTF? How
+                suffix.insert(0, type.substring(type.lastIndexOf("$")));
+                type = type.substring(0, type.lastIndexOf("$"));
+            }
+            var mappingName = mapping.getMappings().get(type).getMapping().getOrDefault(mappingType, type);
+
+            return new ClassNameLink(mappingName.substring(mappingName.lastIndexOf(".") + 1), generateLink(type), mappingName, suffix.toString());
+        } else {
+            // not a primitive type
+            if (type.contains(".")) {
+                var result = INDEXER.linkFor(type);
+                if (result != null) {
+                    return new ClassNameLink(type.substring(type.lastIndexOf(".") + 1), generateLink(type), type, suffix.toString());
+                }
+            }
+            return new ClassNameLink(link.getType(), null, null, null);
+        }
+    }
+
+
+    @SneakyThrows
+    public String generateLink(String clazz) {
+        // TODO: Generate better links
+        var moj = clazz.replaceAll("\\[]", "");
+        var map = mapping
+                .getMappings()
+                .get(moj)
+                .getMapping()
+                .getOrDefault(mapping.getDefaultMapping(), moj);
+
+        return "../".repeat(className.split("\\.").length - 1 + (className.split("\\.").length == 1 ? 1 : 0)) +
+                (map.split("\\.").length == 1 ? "default-pkg/" : "") +
+                map.replace(".", "/")
+                        .replace("${V}", "VVV")
+                + ".html";
     }
 }

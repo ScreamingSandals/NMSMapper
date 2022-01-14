@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.pages;
+package org.screamingsandals.nms.mapper.single;
 
 import lombok.Data;
-import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
-import org.thymeleaf.context.Context;
+import org.screamingsandals.nms.mapper.utils.License;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
-public abstract class AbstractPage {
-    private final String templateName;
-    private final String finalLocation;
-    private final String pageTitle;
-    private final List<NavbarLink> links;
-    private final boolean searchAllowed;
+public class Mapping {
+    private final String version;
+    private final Map<String, ClassDefinition> mappings = new HashMap<>();
+    private final List<MappingType> supportedMappings = new ArrayList<>();
+    private final List<License> licenses = new ArrayList<>();
+    private MappingType defaultMapping = MappingType.OBFUSCATED;
 
-    public abstract void fillContext(Context context);
 }

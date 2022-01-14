@@ -39,7 +39,7 @@ public class OverviewPage extends AbstractPage {
     private final String docsName;
     private final Set<String> packages;
     private final MappingType defaultMapping;
-    private final Map<MappingType, License> licenses;
+    private final List<License> licenses;
 
     @Override
     protected void configure() {
@@ -62,9 +62,9 @@ public class OverviewPage extends AbstractPage {
         );
 
         div.with(div(
-                licenses.entrySet().stream().map(entry -> {
-                    var mappingType = entry.getKey();
-                    var s = entry.getValue();
+                licenses.stream().map(entry -> {
+                    var mappingType = entry.getMappingType();
+                    var s = entry;
                     return div(
                             div(MiscUtils.capitalizeFirst(mappingType.name()) + " license").withClass("card-header"),
                             div(s.getLicense().replace("\n\n", "\n")).withClass("card-body").withStyle("white-space: pre-wrap;"),

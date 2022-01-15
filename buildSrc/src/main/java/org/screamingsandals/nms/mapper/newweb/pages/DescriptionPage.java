@@ -26,6 +26,7 @@ import org.screamingsandals.nms.mapper.utils.JavadocIndexer;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.thymeleaf.context.Context;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DescriptionPage extends AbstractPage {
@@ -34,11 +35,11 @@ public class DescriptionPage extends AbstractPage {
     private final ClassDefinition definition;
     private final String className;
 
-    public DescriptionPage(Mapping mapping, String className, ClassDefinition definition, String title) {
+    public DescriptionPage(Mapping mapping, String className, ClassDefinition definition) {
         super(
                 "description",
-                MiscUtils.classNameToUrl(className),
-                title,
+                mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className),
+                MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
                 List.of(
                         new NavbarLink("Main page", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0)), true),
                         new NavbarLink("Overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
@@ -60,6 +61,21 @@ public class DescriptionPage extends AbstractPage {
         }
         context.setVariable("accessorName", getAccessorName());
         context.setVariable("accessorRequireClass", getRightReqClass());
+        context.setVariable("knownSuperinterfaces", getAllKnownSuperinterfaces());
+    }
+
+    public List<ClassNameLink> getAllKnownSuperinterfaces() {
+        var interfaces = new ArrayList<ClassNameLink>();
+
+        var c = definition;
+
+        do {
+            c.getInterfaces().forEach(link -> interfaces.add(convertToMapping(link, mapping.getDefaultMapping())));
+
+            c = c.getSuperclass().isNms() ? mapping.getMappings().get(c.getSuperclass().getType()) : null;
+        } while (c != null);
+
+        return interfaces;
     }
 
     private String getRightReqClass() {
@@ -99,7 +115,7 @@ public class DescriptionPage extends AbstractPage {
             if (type.contains(".")) {
                 var result = INDEXER.linkFor(type);
                 if (result != null) {
-                    return new ClassNameLink(type.substring(type.lastIndexOf(".") + 1), generateLink(type), type, suffix.toString());
+                    return new ClassNameLink(type.substring(type.lastIndexOf(".") + 1), result, type, suffix.toString());
                 }
             }
             return new ClassNameLink(link.getType(), null, null, null);

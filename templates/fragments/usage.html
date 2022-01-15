@@ -56,7 +56,7 @@ nmsGen {
 	sourceSet = "src/generated/java"
 	cleanOnRebuild = true
 
-	reqClass('<span th:replace="${accessorRequireClass}"></span>')
+	reqClass('<th:block th:text="${accessorRequireClass}"></th:block>')
 	/* ... Other classes ... */
 }
 
@@ -72,11 +72,11 @@ tasks.getByName('compileJava').dependsOn('generateNmsComponents')
                 <div class="collapse" id="collapseJavaExample">
                     <pre>
                         <code class="language-java hljs">
-import com.example.nms.accessors.<span th:replace="${accessorName}"></span>;
+import com.example.nms.accessors.<th:block th:text="${accessorName}"></th:block>;
 
 // ...
 
-Class&lt;?&gt; theClass = <span th:replace="${accessorName}"></span>.getType();
+Class&lt;?&gt; theClass = <th:block th:text="${accessorName}"></th:block>.getType();
                         </code>
                     </pre>
                 </div>

@@ -16,17 +16,23 @@
 
 package org.screamingsandals.nms.mapper.newweb.pages;
 
+import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
 import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PackagePage extends AbstractPage {
-    public PackagePage(String version, String packageName, String title) {
+    private final List<Map.Entry<ClassDefinition.Type, String>> paths;
+
+    public PackagePage(String version, String packageName, List<Map.Entry<ClassDefinition.Type, String>> paths) {
         super(
                 "package",
-                version + "/" + packageName + "/index.html",
-                title,
+                version + "/" + packageName.replace(".", "/").replace("${V}", "VVV") + "/index.html",
+                packageName,
                 List.of(
                         new NavbarLink("Main page", "../".repeat(packageName.split("\\.").length + 1), false),
                         new NavbarLink("Overview", "../".repeat(packageName.split("\\.").length), false),
@@ -36,10 +42,37 @@ public class PackagePage extends AbstractPage {
                 ),
                 true
         );
+        this.paths = paths;
     }
 
     @Override
     public void fillContext(Context context) {
+        context.setVariable("interfaces", paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.INTERFACE)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> new ClassNameLink(entry.substring(0, entry.length() - 5), entry, null, null))
+                .collect(Collectors.toList()));
 
+        context.setVariable("annotations", paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.ANNOTATION)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> new ClassNameLink(entry.substring(0, entry.length() - 5), entry, null, null))
+                .collect(Collectors.toList()));
+
+        context.setVariable("classes", paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.CLASS)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> new ClassNameLink(entry.substring(0, entry.length() - 5), entry, null, null))
+                .collect(Collectors.toList()));
+
+        context.setVariable("enums", paths.stream()
+                .filter(e -> e.getKey() == ClassDefinition.Type.ENUM)
+                .map(Map.Entry::getValue)
+                .sorted()
+                .map(entry -> new ClassNameLink(entry.substring(0, entry.length() - 5), entry, null, null))
+                .collect(Collectors.toList()));
     }
 }

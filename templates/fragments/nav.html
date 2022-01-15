@@ -9,7 +9,7 @@
                 <li th:each="navLink: ${navLinks}">
                     <a th:text="${navLink.label}"
                        th:class="'nav-link' + ${navLink.active? ' active' : ''} + ${navLink.link == null && !navLink.active ? ' disabled' : ''}"
-                       th:href="${navLink.link != null}? navLink.link : '#'">
+                       th:href="${navLink.link != null}? ${navLink.link} : '#'">
                     </a>
                 </li>
             </ul>

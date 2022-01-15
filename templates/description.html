@@ -7,14 +7,20 @@
         <div class="container">
             <h1 th:text="${pageTitle}"></h1>
             <p th:if="${extends}">extends
-                <a th:if="${extends.link}" th:href="${extends.link}" th:text="${extends.name}"></a>
-                <span th:unless="${extends.link}" th:text="${extends.name}"></span>
-                <span th:if="${extends.suffix}" th:replace="${extends.suffix}"></span>
+                <span th:replace="~{fragments/reference::frag (${extends})}"></span>
             </p>
 
             <div class="row">
                 <div class="col-sm-11">
-
+                    <div th:unless="${knownSuperinterfaces.isEmpty()}">
+                        <div>
+                            <b>All known superinterfaces:</b>
+                        </div>
+                        <div th:each="superinterface, iterStat : ${knownSuperinterfaces}">
+                            <span th:replace="~{fragments/reference::frag (${superinterface})}"></span>
+                            <th:block th:unless="${iterStat.last}">,</th:block>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-sm-1">
                     <div th:replace="~{fragments/usage}"></div>

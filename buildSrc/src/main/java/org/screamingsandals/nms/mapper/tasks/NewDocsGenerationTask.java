@@ -23,12 +23,20 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.newweb.WebGenerator;
 import org.screamingsandals.nms.mapper.newweb.components.VersionRecord;
+import org.screamingsandals.nms.mapper.newweb.pages.DescriptionPage;
 import org.screamingsandals.nms.mapper.newweb.pages.MainPage;
+import org.screamingsandals.nms.mapper.newweb.pages.OverviewPage;
+import org.screamingsandals.nms.mapper.newweb.pages.PackagePage;
+import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
-import java.util.Arrays;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public abstract class NewDocsGenerationTask extends DefaultTask {
     @Input
@@ -41,17 +49,78 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
     @SneakyThrows
     @TaskAction
     public void run() {
+        System.out.println("Generating docs...");
         var outputFolder = getOutputFolder().get();
 
         outputFolder.mkdirs();
 
         var generator = new WebGenerator(getTemplatesFolder().get(), outputFolder);
-
-        // TODO: other parts of generation
-
         var mainPage = new MainPage();
-        mainPage.getVersions().add(new VersionRecord("1.18.1", Arrays.asList(MappingType.values()), "1.18.1/"));
-        generator.generate(mainPage);
+        generator.putPage(mainPage);
+
+        getUtils().get().getMappings().forEach((version, mapping) -> {
+            System.out.println("Generating docs for version " + version + "...");
+
+            var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
+            var packages = new HashMap<String, List<Map.Entry<ClassDefinition.Type, String>>>();
+
+            mainPage.getVersions().add(new VersionRecord(version, mapping.getSupportedMappings(), version + "/"));
+
+            mapping.getMappings().forEach((key, classDefinition) -> {
+                var key2 = classDefinition.getMapping().getOrDefault(mapping.getDefaultMapping(), key);
+
+                var page = new DescriptionPage(mapping, key2, classDefinition);
+
+                var packageStr = key2.lastIndexOf(".") == -1 ? "default-pkg" : key2.substring(0, key2.lastIndexOf("."));
+
+                if (!packages.containsKey(packageStr)) {
+                    packages.put(packageStr, new ArrayList<>());
+                }
+
+                packages.get(packageStr).add(Map.entry(classDefinition.getType(), page.getFinalLocation().substring(page.getFinalLocation().lastIndexOf("/") + 1)));
+
+                classDefinition.setPathKey(page.getFinalLocation());
+
+                //getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, page.getFinalLocation());
+
+                classDefinition.getMapping().forEach((mappingType, s) -> {
+                    if (!searchIndex.containsKey(mappingType)) {
+                        searchIndex.put(mappingType, new ArrayList<>());
+                    }
+                    searchIndex.get(mappingType).add(Map.of(
+                            "label", s,
+                            "value",  page.getFinalLocation()
+                    ));
+                });
+
+                generator.putPage(page);
+            });
+
+            packages.forEach((key, paths) -> {
+                generator.putPage(new PackagePage(version, key, paths));
+            });
+
+            generator.putPage(new OverviewPage(mapping, version, packages.keySet()));
+
+            try {
+                var saver = GsonConfigurationLoader.builder()
+                        .file(new File(generator.getFinalFolder(), version + "/search-index.json"))
+                        .build();
+
+                var node = saver.createNode();
+
+                node.node("index").set(searchIndex);
+                node.node("default-mapping").set(mapping.getDefaultMapping());
+                saver.save(node);
+            } catch (ConfigurateException e) {
+                e.printStackTrace();
+            }
+        });
+
+        // TODO: history generation
+
+
+        generator.generate();
     }
 
 }

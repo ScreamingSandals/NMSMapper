@@ -5,9 +5,83 @@
         <nav th:replace="~{fragments/nav}"></nav>
 
         <div class="container">
-            <h1></h1>
+            <h1 th:text="${pageTitle}"></h1>
 
-            <!-- TODO -->
+            <div th:unless="${interfaces.isEmpty()}">
+                <b class="badge bg-info m-1">Interface summary</b>
+
+                <table class="table table-stripped">
+                    <thead>
+                        <tr>
+                            <th class="py-1">Interface</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="interface : ${interfaces}" class="py-1">
+                            <td>
+                                <span th:replace="~{fragments/reference::frag (${interface})}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:unless="${annotations.isEmpty()}">
+                <b class="badge bg-info m-1">Annotation summary</b>
+
+                <table class="table table-stripped">
+                    <thead>
+                        <tr>
+                            <th class="py-1">Annotation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="annotation : ${annotations}" class="py-1">
+                            <td>
+                                <span th:replace="~{fragments/reference::frag (${annotation})}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:unless="${classes.isEmpty()}">
+                <b class="badge bg-info m-1">Class summary</b>
+
+                <table class="table table-stripped">
+                    <thead>
+                        <tr>
+                            <th class="py-1">Class</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="class : ${classes}" class="py-1">
+                            <td>
+                                <span th:replace="~{fragments/reference::frag (${class})}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:unless="${enums.isEmpty()}">
+                <b class="badge bg-info m-1">Enum summary</b>
+
+                <table class="table table-stripped">
+                    <thead>
+                        <tr>
+                            <th class="py-1">Enum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="enum : ${enums}" class="py-1">
+                            <td>
+                                <span th:replace="~{fragments/reference::frag (${enum})}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <footer th:replace="~{fragments/footer}"></footer>
         </div>

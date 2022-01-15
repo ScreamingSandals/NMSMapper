@@ -17,12 +17,15 @@
 package org.screamingsandals.nms.mapper.newweb.pages;
 
 import lombok.Getter;
+import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
 import org.screamingsandals.nms.mapper.newweb.components.VersionRecord;
 import org.thymeleaf.context.Context;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainPage extends AbstractPage {
     @Getter
@@ -46,6 +49,10 @@ public class MainPage extends AbstractPage {
 
     @Override
     public void fillContext(Context context) {
-        context.setVariable("versions", versions);
+        context.setVariable("versions", versions
+                .stream()
+                .sorted(Comparator.comparing((VersionRecord o) -> VersionNumber.parse(o.getVersion())).reversed())
+                .collect(Collectors.toList())
+        );
     }
 }

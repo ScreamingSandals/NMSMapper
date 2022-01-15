@@ -17,16 +17,21 @@
 package org.screamingsandals.nms.mapper.newweb.pages;
 
 import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
+import org.screamingsandals.nms.mapper.single.Mapping;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.Set;
 
 public class OverviewPage extends AbstractPage {
-    public OverviewPage(String version, String title) {
+    private final Mapping mapping;
+    private final Set<String> packages;
+
+    public OverviewPage(Mapping mapping, String version, Set<String> packages) {
         super(
                 "overview",
                 version + "/index.html",
-                title,
+                "NMS mapping - v" + version,
                 List.of(
                         new NavbarLink("Main page", "../", false),
                         new NavbarLink("Overview", null, true),
@@ -36,10 +41,14 @@ public class OverviewPage extends AbstractPage {
                 ),
                 true
         );
+        this.mapping = mapping;
+        this.packages = packages;
     }
 
     @Override
     public void fillContext(Context context) {
-
+        context.setVariable("defaultMapping", mapping.getDefaultMapping());
+        context.setVariable("licenses", mapping.getLicenses());
+        context.setVariable("packages", packages);
     }
 }

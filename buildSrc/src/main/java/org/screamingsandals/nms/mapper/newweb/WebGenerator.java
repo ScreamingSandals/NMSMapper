@@ -26,12 +26,16 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class WebGenerator {
     private final TemplateEngine templateEngine;
     private final FileTemplateResolver templateResolver;
     private final File finalFolder;
+
+    private final List<AbstractPage> pageBuffer = new ArrayList<>();
 
     public WebGenerator(File templatesFolder, File finalFolder) {
         this.finalFolder = finalFolder;
@@ -44,6 +48,10 @@ public class WebGenerator {
         templateEngine.setTemplateResolver(templateResolver);
     }
 
+    public void putPage(AbstractPage page) {
+        pageBuffer.add(page);
+    }
+
     public void generate(AbstractPage page) throws IOException {
         var context = new Context();
         context.setVariable("pageTitle", page.getPageTitle());
@@ -51,8 +59,17 @@ public class WebGenerator {
         context.setVariable("navLinks", page.getLinks());
         page.fillContext(context);
 
-        var stringWriter = new FileWriter(new File(finalFolder, page.getFinalLocation()));
+        var file = new File(finalFolder, page.getFinalLocation());
+        file.getParentFile().mkdirs();
+        var stringWriter = new FileWriter(file);
         templateEngine.process(page.getTemplateName(), context, stringWriter);
         stringWriter.close();
+    }
+
+    public void generate() throws IOException {
+        for (var page : pageBuffer) {
+            generate(page);
+        }
+        pageBuffer.clear();
     }
 }

@@ -1,0 +1,6 @@
+<!-- parameter reference -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="frag (reference)">
+    <a th:if="${reference.link}" th:href="${reference.link}" th:text="${reference.name}"></a>
+    <th:block th:unless="${reference.link}" th:text="${reference.name}"></th:block>
+    <th:block th:text="${reference.suffix} ?: ''"></th:block>
+</th:block>

@@ -1,0 +1,19 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="symbolSummary (symbolName, symbols)">
+    <b class="badge bg-info m-1">[[${symbolName}]] summary</b>
+    <table class="table table-stripped">
+        <thead>
+            <tr>
+                <th class="py-1">Modified<th:block th:unless="${symbolName} == 'Constructor'" th:text="' and Type'" /></th>
+                <th class="py-1">[[${symbolName}]]</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="symbol: ${symbols}">
+                <!--/*@thymesVar id="symbol" type="org.screamingsandals.nms.mapper.newweb.components.Symbol"*/-->
+                <td>[[${symbol.modifier}]]<th:block th:if="${symbol.type}"> <th:block th:replace="~{fragments/reference :: frag (${symbol.type})}" /></th:block></td>
+                <td th:insert="~{fragments/mappings :: frag (${symbol.mappings})}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>
+</div>

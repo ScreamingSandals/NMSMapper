@@ -1,0 +1,8 @@
+<th:block xmlns:th="http://www.thymeleaf.org">
+    <div th:if="${defaultMapping.name() != 'MOJANG'}" class="alert alert-danger">
+        This minecraft version doesn't have published official Mojang mappings. Other mappings are used as
+        default instead:
+        <!--suppress CheckTagEmptyBody -->
+        <th:block th:text="${defaultMapping}"></th:block>
+    </div>
+</th:block>

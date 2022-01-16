@@ -7,6 +7,8 @@
         <div class="container">
             <h1 th:text="${pageTitle}"></h1>
 
+            <th:block th:replace="~{fragments/version-alerts}" />
+
             <div th:unless="${interfaces.isEmpty()}">
                 <b class="badge bg-info m-1">Interface summary</b>
 
@@ -17,9 +19,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="interface : ${interfaces}" class="py-1">
+                        <tr th:each="interface : ${#lists.sort(interfaces)}" class="py-1">
                             <td>
-                                <span th:replace="~{fragments/reference::frag (${interface})}"></span>
+                                <th:block th:replace="~{fragments/reference::frag (${interface})}" />
                             </td>
                         </tr>
                     </tbody>
@@ -36,9 +38,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="annotation : ${annotations}" class="py-1">
+                        <tr th:each="annotation : ${#lists.sort(annotations)}" class="py-1">
                             <td>
-                                <span th:replace="~{fragments/reference::frag (${annotation})}"></span>
+                                <th:block th:replace="~{fragments/reference::frag (${annotation})}" />
                             </td>
                         </tr>
                     </tbody>
@@ -55,9 +57,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="class : ${classes}" class="py-1">
+                        <tr th:each="class : ${#lists.sort(classes)}" class="py-1">
                             <td>
-                                <span th:replace="~{fragments/reference::frag (${class})}"></span>
+                                <th:block th:replace="~{fragments/reference::frag (${class})}" />
                             </td>
                         </tr>
                     </tbody>
@@ -74,9 +76,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="enum : ${enums}" class="py-1">
+                        <tr th:each="enum : ${#lists.sort(enums)}" class="py-1">
                             <td>
-                                <span th:replace="~{fragments/reference::frag (${enum})}"></span>
+                                <th:block th:replace="~{fragments/reference::frag (${enum})}" />
                             </td>
                         </tr>
                     </tbody>

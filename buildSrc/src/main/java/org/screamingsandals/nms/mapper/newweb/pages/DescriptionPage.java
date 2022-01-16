@@ -17,8 +17,7 @@
 package org.screamingsandals.nms.mapper.newweb.pages;
 
 import lombok.SneakyThrows;
-import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
-import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
+import org.screamingsandals.nms.mapper.newweb.components.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.Mapping;
 import org.screamingsandals.nms.mapper.single.MappingType;
@@ -28,6 +27,8 @@ import org.thymeleaf.context.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class DescriptionPage extends AbstractPage {
     private static final JavadocIndexer INDEXER = new JavadocIndexer();
@@ -56,12 +57,77 @@ public class DescriptionPage extends AbstractPage {
 
     @Override
     public void fillContext(Context context) {
+        context.setVariable("defaultMapping", mapping.getDefaultMapping());
+
         if (definition.getType() != ClassDefinition.Type.INTERFACE) {
             context.setVariable("extends", convertToMapping(definition.getSuperclass(), mapping.getDefaultMapping()));
         }
         context.setVariable("accessorName", getAccessorName());
         context.setVariable("accessorRequireClass", getRightReqClass());
         context.setVariable("knownSuperinterfaces", getAllKnownSuperinterfaces());
+
+        var knownMappings = definition.getMapping().keySet();
+
+        context.setVariable("classMappings", definition.getMapping()
+                .entrySet()
+                .stream()
+                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList())
+        );
+
+        context.setVariable("classFields", definition.getFields()
+                .values()
+                .stream()
+                .map(field -> new Symbol(
+                        MiscUtils.getModifierString(field.getModifier()),
+                        convertToMapping(field.getType(), mapping.getDefaultMapping()),
+                        field
+                                .getMapping()
+                                .entrySet()
+                                .stream()
+                                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue()))
+                                .collect(Collectors.toList())
+                        )
+                )
+                .collect(Collectors.toList())
+        );
+
+        context.setVariable("classConstructors", definition.getConstructors()
+                .stream()
+                .map(constructor -> new Symbol(
+                                MiscUtils.getModifierString(constructor.getModifier()),
+                                null,
+                                knownMappings
+                                    .stream()
+                                        .map(entry -> new SymbolMapping(entry, "", generateMethodDescriptor(constructor.getParameters(), entry)))
+                                        .collect(Collectors.toList())
+                        )
+                )
+                .collect(Collectors.toList())
+        );
+
+        context.setVariable("classMethods", definition.getMethods()
+                .stream()
+                .map(method -> new Symbol(
+                        MiscUtils.getModifierString(method.getModifier()),
+                        convertToMapping(method.getReturnType(), mapping.getDefaultMapping()),
+                        method.getMapping()
+                                .entrySet()
+                                .stream()
+                                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue(), generateMethodDescriptor(method.getParameters(), entry.getKey())))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList())
+        );
+    }
+
+    private List<SymbolArgument> generateMethodDescriptor(List<ClassDefinition.Link> parameters, MappingType mappingType) {
+        AtomicInteger counter = new AtomicInteger();
+        return parameters
+                .stream()
+                .map(link -> convertToMapping(link, mappingType))
+                .map(classNameLink -> new SymbolArgument(classNameLink, "arg" + counter.getAndIncrement()))
+                .collect(Collectors.toList());
     }
 
     public List<ClassNameLink> getAllKnownSuperinterfaces() {

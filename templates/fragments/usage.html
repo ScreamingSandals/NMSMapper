@@ -12,7 +12,7 @@
             <h5 class="card-title">Using the mappings with NMSMapper (Gradle only)</h5>
             <div>
                 Add the repository to your settings.gradle:
-                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                <button class="btn btn-outline-secondary dropdown-toggle d-block my-2" data-bs-toggle="collapse"
                         aria-expanded="false" data-bs-target="#collapseSettingsGradle" type="button">
                     Example
                 </button>
@@ -34,7 +34,7 @@ rootProject.name = 'YourProject'
                     </pre>
                 </div>
                 Configuring the plugin:
-                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                <button class="btn btn-outline-secondary dropdown-toggle d-block my-2" data-bs-toggle="collapse"
                         aria-expanded="false" data-bs-target="#collapseBuildGradle" type="button">
                     Example
                 </button>
@@ -56,7 +56,7 @@ nmsGen {
 	sourceSet = "src/generated/java"
 	cleanOnRebuild = true
 
-	reqClass('<th:block th:text="${accessorRequireClass}"></th:block>')
+	reqClass('[[${accessorRequireClass}]]')
 	/* ... Other classes ... */
 }
 
@@ -65,18 +65,18 @@ tasks.getByName('compileJava').dependsOn('generateNmsComponents')
                     </pre>
                 </div>
                 Using the accessor:
-                <button class="btn btn-link dropdown-toggle d-block my-2" data-bs-toggle="collapse"
+                <button class="btn btn-outline-secondary dropdown-toggle d-block my-2" data-bs-toggle="collapse"
                         aria-expanded="false" data-bs-target="#collapseJavaExample" type="button">
                     Example
                 </button>
                 <div class="collapse" id="collapseJavaExample">
                     <pre>
                         <code class="language-java hljs">
-import com.example.nms.accessors.<th:block th:text="${accessorName}"></th:block>;
+import com.example.nms.accessors.[[${accessorName}]];
 
 // ...
 
-Class&lt;?&gt; theClass = <th:block th:text="${accessorName}"></th:block>.getType();
+Class&lt;?&gt; theClass = [[${accessorName}]].getType();
                         </code>
                     </pre>
                 </div>

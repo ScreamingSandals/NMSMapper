@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.tasks;
 
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -34,8 +35,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public abstract class NewDocsGenerationTask extends DefaultTask {
@@ -97,7 +97,7 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
             });
 
             packages.forEach((key, paths) -> {
-                generator.putPage(new PackagePage(version, key, paths));
+                generator.putPage(new PackagePage(mapping, key, paths));
             });
 
             generator.putPage(new OverviewPage(mapping, version, packages.keySet()));
@@ -121,6 +121,15 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
 
 
         generator.generate();
+
+        System.out.println("Updating static contents...");
+        var staticFolder = new File(outputFolder, "static");
+        if (staticFolder.exists()) {
+            FileUtils.deleteDirectory(staticFolder);
+        }
+        FileUtils.copyDirectory(getProject().file("static"), staticFolder);
+        FileUtils.touch(new File(outputFolder, ".nojekyll"));
+        FileUtils.write(new File(outputFolder, "robots.txt"), "User-agent: *\nDisallow: /", StandardCharsets.UTF_8);
     }
 
 }

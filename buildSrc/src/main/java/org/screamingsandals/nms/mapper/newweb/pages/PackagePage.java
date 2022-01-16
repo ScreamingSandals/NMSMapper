@@ -19,6 +19,7 @@ package org.screamingsandals.nms.mapper.newweb.pages;
 import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
 import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
+import org.screamingsandals.nms.mapper.single.Mapping;
 import org.thymeleaf.context.Context;
 
 import java.util.List;
@@ -26,12 +27,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PackagePage extends AbstractPage {
+    private final Mapping mapping;
     private final List<Map.Entry<ClassDefinition.Type, String>> paths;
 
-    public PackagePage(String version, String packageName, List<Map.Entry<ClassDefinition.Type, String>> paths) {
+    public PackagePage(Mapping mapping, String packageName, List<Map.Entry<ClassDefinition.Type, String>> paths) {
         super(
                 "package",
-                version + "/" + packageName.replace(".", "/").replace("${V}", "VVV") + "/index.html",
+                mapping.getVersion() + "/" + packageName.replace(".", "/").replace("${V}", "VVV") + "/index.html",
                 packageName,
                 List.of(
                         new NavbarLink("Main page", "../".repeat(packageName.split("\\.").length + 1), false),
@@ -42,11 +44,14 @@ public class PackagePage extends AbstractPage {
                 ),
                 true
         );
+        this.mapping = mapping;
         this.paths = paths;
     }
 
     @Override
     public void fillContext(Context context) {
+        context.setVariable("defaultMapping", mapping.getDefaultMapping());
+
         context.setVariable("interfaces", paths.stream()
                 .filter(e -> e.getKey() == ClassDefinition.Type.INTERFACE)
                 .map(Map.Entry::getValue)

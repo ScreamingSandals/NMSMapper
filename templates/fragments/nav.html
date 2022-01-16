@@ -7,9 +7,9 @@
         <div class="collapse navbar-collapse" id="mainNavbarCollapse">
             <ul class="navbar-nav me-auto">
                 <li th:each="navLink: ${navLinks}">
-                    <a th:text="${navLink.label}"
-                       th:class="'nav-link' + ${navLink.active? ' active' : ''} + ${navLink.link == null && !navLink.active ? ' disabled' : ''}"
+                    <a th:class="'nav-link' + ${navLink.active? ' active' : ''} + ${navLink.link == null && !navLink.active ? ' disabled' : ''}"
                        th:href="${navLink.link != null}? ${navLink.link} : '#'">
+                        [[${navLink.label}]]
                     </a>
                 </li>
             </ul>

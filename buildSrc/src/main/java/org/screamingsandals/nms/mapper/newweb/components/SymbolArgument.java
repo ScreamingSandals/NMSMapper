@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.single;
+package org.screamingsandals.nms.mapper.newweb.components;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 
-@Getter
-@RequiredArgsConstructor
-public enum MappingType {
-    MOJANG("Mojang", "success"),
-    OBFUSCATED("Obfuscated", "primary"), // sometimes referred to as NOTCH
-    SPIGOT("Spigot", "warning"),
-    SEARGE("Searge", "danger"),
-    INTERMEDIARY("Intermediary", "info"); // read from MCPConfig
-
-    private final String webName;
-    private final String bootstrapColor;
+@Data
+public class SymbolArgument {
+    private final ClassNameLink link;
+    private final String name;
 }

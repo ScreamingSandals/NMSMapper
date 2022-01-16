@@ -17,33 +17,30 @@
 package org.screamingsandals.nms.mapper.newweb.components;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.screamingsandals.nms.mapper.single.MappingType;
 
-import java.util.Objects;
+import java.util.List;
 
 @Data
-public class ClassNameLink implements Comparable<ClassNameLink> {
+@RequiredArgsConstructor
+public class SymbolMapping implements Comparable<SymbolMapping> {
+    private final MappingType mappingType;
     private final String name;
-    @Nullable
-    private final String link;
-    @Nullable
-    private final String title;
-    @Nullable
-    private final String suffix;
+    private final boolean canHaveArguments;
+    private final List<SymbolArgument> arguments;
+
+    public SymbolMapping(MappingType mappingType, String name) {
+        this(mappingType, name, false, null);
+    }
+
+    public SymbolMapping(MappingType mappingType, String name, List<SymbolArgument> arguments) {
+        this(mappingType, name, true, arguments == null ? List.of() : arguments);
+    }
 
     @Override
-    public int compareTo(@NotNull ClassNameLink o) {
-        int last = name.compareTo(o.name);
-        if (last != 0) {
-            return last;
-        }
-        if (suffix == null && o.suffix == null) {
-            return 0;
-        } else if (suffix == null) {
-            return o.suffix.compareTo("");
-        } else {
-            return suffix.compareTo(Objects.requireNonNullElse(o.suffix, ""));
-        }
+    public int compareTo(@NotNull SymbolMapping o) {
+        return mappingType.compareTo(o.mappingType);
     }
 }

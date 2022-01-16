@@ -1,0 +1,14 @@
+<ul xmlns:th="http://www.thymeleaf.org" class="list-unstyled" th:fragment="frag (symbolMappings)">
+    <li th:each="symbolMapping: ${#lists.sort(symbolMappings)}">
+        <!--/*@thymesVar id="symbolMapping" type="org.screamingsandals.nms.mapper.newweb.components.SymbolMapping"*/-->
+        <span th:class="'badge me-2 bg-'+${symbolMapping.mappingType.bootstrapColor}">[[${symbolMapping.mappingType.webName}]]</span>
+        [[${symbolMapping.name}]]
+        <th:block th:if="${symbolMapping.canHaveArguments}">
+            (
+            <th:block th:each="argument,iterStat: ${symbolMapping.arguments}">
+                <th:block th:replace="~{fragments/reference :: frag (${argument.link})}" /> [[${argument.name}]]<th:block th:unless="${iterStat.last}">, </th:block>
+            </th:block>
+            )
+        </th:block>
+    </li>
+</ul>

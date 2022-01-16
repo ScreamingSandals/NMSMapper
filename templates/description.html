@@ -7,7 +7,7 @@
         <div class="container">
             <h1 th:text="${pageTitle}"></h1>
             <p th:if="${extends}">extends
-                <span th:replace="~{fragments/reference::frag (${extends})}"></span>
+                <th:block th:replace="~{fragments/reference::frag (${extends})}" />
             </p>
 
             <div class="row">
@@ -17,7 +17,7 @@
                             <b>All known superinterfaces:</b>
                         </div>
                         <div th:each="superinterface, iterStat : ${knownSuperinterfaces}">
-                            <span th:replace="~{fragments/reference::frag (${superinterface})}"></span>
+                            <th:block th:replace="~{fragments/reference::frag (${superinterface})}" />
                             <th:block th:unless="${iterStat.last}">,</th:block>
                         </div>
                     </div>
@@ -26,7 +26,20 @@
                     <div th:replace="~{fragments/usage}"></div>
                 </div>
             </div>
-            <!-- TODO -->
+
+            <hr>
+
+            <th:block th:replace="~{fragments/version-alerts}" />
+
+            <th:block th:replace="~{fragments/mappings :: frag (${classMappings})}" />
+
+            <hr>
+
+            <th:block th:unless="${classFields.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Field',${classFields})}" />
+
+            <th:block th:unless="${classConstructors.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Constructor',${classConstructors})}" />
+
+            <th:block th:unless="${classMethods.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Method',${classMethods})}" />
 
             <footer th:replace="~{fragments/footer}"></footer>
         </div>

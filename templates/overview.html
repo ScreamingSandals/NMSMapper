@@ -7,11 +7,7 @@
         <div class="container">
             <h1 th:text="${pageTitle}"></h1>
 
-            <div th:if="${defaultMapping.name() != 'MOJANG'}" class="alert alert-danger">
-                This minecraft version doesn't have published official Mojang mappings. Other mappings are used as
-                default instead:
-                <th:block th:text="${defaultMapping}"></th:block>
-            </div>
+            <th:block th:replace="~{fragments/version-alerts}" />
 
             <th:block th:if="${licenses}">
                 <button class="btn btn-primary btn-sm btn-block mb-2 w-100" onclick="document.getElementById('licenses').classList.toggle('d-none')">
@@ -19,11 +15,11 @@
                 </button>
 
                 <div class="d-none" id="licenses">
-                    <div th:each="license : ${licenses}" th:class="'card text-white mb-1 bg-'+${license.mappingType.bootstrapColor}">
-                        <div class="card-header" th:text="${license.mappingType.getWebName()+' license'}"></div>
-                        <div class="card-body" style="white-space: pre-wrap;" th:text="${license.license}"></div>
+                    <div th:each="license : ${#lists.sort(licenses)}" th:class="'card text-white mb-1 bg-'+${license.mappingType.bootstrapColor}">
+                        <div class="card-header">[[${license.mappingType.getWebName()}]] license</div>
+                        <div class="card-body" style="white-space: pre-wrap;">[[${license.license}]]</div>
                         <div class="card-footer" th:each="link : ${license.links}">
-                            <a th:href="${link}" th:text="${link}" class="d-block text-white"></a>
+                            <a th:href="${link}" class="d-block text-white">[[${link}]]</a>
                         </div>
                     </div>
                 </div>
@@ -39,9 +35,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="package : ${packages}" class="py-1">
+                        <tr th:each="package : ${#lists.sort(#lists.toList(packages))}" class="py-1">
                             <td>
-                                <a th:text="${package}" th:href="${package.replace('.', '/')+'/index.html'}"></a>
+                                <a th:href="${package.replace('.', '/')+'/index.html'}">[[${package}]]</a>
                             </td>
                         </tr>
                     </tbody>

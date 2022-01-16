@@ -17,13 +17,19 @@
 package org.screamingsandals.nms.mapper.utils;
 
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.screamingsandals.nms.mapper.single.MappingType;
 
 import java.util.List;
 
 @Data
-public class License {
+public class License implements Comparable<License> {
     private final MappingType mappingType;
     private final String license;
     private final List<String> links;
+
+    @Override
+    public int compareTo(@NotNull License o) {
+        return mappingType.compareTo(o.mappingType);
+    }
 }

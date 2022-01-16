@@ -52,9 +52,10 @@
                     </thead>
                     <tbody>
                         <tr th:each="version: ${versions}">
-                            <td><a th:href="${version.link}" th:text="${version.version}"></a></td>
+                            <td><a th:href="${version.link}">[[${version.version}]]</a></td>
                             <td>
-                                <span th:each="mapping: ${version.mappingTypes}" th:text="${mapping.webName}" th:class="'badge me-2 ms-2 bg-' + ${mapping.bootstrapColor}">
+                                <span th:each="mapping: ${version.mappingTypes}" th:class="'badge me-2 ms-2 bg-' + ${mapping.bootstrapColor}">
+                                    [[${mapping.webName}]]
                                 </span>
                             </td>
                         </tr>

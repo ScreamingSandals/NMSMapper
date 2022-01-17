@@ -35,11 +35,11 @@
 
             <hr>
 
-            <th:block th:unless="${classFields.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Field',${classFields})}" />
+            <th:block th:unless="${classFields.isEmpty()}" th:insert="~{fragments/symbol-map :: symbolSummary ('Field',${classFields})}" />
 
-            <th:block th:unless="${classConstructors.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Constructor',${classConstructors})}" />
+            <th:block th:unless="${classConstructors.isEmpty()}" th:insert="~{fragments/symbol-map :: symbolSummary ('Constructor',${classConstructors})}" />
 
-            <th:block th:unless="${classMethods.isEmpty()}" th:replace="~{fragments/symbol-map :: symbolSummary ('Method',${classMethods})}" />
+            <th:block th:unless="${classMethods.isEmpty()}" th:insert="~{fragments/symbol-map :: symbolSummary ('Method',${classMethods})}" />
 
             <footer th:replace="~{fragments/footer}"></footer>
         </div>

@@ -5,9 +5,11 @@
         <nav th:replace="~{fragments/nav}"></nav>
 
         <div class="container">
-            <h1></h1>
+            <h1>[[${pageTitle}]]</h1>
 
-            <!-- TODO -->
+            <th:block th:each="mapping : ${versions}">
+                <th:block th:replace="~{fragments/changelog :: frag (${mapping})}" />
+            </th:block>
 
             <footer th:replace="~{fragments/footer}"></footer>
         </div>

@@ -24,10 +24,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.newweb.WebGenerator;
 import org.screamingsandals.nms.mapper.newweb.components.VersionRecord;
-import org.screamingsandals.nms.mapper.newweb.pages.DescriptionPage;
-import org.screamingsandals.nms.mapper.newweb.pages.MainPage;
-import org.screamingsandals.nms.mapper.newweb.pages.OverviewPage;
-import org.screamingsandals.nms.mapper.newweb.pages.PackagePage;
+import org.screamingsandals.nms.mapper.newweb.pages.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
@@ -35,6 +32,8 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -59,7 +58,7 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
         generator.putPage(mainPage);
 
         getUtils().get().getMappings().forEach((version, mapping) -> {
-            System.out.println("Generating docs for version " + version + "...");
+            System.out.println("Preparing generation of docs for version " + version + "...");
 
             var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
             var packages = new HashMap<String, List<Map.Entry<ClassDefinition.Type, String>>>();
@@ -81,7 +80,7 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
 
                 classDefinition.setPathKey(page.getFinalLocation());
 
-                //getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, page.getFinalLocation());
+                getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, page.getFinalLocation());
 
                 classDefinition.getMapping().forEach((mappingType, s) -> {
                     if (!searchIndex.containsKey(mappingType)) {
@@ -117,9 +116,30 @@ public abstract class NewDocsGenerationTask extends DefaultTask {
             }
         });
 
-        // TODO: history generation
 
+        System.out.println("Preparing generation of class history...");
 
+        getUtils().get().getJoinedMappings().forEach((s, m) -> {
+            var l = getUtils().get()
+                    .getJoinedMappingsClassLinks()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().equals(s))
+                    .findFirst()
+                    .or(() -> getUtils().get()
+                            .getSpigotJoinedMappingsClassLinks()
+                            .entrySet()
+                            .stream()
+                            .filter(entry -> entry.getValue().equals(s))
+                            .findFirst()
+                    )
+                    .map(Map.Entry::getKey)
+                    .orElse(s);
+            var page = new HistoryPage(s, l, m, getUtils().get().getJoinedMappingsClassLinks());
+            generator.putPage(page);
+        });
+
+        System.out.println("Generating pages using Thymeleaf...");
         generator.generate();
 
         System.out.println("Updating static contents...");

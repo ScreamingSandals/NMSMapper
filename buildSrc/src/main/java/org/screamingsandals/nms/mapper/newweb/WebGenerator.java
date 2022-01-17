@@ -44,7 +44,7 @@ public class WebGenerator {
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setPrefix(templatesFolder.getAbsolutePath() + File.separator);
         templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(false);
+        templateResolver.setCacheable(true);
         templateEngine.setTemplateResolver(templateResolver);
     }
 

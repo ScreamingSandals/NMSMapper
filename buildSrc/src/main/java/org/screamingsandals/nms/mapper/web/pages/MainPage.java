@@ -14,41 +14,45 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.pages;
+package org.screamingsandals.nms.mapper.web.pages;
 
-import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
-import org.screamingsandals.nms.mapper.single.Mapping;
+import lombok.Getter;
+import org.gradle.util.VersionNumber;
+import org.screamingsandals.nms.mapper.web.components.NavbarLink;
+import org.screamingsandals.nms.mapper.web.components.VersionRecord;
 import org.thymeleaf.context.Context;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-public class OverviewPage extends AbstractPage {
-    private final Mapping mapping;
-    private final Set<String> packages;
+public class MainPage extends AbstractPage {
+    @Getter
+    private final List<VersionRecord> versions = new ArrayList<>();
 
-    public OverviewPage(Mapping mapping, String version, Set<String> packages) {
+    public MainPage() {
         super(
-                "overview",
-                version + "/index.html",
-                "NMS mapping - v" + version,
+                "index",
+                "index.html",
+                "NMS mapping browser",
                 List.of(
-                        new NavbarLink("Main page", "../", false),
-                        new NavbarLink("Overview", null, true),
+                        new NavbarLink("Main page", null, true),
+                        new NavbarLink("Overview", null, false),
                         new NavbarLink("Package", null, false),
                         new NavbarLink("Class", null, false),
                         new NavbarLink("History", null, false)
                 ),
-                true
+                false
         );
-        this.mapping = mapping;
-        this.packages = packages;
     }
 
     @Override
     public void fillContext(Context context) {
-        context.setVariable("defaultMapping", mapping.getDefaultMapping());
-        context.setVariable("licenses", mapping.getLicenses());
-        context.setVariable("packages", packages);
+        context.setVariable("versions", versions
+                .stream()
+                .sorted(Comparator.comparing((VersionRecord o) -> VersionNumber.parse(o.getVersion())).reversed())
+                .collect(Collectors.toList())
+        );
     }
 }

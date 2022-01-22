@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb;
+package org.screamingsandals.nms.mapper.web;
 
 import lombok.Data;
-import org.screamingsandals.nms.mapper.newweb.pages.AbstractPage;
+import org.screamingsandals.nms.mapper.web.pages.AbstractPage;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -57,6 +57,7 @@ public class WebGenerator {
         context.setVariable("pageTitle", page.getPageTitle());
         context.setVariable("searchAllowed", page.isSearchAllowed());
         context.setVariable("navLinks", page.getLinks());
+        context.setVariable("staticFolderLocation", "../".repeat(page.getFinalLocation().split("/").length - 1) + "static");
         page.fillContext(context);
 
         var file = new File(finalFolder, page.getFinalLocation());

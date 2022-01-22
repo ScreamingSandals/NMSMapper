@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.components;
+package org.screamingsandals.nms.mapper.web.components;
 
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;

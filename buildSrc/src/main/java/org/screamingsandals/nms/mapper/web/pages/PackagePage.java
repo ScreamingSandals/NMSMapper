@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.pages;
+package org.screamingsandals.nms.mapper.web.pages;
 
-import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
-import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
+import org.screamingsandals.nms.mapper.web.components.ClassNameLink;
+import org.screamingsandals.nms.mapper.web.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.Mapping;
 import org.thymeleaf.context.Context;

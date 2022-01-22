@@ -5,28 +5,31 @@
             <a th:href="${changelog.link}">[[${changelog.version}]]</a>
         </h5>
         <th:block th:if="${changelog.nameMappings.isEmpty() && changelog.constructorChanges.isEmpty() && changelog.fieldChanges.isEmpty() && changelog.methodChanges.isEmpty()}">
-            <i>No changes so far.</i>
+            <p><i>No changes so far.</i></p>
         </th:block>
-        <th:block th:unles="${changelog.nameMappings.isEmpty()}">
+        <th:block th:if="${changelog.first}">
+            <p><i>First known occurrence</i></p>
+        </th:block>
+        <th:block th:unless="${changelog.nameMappings.isEmpty()}">
             <h6 class="card-subtitle mt-1 my-2 text-muted">Name mapping</h6>
             <th:block th:each="mapping : ${changelog.nameMappings}">
                 <div th:if="${mapping.value.key}" class="alert-danger font-monospace">- [[${mapping.key.webName}]]: [[${mapping.value.key}]]</div>
-                <div th:if="${mapping.value.value}" class="alert-success font-monospace">+ [[${mapping.key.webName}]]: [[${mapping.value.value}]]</div>
+                <div th:if="${mapping.value.value}" th:class="'font-monospace alert-' + (${changelog.first} ? 'info' : 'success')">[[${changelog.first} ? '' : '+']] [[${mapping.key.webName}]]: [[${mapping.value.value}]]</div>
             </th:block>
         </th:block>
-        <th:block th:if="${not changelog.constructorChanges.isEmpty()}">
+        <th:block th:unless="${changelog.constructorChanges.isEmpty()}">
             <h6 class="card-subtitle mt-1 my-2 text-muted">Constructors</h6>
             <th:block th:each="changedSymbol : ${changelog.constructorChanges}">
                 <th:block th:replace=":: change (${changedSymbol})" />
             </th:block>
         </th:block>
-        <th:block th:if="${not changelog.fieldChanges.isEmpty()}">
+        <th:block th:unless="${changelog.fieldChanges.isEmpty()}">
             <h6 class="card-subtitle mt-1 my-2 text-muted">Fields</h6>
             <th:block th:each="changedSymbol : ${changelog.fieldChanges}">
                 <th:block th:replace=":: change (${changedSymbol})" />
             </th:block>
         </th:block>
-        <th:block th:if="${not changelog.methodChanges.isEmpty()}">
+        <th:block th:unless="${changelog.methodChanges.isEmpty()}">
             <h6 class="card-subtitle mt-1 my-2 text-muted">Methods</h6>
             <th:block th:each="changedSymbol : ${changelog.methodChanges}">
                 <th:block th:replace=":: change (${changedSymbol})" />
@@ -34,9 +37,9 @@
         </th:block>
     </div>
 
-    <div th:fragment="change (changedSymbol)" th:class="'font-monospace alert-' + (${changedSymbol.addition} ? 'success' : 'danger')">
+    <div th:fragment="change (changedSymbol)" th:class="'font-monospace alert-' + (${changedSymbol.addition} ? (${changelog.first} ? 'info' : 'success') : 'danger')">
         <!--/*@thymesVar id="changedSymbol" type="org.screamingsandals.nms.mapper.newweb.components.ChangedSymbol"*/-->
-        [[${changedSymbol.addition} ? '+' : '-']] <th:block th:if="${changedSymbol.returnType}"><th:block th:replace="~{fragments/reference :: frag (${changedSymbol.returnType})}" /></th:block>
+        [[${changedSymbol.addition} ? (${changelog.first} ? '' : '+') : '-']] <th:block th:if="${changedSymbol.returnType}"><th:block th:replace="~{fragments/reference :: frag (${changedSymbol.returnType})}" /></th:block>
         <th:block th:if="${changedSymbol.canHaveArguments}">(<th:block th:each="arg,iterStat : ${changedSymbol.arguments}"><th:block th:replace="~{fragments/reference :: frag (${arg})}"/><th:block th:unless="${iterStat.last}">, </th:block></th:block>)</th:block>
         <th:block th:if="${changedSymbol.mappings}" th:each="mapping,iterStat : ${changedSymbol.mappings}">
             [[${mapping.key.webName}]]: [[${mapping.value}]]<th:block th:unless="${iterStat.last}">, </th:block>

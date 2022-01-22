@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.pages;
+package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.SneakyThrows;
-import org.screamingsandals.nms.mapper.newweb.components.*;
+import org.screamingsandals.nms.mapper.web.components.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.Mapping;
 import org.screamingsandals.nms.mapper.single.MappingType;

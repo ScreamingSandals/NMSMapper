@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.components;
+package org.screamingsandals.nms.mapper.web.components;
 
 import lombok.Data;
-import org.screamingsandals.nms.mapper.single.MappingType;
-
-import java.util.List;
 
 @Data
-public class VersionRecord {
-    private final String version;
-    private final List<MappingType> mappingTypes;
+public class NavbarLink {
+    private final String label;
     private final String link;
+    private final boolean active;
 }

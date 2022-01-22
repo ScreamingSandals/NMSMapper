@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.web;
+package org.screamingsandals.nms.mapper.web.components;
 
-import j2html.tags.ContainerTag;
+import lombok.Data;
 
-public interface WebsiteComponent {
-    ContainerTag generate();
+@Data
+public class SymbolArgument {
+    private final ClassNameLink link;
+    private final String name;
 }

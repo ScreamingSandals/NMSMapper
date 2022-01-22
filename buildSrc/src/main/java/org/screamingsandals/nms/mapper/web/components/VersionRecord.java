@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.components;
+package org.screamingsandals.nms.mapper.web.components;
 
 import lombok.Data;
+import org.screamingsandals.nms.mapper.single.MappingType;
+
+import java.util.List;
 
 @Data
-public class SymbolArgument {
-    private final ClassNameLink link;
-    private final String name;
+public class VersionRecord {
+    private final String version;
+    private final List<MappingType> mappingTypes;
+    private final String link;
 }

@@ -22,22 +22,22 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.util.VersionNumber;
+import org.screamingsandals.nms.mapper.web.WebGenerator;
+import org.screamingsandals.nms.mapper.web.components.VersionRecord;
+import org.screamingsandals.nms.mapper.web.pages.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.UtilsHolder;
-import org.screamingsandals.nms.mapper.web.*;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class DocsGenerationTask extends DefaultTask {
+    @Input
+    public abstract Property<File> getTemplatesFolder();
     @Input
     public abstract Property<File> getOutputFolder();
     @Input
@@ -48,27 +48,25 @@ public abstract class DocsGenerationTask extends DefaultTask {
     public void run() {
         System.out.println("Generating docs...");
         var outputFolder = getOutputFolder().get();
-        var versions = getUtils().get().getMappings();
-        var mappings = getUtils().get().getMappings();
 
         outputFolder.mkdirs();
 
-        versions.forEach((version, mapping) -> {
-            System.out.println("Generating docs for version " + version + "...");
+        var generator = new WebGenerator(getTemplatesFolder().get(), outputFolder);
+        var mainPage = new MainPage();
+        generator.putPage(mainPage);
+
+        getUtils().get().getMappings().forEach((version, mapping) -> {
+            System.out.println("Preparing generation of docs for version " + version + "...");
 
             var searchIndex = new HashMap<MappingType, List<Map<String, String>>>();
-
-            var versionDirectory = new File(outputFolder, version);
-            versionDirectory.mkdirs();
-
             var packages = new HashMap<String, List<Map.Entry<ClassDefinition.Type, String>>>();
+
+            mainPage.getVersions().add(new VersionRecord(version, mapping.getSupportedMappings(), version + "/"));
 
             mapping.getMappings().forEach((key, classDefinition) -> {
                 var key2 = classDefinition.getMapping().getOrDefault(mapping.getDefaultMapping(), key);
 
-                var pathKey = key2
-                        .replace(".", "/")
-                        .replace("${V}", "VVV");
+                var page = new DescriptionPage(mapping, key2, classDefinition);
 
                 var packageStr = key2.lastIndexOf(".") == -1 ? "default-pkg" : key2.substring(0, key2.lastIndexOf("."));
 
@@ -76,85 +74,50 @@ public abstract class DocsGenerationTask extends DefaultTask {
                     packages.put(packageStr, new ArrayList<>());
                 }
 
-                if (packageStr.equals("default-pkg")) {
-                    pathKey = "default-pkg/" + pathKey;
-                }
+                packages.get(packageStr).add(Map.entry(classDefinition.getType(), page.getFinalLocation().substring(page.getFinalLocation().lastIndexOf("/") + 1)));
 
-                packages.get(packageStr).add(Map.entry(classDefinition.getType(), pathKey.substring(pathKey.lastIndexOf("/") + 1) + ".html"));
+                classDefinition.setPathKey(page.getFinalLocation());
 
-                classDefinition.setPathKey(pathKey + ".html");
+                getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, page.getFinalLocation());
 
-                getUtils().get().getJoinedMappings().get(classDefinition.getJoinedKey()).getPathKeys().put(version, pathKey + ".html");
-
-                var finalHtml = new File(versionDirectory, pathKey + ".html");
-                finalHtml.getParentFile().mkdirs();
-
-                final var finalPathKey = pathKey;
                 classDefinition.getMapping().forEach((mappingType, s) -> {
                     if (!searchIndex.containsKey(mappingType)) {
                         searchIndex.put(mappingType, new ArrayList<>());
                     }
                     searchIndex.get(mappingType).add(Map.of(
                             "label", s,
-                            "value",  finalPathKey + ".html"
+                            "value",  page.getFinalLocation().substring(page.getFinalLocation().indexOf("/") + 1)
                     ));
                 });
 
-                var page = new DescriptionPage(key2, classDefinition, mapping.getMappings(), mapping.getDefaultMapping());
-                try (var fileWriter = new FileWriter(finalHtml)) {
-                    page.generate().render(fileWriter);
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                }
+                generator.putPage(page);
             });
 
             packages.forEach((key, paths) -> {
-                var pathKey = key
-                        .replace(".", "/")
-                        .replace("${V}", "VVV");
-
-                var finalHtml = new File(versionDirectory, pathKey + "/index.html");
-                finalHtml.getParentFile().mkdirs();
-
-                var page = new PackageInfoPage(key, paths, mapping.getDefaultMapping());
-                try (var fileWriter = new FileWriter(finalHtml)) {
-                    page.generate().render(fileWriter);
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                }
+                generator.putPage(new PackagePage(mapping, key, paths));
             });
 
-            var finalHtml = new File(versionDirectory, "index.html");
-            finalHtml.getParentFile().mkdirs();
-
-            var page = new OverviewPage("NMS mapping - v" + version, packages.keySet(), mapping.getDefaultMapping(), mapping.getLicenses());
-            try (var fileWriter = new FileWriter(finalHtml)) {
-                page.generate().render(fileWriter);
-            } catch (IOException exception) {
-                exception.printStackTrace();
-            }
+            generator.putPage(new OverviewPage(mapping, version, packages.keySet()));
 
             try {
                 var saver = GsonConfigurationLoader.builder()
-                        .file(new File(versionDirectory, "search-index.json"))
+                        .file(new File(generator.getFinalFolder(), version + "/search-index.json"))
                         .build();
 
                 var node = saver.createNode();
 
                 node.node("index").set(searchIndex);
-                node.node("default-mapping").set(mapping);
+                node.node("default-mapping").set(mapping.getDefaultMapping());
                 saver.save(node);
             } catch (ConfigurateException e) {
                 e.printStackTrace();
             }
         });
 
-        System.out.println("Generating class history...");
+
+        System.out.println("Preparing generation of class history...");
 
         getUtils().get().getJoinedMappings().forEach((s, m) -> {
-            var finalHtml = new File(outputFolder, "history/" + s + ".html");
-            finalHtml.getParentFile().mkdirs();
-
             var l = getUtils().get()
                     .getJoinedMappingsClassLinks()
                     .entrySet()
@@ -170,28 +133,12 @@ public abstract class DocsGenerationTask extends DefaultTask {
                     )
                     .map(Map.Entry::getKey)
                     .orElse(s);
-            var page = new HistoryPage(l, m, getUtils().get().getJoinedMappingsClassLinks(), getUtils().get().getJoinedMappings());
-            try (var fileWriter = new FileWriter(finalHtml)) {
-                page.generate().render(fileWriter);
-            } catch (IOException exception) {
-                exception.printStackTrace();
-            }
+            var page = new HistoryPage(s, l, m, getUtils().get().getJoinedMappingsClassLinks());
+            generator.putPage(page);
         });
 
-        var finalHtml = new File(outputFolder, "index.html");
-        finalHtml.getParentFile().mkdirs();
-
-        var page = new MainPage(mappings
-                .values()
-                .stream()
-                .sorted(Comparator.comparing(e -> VersionNumber.parse(e.getVersion())))
-                .map(e -> Map.entry(e.getVersion(), e.getSupportedMappings()))
-                .collect(Collectors.toList()));
-        try (var fileWriter = new FileWriter(finalHtml)) {
-            page.generate().render(fileWriter);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        System.out.println("Generating pages using Thymeleaf...");
+        generator.generate();
 
         System.out.println("Updating static contents...");
         var staticFolder = new File(outputFolder, "static");
@@ -202,4 +149,5 @@ public abstract class DocsGenerationTask extends DefaultTask {
         FileUtils.touch(new File(outputFolder, ".nojekyll"));
         FileUtils.write(new File(outputFolder, "robots.txt"), "User-agent: *\nDisallow: /", StandardCharsets.UTF_8);
     }
+
 }

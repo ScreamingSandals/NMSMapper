@@ -16,9 +16,10 @@
                         <div>
                             <b>All known superinterfaces:</b>
                         </div>
-                        <div th:each="superinterface, iterStat : ${knownSuperinterfaces}">
-                            <th:block th:replace="~{fragments/reference::frag (${superinterface})}" />
-                            <th:block th:unless="${iterStat.last}">,</th:block>
+                        <div>
+                            <th:block th:each="superinterface, iterStat : ${knownSuperinterfaces}">
+                                <th:block th:replace="~{fragments/reference::frag (${superinterface})}" /><th:block th:unless="${iterStat.last}">,</th:block>
+                            </th:block>
                         </div>
                     </div>
                 </div>

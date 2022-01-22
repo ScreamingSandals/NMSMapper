@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.newweb.pages;
+package org.screamingsandals.nms.mapper.web.pages;
 
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
-import org.screamingsandals.nms.mapper.newweb.components.ChangedSymbol;
-import org.screamingsandals.nms.mapper.newweb.components.Changelog;
-import org.screamingsandals.nms.mapper.newweb.components.ClassNameLink;
-import org.screamingsandals.nms.mapper.newweb.components.NavbarLink;
+import org.screamingsandals.nms.mapper.web.components.ChangedSymbol;
+import org.screamingsandals.nms.mapper.web.components.Changelog;
+import org.screamingsandals.nms.mapper.web.components.ClassNameLink;
+import org.screamingsandals.nms.mapper.web.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.thymeleaf.context.Context;
@@ -100,7 +100,7 @@ public class HistoryPage extends AbstractPage {
                     .filter(l -> !l.getKey().isEmpty())
                     .collect(Collectors.toList());
 
-            var changelog = new Changelog(s, "../" + s + "/" + definition.getPathKeys().get(s), previousVersion == null);
+            var changelog = new Changelog(s, "../" + definition.getPathKeys().get(s), previousVersion == null);
 
             if (previousVersion == null) { // Everything is changed
                 classMapping.forEach(entry ->

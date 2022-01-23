@@ -29,15 +29,11 @@
             </a>
         </li>
     </ul>
+
     <script>
-        /* TODO: move this fragment out and unminify it */
-        let darkMode = localStorage.getItem("nms-dark-mode");
-
-        function toggleDarkMode() {
-            let e = localStorage.getItem("nms-dark-mode");
-            null === e && (e = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches), "false" === e ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches || $("#darkModeCss").removeAttr("media"), $("#darkModeCss")[0].disabled = !1, $("nav").removeClass("bg-light"), localStorage.setItem("nms-dark-mode", !0)) : ($("#darkModeCss")[0].disabled = !0, $("nav").addClass("bg-light"), localStorage.setItem("nms-dark-mode", !1))
-        }
-
-        null !== darkMode && ("true" === darkMode ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches || $("#darkModeCss").removeAttr("media"), $("#darkModeCss")[0].disabled = !1, $("nav").removeClass("bg-light")) : ($("#darkModeCss")[0].disabled = !0, $("nav").addClass("bg-light")));
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [data-tooltip="true"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     </script>
 </footer>

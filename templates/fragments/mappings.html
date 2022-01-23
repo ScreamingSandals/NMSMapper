@@ -4,11 +4,10 @@
         <span th:class="'badge me-2 bg-'+${symbolMapping.mappingType.bootstrapColor}">[[${symbolMapping.mappingType.webName}]]</span>
         [[${symbolMapping.name}]]
         <th:block th:if="${symbolMapping.canHaveArguments}">
-            (
+            <th:block th:if="${symbolMapping.arguments.isEmpty()}" th:text="'()'" />
             <th:block th:each="argument,iterStat: ${symbolMapping.arguments}">
-                <th:block th:replace="~{fragments/reference :: frag (${argument.link})}" /> [[${argument.name}]]<th:block th:unless="${iterStat.last}">, </th:block>
+                [[${iterStat.first} ? '(' : '']]<th:block th:replace="~{fragments/reference :: frag (${argument.link})}" /> [[${argument.name}]][[${iterStat.last} ? ')' : ', ']]
             </th:block>
-            )
         </th:block>
     </li>
 </ul>

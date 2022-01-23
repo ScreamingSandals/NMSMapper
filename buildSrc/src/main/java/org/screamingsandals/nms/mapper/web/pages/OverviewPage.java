@@ -16,6 +16,7 @@
 
 package org.screamingsandals.nms.mapper.web.pages;
 
+import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.Mapping;
 import org.thymeleaf.context.Context;
@@ -33,11 +34,8 @@ public class OverviewPage extends AbstractPage {
                 version + "/index.html",
                 "NMS mapping - v" + version,
                 List.of(
-                        new NavbarLink("Main page", "../", false),
-                        new NavbarLink("Overview", null, true),
-                        new NavbarLink("Package", null, false),
-                        new NavbarLink("Class", null, false),
-                        new NavbarLink("History", null, false)
+                        new NavbarLink("Version Overview", null, true),
+                        new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 true
         );

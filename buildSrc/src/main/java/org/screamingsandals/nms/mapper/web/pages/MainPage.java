@@ -18,6 +18,7 @@ package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.Getter;
 import org.gradle.util.VersionNumber;
+import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.NavbarLink;
 import org.screamingsandals.nms.mapper.web.components.VersionRecord;
 import org.thymeleaf.context.Context;
@@ -37,11 +38,8 @@ public class MainPage extends AbstractPage {
                 "index.html",
                 "NMS mapping browser",
                 List.of(
-                        new NavbarLink("Main page", null, true),
-                        new NavbarLink("Overview", null, false),
-                        new NavbarLink("Package", null, false),
-                        new NavbarLink("Class", null, false),
-                        new NavbarLink("History", null, false)
+                        new NavbarLink("Version Overview", null, false),
+                        new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 false
         );

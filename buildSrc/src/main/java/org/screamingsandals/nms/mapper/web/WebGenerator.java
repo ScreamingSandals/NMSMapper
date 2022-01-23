@@ -31,6 +31,8 @@ import java.util.List;
 
 @Data
 public class WebGenerator {
+    public static final String DOC_LINK = "https://docs.screamingsandals.org/ScreamingLib/2.0.1-SNAPSHOT/nmsmapper/";
+
     private final TemplateEngine templateEngine;
     private final FileTemplateResolver templateResolver;
     private final File finalFolder;
@@ -57,7 +59,7 @@ public class WebGenerator {
         context.setVariable("pageTitle", page.getPageTitle());
         context.setVariable("searchAllowed", page.isSearchAllowed());
         context.setVariable("navLinks", page.getLinks());
-        context.setVariable("staticFolderLocation", "../".repeat(page.getFinalLocation().split("/").length - 1) + "static");
+        context.setVariable("basePath", "../".repeat(page.getFinalLocation().split("/").length - 1));
         page.fillContext(context);
 
         var file = new File(finalFolder, page.getFinalLocation());

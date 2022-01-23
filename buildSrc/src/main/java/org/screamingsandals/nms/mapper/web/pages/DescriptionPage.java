@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.SneakyThrows;
+import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.Mapping;
@@ -42,11 +43,8 @@ public class DescriptionPage extends AbstractPage {
                 mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className),
                 MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
                 List.of(
-                        new NavbarLink("Main page", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0)), true),
-                        new NavbarLink("Overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
-                        new NavbarLink("Package", "index.html", false),
-                        new NavbarLink("Class", null, true),
-                        new NavbarLink("History", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0)) + "history/" + definition.getJoinedKey() + ".html", false)
+                        new NavbarLink("Version Overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
+                        new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 true
         );
@@ -58,6 +56,8 @@ public class DescriptionPage extends AbstractPage {
     @Override
     public void fillContext(Context context) {
         context.setVariable("defaultMapping", mapping.getDefaultMapping());
+        context.setVariable("packageName", className.contains(".") ? className.substring(0, className.lastIndexOf(".")) : "(default package)");
+        context.setVariable("historyLink", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0)) + "history/" + definition.getJoinedKey() + ".html");
 
         if (definition.getType() != ClassDefinition.Type.INTERFACE) {
             context.setVariable("extends", convertToMapping(definition.getSuperclass(), mapping.getDefaultMapping()));
@@ -94,13 +94,9 @@ public class DescriptionPage extends AbstractPage {
 
         context.setVariable("classConstructors", definition.getConstructors()
                 .stream()
-                .map(constructor -> new Symbol(
+                .map(constructor -> new Constructor(
                                 MiscUtils.getModifierString(constructor.getModifier()),
-                                null,
-                                knownMappings
-                                    .stream()
-                                        .map(entry -> new SymbolMapping(entry, "", generateMethodDescriptor(constructor.getParameters(), entry)))
-                                        .collect(Collectors.toList())
+                                generateMethodDescriptor(constructor.getParameters(), mapping.getDefaultMapping())
                         )
                 )
                 .collect(Collectors.toList())

@@ -32,7 +32,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public abstract class DocsGenerationTask extends DefaultTask {
@@ -140,14 +140,8 @@ public abstract class DocsGenerationTask extends DefaultTask {
         System.out.println("Generating pages using Thymeleaf...");
         generator.generate();
 
-        System.out.println("Updating static contents...");
-        var staticFolder = new File(outputFolder, "static");
-        if (staticFolder.exists()) {
-            FileUtils.deleteDirectory(staticFolder);
-        }
-        FileUtils.copyDirectory(getProject().file("static"), staticFolder);
-        FileUtils.touch(new File(outputFolder, ".nojekyll"));
-        FileUtils.write(new File(outputFolder, "robots.txt"), "User-agent: *\nDisallow: /", StandardCharsets.UTF_8);
+        System.out.println("Copying static contents...");
+        FileUtils.copyDirectory(getProject().file("www"), outputFolder, null, true, StandardCopyOption.REPLACE_EXISTING);
     }
 
 }

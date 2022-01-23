@@ -18,6 +18,7 @@ package org.screamingsandals.nms.mapper.web.pages;
 
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
+import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.ChangedSymbol;
 import org.screamingsandals.nms.mapper.web.components.Changelog;
 import org.screamingsandals.nms.mapper.web.components.ClassNameLink;
@@ -40,11 +41,8 @@ public class HistoryPage extends AbstractPage {
                 "history/" + classHashName + ".html",
                 "History of " + className,
                 List.of(
-                        new NavbarLink("Main page", "../", false),
-                        new NavbarLink("Overview", null, false),
-                        new NavbarLink("Package", null, false),
-                        new NavbarLink("Class", null, false),
-                        new NavbarLink("History", null, true)
+                        new NavbarLink("Version Overview", null, false),
+                        new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 false
         );

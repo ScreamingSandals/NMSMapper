@@ -1,0 +1,23 @@
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="constructorSummary (symbols)">
+    <b class="badge bg-info m-1">Constructor summary</b>
+    <table class="table table-stripped">
+        <thead>
+            <tr>
+                <th class="py-1">Modifier</th>
+                <th class="py-1">Constructor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="symbol: ${symbols}">
+                <!--/*@thymesVar id="symbol" type="org.screamingsandals.nms.mapper.newweb.components.Constructor"*/-->
+                <td>[[${symbol.modifier}]]</td>
+                <td>
+                    <th:block th:if="${symbol.arguments.isEmpty()}" th:text="'()'" />
+                    <th:block th:each="argument,iterStat: ${symbol.arguments}">
+                        [[${iterStat.first} ? '(' : '']]<th:block th:replace="~{fragments/reference :: frag (${argument.link})}" /> [[${argument.name}]][[${iterStat.last} ? ')' : ', ']]
+                    </th:block>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

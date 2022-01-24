@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.parser;
 
 import net.minecraftforge.srgutils.IMappingFile;
+import org.screamingsandals.nms.mapper.errors.SymbolNotFoundMappingError;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
@@ -56,7 +57,8 @@ public class AnyMappingParser {
                             if (definition.getFields().containsKey(iFieldOriginal)) {
                                 definition.getFields().get(iFieldOriginal).getMapping().put(mappingType, iFieldMapped);
                             } else if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " field " + iFieldOriginal)) {
-                                errorsLogger.log(definition.getMapping().get(MappingType.OBFUSCATED) + ": Missing " + iFieldOriginal + " -> " + iFieldMapped);
+                                definition.getMappingErrors().add(new SymbolNotFoundMappingError(iFieldOriginal, mappingType, iFieldMapped));
+                                errorsLogger.incremenetErrors();
                             }
                         });
 
@@ -123,7 +125,8 @@ public class AnyMappingParser {
                                     }, () -> {
                                         var s = String.join(",", allMatches);
                                         if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " method " + iMethodOriginal + "(" + s + ")")) {
-                                            errorsLogger.log(definition.getMapping().get(MappingType.OBFUSCATED) + ": missing " + iMethodOriginal + "(" + s + ") -> " + iMethodMapped);
+                                            definition.getMappingErrors().add(new SymbolNotFoundMappingError(iMethodOriginal + "(" + s + ")", mappingType, iMethodMapped));
+                                            errorsLogger.incremenetErrors();
                                         }
                                     });
                         });

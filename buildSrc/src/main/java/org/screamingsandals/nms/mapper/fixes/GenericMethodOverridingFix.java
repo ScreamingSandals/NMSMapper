@@ -16,9 +16,12 @@
 
 package org.screamingsandals.nms.mapper.fixes;
 
+import lombok.Data;
+import org.screamingsandals.nms.mapper.errors.MappingError;
 import org.screamingsandals.nms.mapper.parser.SpigotMappingParser;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
+import org.screamingsandals.nms.mapper.single.ProblemLocation;
 
 import java.util.Map;
 
@@ -46,11 +49,38 @@ public class GenericMethodOverridingFix extends AbstractSingleFix {
                                     && m.getParameters().equals(methodDefinition.getParameters()))
                             .findFirst()
                             .ifPresent(md -> {
-                                logNewFix(entry.getValue(), md, "Missing mapping for overridden method fixed: {location} overrides " + classDefinition.printProblemLocationWith(methodDefinition, this.mappingType));
                                 md.getMapping().put(this.mappingType, methodDefinition.getMapping().get(this.mappingType));
+                                entry.getValue().getMappingErrors().add(new GenericMethodOverridingMappingError(entry.getValue(), md, classDefinition, methodDefinition, this.mappingType));
+                                incrementFix();
                             })));
         });
 
         System.out.println(getName() + " applied " + fixCount + " times");
+    }
+
+    @Data
+    public static class GenericMethodOverridingMappingError implements MappingError {
+        // TODO: get rid of this "ProblemLocation" shit
+        private final ProblemLocation classLocation;
+        private final ProblemLocation methodLocation;
+        private final ProblemLocation superClassLocation;
+        private final ProblemLocation superMethodLocation;
+        private final MappingType mappingType;
+
+        @Override
+        public String getErrorName() {
+            return "Missing mapping for overridden method (fixed)";
+        }
+
+        @Override
+        public String getDescription() {
+            // TODO: better output, this is mess
+            return classLocation.printProblemLocationWith(methodLocation, mappingType) + " overrides " + superClassLocation.printProblemLocationWith(superMethodLocation, mappingType) + ", but it's not in mappings";
+        }
+
+        @Override
+        public Level getErrorLevel() {
+            return Level.NOTICE;
+        }
     }
 }

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;
+import org.screamingsandals.nms.mapper.errors.MappingError;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -34,6 +35,7 @@ public class ClassDefinition implements ProblemLocation {
     private final Map<String, FieldDefinition> fields = new HashMap<>();
     private final List<MethodDefinition> methods = new ArrayList<>();
     private final List<ConstructorDefinition> constructors = new ArrayList<>();
+    private final List<MappingError> mappingErrors = new ArrayList<>();
 
     private transient String joinedKey;
     private transient String pathKey;

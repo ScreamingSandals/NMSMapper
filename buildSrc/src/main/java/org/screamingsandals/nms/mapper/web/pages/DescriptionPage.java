@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.SneakyThrows;
+import org.screamingsandals.nms.mapper.errors.MappingError;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.*;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
@@ -27,6 +28,7 @@ import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.thymeleaf.context.Context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -65,8 +67,8 @@ public class DescriptionPage extends AbstractPage {
         context.setVariable("accessorName", getAccessorName());
         context.setVariable("accessorRequireClass", getRightReqClass());
         context.setVariable("knownSuperinterfaces", getAllKnownSuperinterfaces());
-
-        var knownMappings = definition.getMapping().keySet();
+        context.setVariable("errors", definition.getMappingErrors());
+        context.setVariable("totalErrorSeverity", Arrays.stream(MappingError.Level.values()).filter(level -> definition.getMappingErrors().stream().anyMatch(mappingError -> mappingError.getErrorLevel() == level)).findFirst().orElse(MappingError.Level.OKAY));
 
         context.setVariable("classMappings", definition.getMapping()
                 .entrySet()

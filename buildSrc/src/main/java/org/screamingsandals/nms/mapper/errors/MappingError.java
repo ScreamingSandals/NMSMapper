@@ -14,34 +14,26 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.utils;
+package org.screamingsandals.nms.mapper.errors;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
-public class ErrorsLogger {
-    private int errors;
-    private boolean silent;
+public interface MappingError {
+    String getErrorName();
 
-    public void log(String error) {
-        errors++;
-        if (!silent) {
-            System.out.println(error);
-        }
-    }
+    String getDescription();
 
-    public void reset() {
-        errors = 0;
-        silent = false;
-    }
+    Level getErrorLevel();
 
-    public void incremenetErrors() {
-        errors++;
-    }
+    @RequiredArgsConstructor
+    @Getter
+    enum Level {
+        SEVERE("danger"),
+        WARNING("warning"),
+        NOTICE("info"),
+        OKAY("success");
 
-    public void printWarn() {
-        if (errors > 0) {
-            System.out.println(errors + " symbols (fields, methods) not found, but they are not excluded.");
-        }
+        private final String bootstrapColor;
     }
 }

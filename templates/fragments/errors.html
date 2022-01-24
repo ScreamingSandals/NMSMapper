@@ -1,14 +1,58 @@
 <div xmlns:th="http://www.thymeleaf.org" class="dropdown d-inline-block">
-    <button title="No errors" class="btn btn-outline-secondary" data-tooltip="tooltip" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+    <button th:title="${totalErrorSeverity.name()  == 'SEVERE'} ? 'Severe failures occurred during mapping' : (${totalErrorSeverity.name() == 'WARNING'} ? 'Minor failures occurred during mapping' : 'Class mapped successfully')" th:class="'btn btn-outline-' + (${totalErrorSeverity.name()  == 'SEVERE'} ? 'danger' : 'secondary')" data-tooltip="tooltip" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">
+        <svg th:if="${totalErrorSeverity.name() == 'OKAY' or totalErrorSeverity.name() == 'NOTICE'}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
             <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
         </svg>
+        <svg th:if="${totalErrorSeverity.name() == 'WARNING'}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+        </svg>
+        <svg th:if="${totalErrorSeverity.name() == 'SEVERE'}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+            <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+            <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+        </svg>
     </button>
     <div class="dropdown-menu dropdown-menu-end">
-        <div class="card-body" style="width:min(550px, 95vw);">
-            <h5 class="card-title">Not implemented yet.</h5>
-            <p>Come back later</p>
+        <div class="card-body" style="width:min(400px, 95vw);">
+            <th:block th:switch="${totalErrorSeverity.name()}">
+                <th:block th:case="'SEVERE'">
+                    <h5 class="card-title">
+                        This is wrong
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-frown" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.498 3.498 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.498 4.498 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+                        </svg>
+                    </h5>
+                    <p class="card-subtitle mb-2 text-muted">During mapping severe failures occurred. These failures probably broke this mapping.</p>
+                </th:block>
+                <th:block th:case="'WARNING'">
+                    <h5 class="card-title">Something is missing</h5>
+                    <p class="card-subtitle mb-2 text-muted">During mapping minor failures occurred and there was no fix for them</p>
+                </th:block>
+                <th:block th:case="'NOTICE'">
+                    <h5 class="card-title">Everything seems okay</h5>
+                    <p class="card-subtitle mb-2 text-muted">Failures occurred but they were automatically fixed</p>
+                </th:block>
+                <th:block th:case="'OKAY'">
+                    <h5 class="card-title">
+                        Everything seems okay
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-smile" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+                        </svg>
+                    </h5>
+                    <p class="card-subtitle mb-2 text-muted">No failures occurred during mapping!</p>
+                </th:block>
+            </th:block>
+            <div th:unless="${errors.isEmpty()}" class="overflow-auto" style="max-height:min(400px, 60vh)">
+                <th:block th:each="error : ${errors}">
+                    <div th:class="'card-text mx-1 px-2 py-1 bg-opacity-10 border-start border-3 bg-' + ${error.errorLevel.bootstrapColor} + ' border-' + ${error.errorLevel.bootstrapColor} ">
+                        <div class="text-muted" th:text="${error.errorName}"></div>
+                        <div th:text="${error.description}"></div>
+                    </div>
+                </th:block>
+            </div>
         </div>
     </div>
 </div>

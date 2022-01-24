@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.parser;
 
 import lombok.SneakyThrows;
+import org.screamingsandals.nms.mapper.errors.SymbolNotFoundMappingError;
 import org.screamingsandals.nms.mapper.extension.Version;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
@@ -153,7 +154,8 @@ public class SpigotMappingParser {
                                 fieldDefinition.getMapping().put(MappingType.SPIGOT, split[2]);
                             }, () -> {
                                 if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " field " + split[1])) {
-                                    errorsLogger.log(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": Missing " + split[1] + " -> " + split[2]);
+                                    spigotToValue.get(split[0]).getMappingErrors().add(new SymbolNotFoundMappingError(split[1], MappingType.SPIGOT, split[2]));
+                                    errorsLogger.incremenetErrors();
                                 }
                             });
                 } else if (split.length == 4) {
@@ -307,7 +309,8 @@ public class SpigotMappingParser {
                             }, () -> {
                                 var s2 = String.join(",", allMatches);
                                 if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " method " + split[1] + "(" + s2 + ")")) {
-                                    errorsLogger.log(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + ": missing " + split[1] + "(" + s2 + ") -> " + split[3]);
+                                    spigotToValue.get(split[0]).getMappingErrors().add(new SymbolNotFoundMappingError(split[1] + "(" + s2 + ")", MappingType.SPIGOT, split[3]));
+                                    errorsLogger.incremenetErrors();
                                 }
                             });
                 }

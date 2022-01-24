@@ -38,15 +38,21 @@ public abstract class AbstractSingleFix {
 
     public abstract void fix(Map<String, ClassDefinition> map);
 
+    @Deprecated
     protected void logNewFix(ProblemLocation problemLocation, String fixMessage) {
         // TODO: save logged fix
         System.out.println("Applied " + getName() + ": " + fixMessage.replace("{location}", problemLocation.printProblemLocationWith(mappingType)));
         fixCount++;
     }
 
+    @Deprecated
     protected void logNewFix(ProblemLocation problemLocation, ProblemLocation childProblem, String fixMessage) {
         // TODO: save logged fix
         System.out.println("Applied " + getName() + ": " + fixMessage.replace("{location}", problemLocation.printProblemLocationWith(childProblem, mappingType)));
+        fixCount++;
+    }
+
+    protected void incrementFix() {
         fixCount++;
     }
 }

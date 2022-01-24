@@ -14,34 +14,29 @@
  * limitations under the License.
  */
 
-package org.screamingsandals.nms.mapper.utils;
+package org.screamingsandals.nms.mapper.errors;
 
 import lombok.Data;
+import org.screamingsandals.nms.mapper.single.MappingType;
 
 @Data
-public class ErrorsLogger {
-    private int errors;
-    private boolean silent;
+public class SymbolNotFoundMappingError implements MappingError {
+    private final String missingSymbol;
+    private final MappingType remappedMappingType;
+    private final String remappedName;
 
-    public void log(String error) {
-        errors++;
-        if (!silent) {
-            System.out.println(error);
-        }
+    @Override
+    public String getErrorName() {
+        return "Symbol not found";
     }
 
-    public void reset() {
-        errors = 0;
-        silent = false;
+    @Override
+    public String getDescription() {
+        return "Missing symbol: " + missingSymbol + " -> " + remappedName + " (" + remappedMappingType.getWebName() + ")";
     }
 
-    public void incremenetErrors() {
-        errors++;
-    }
-
-    public void printWarn() {
-        if (errors > 0) {
-            System.out.println(errors + " symbols (fields, methods) not found, but they are not excluded.");
-        }
+    @Override
+    public Level getErrorLevel() {
+        return Level.WARNING;
     }
 }

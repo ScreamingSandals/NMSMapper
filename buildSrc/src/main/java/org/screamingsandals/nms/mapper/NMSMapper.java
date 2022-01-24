@@ -101,7 +101,7 @@ public class NMSMapper implements Plugin<Project> {
 
                 project.getTasks().create("generateNmsDocs", DocsGenerationTask.class, docsGenerationTask -> {
                     docsGenerationTask.getUtils().set(utilsHolder);
-                    docsGenerationTask.getOutputFolder().set(project.file("build/ndocs"));
+                    docsGenerationTask.getOutputFolder().set(project.file("build/docs"));
                     docsGenerationTask.getTemplatesFolder().set(project.file("templates"));
 
                     docsGenerationTask.dependsOn(Stream.concat(versions.stream().map(s -> "remapVersion" + s.getVersion()), Stream.of("createJoinedMappings")).toArray());

@@ -18,7 +18,9 @@ $(document).ready(function () {
         $('#searchBar').autocomplete({
             delay: 400,
             minLength: 2,
-            source: index[localMapping],
+            source: index[localMapping].sort((a,b) => {
+                return a.value.localeCompare(b.value);
+            }),
             position: {my: "right top", at: "right bottom"},
             autoFocus: true,
             select: function (event, ui) {
@@ -43,7 +45,9 @@ $(document).ready(function () {
 
         select.on('change', function (e) {
             let valueSelected = this.value;
-            $('#searchBar').autocomplete('option', 'source', index[valueSelected]);
+            $('#searchBar').autocomplete('option', 'source', index[valueSelected].sort((a,b) => {
+                return a.value.localeCompare(b.value);
+            }));
             localStorage.setItem('search-default-mapping-' + versionPart, valueSelected);
         });
     });

@@ -1,0 +1,21 @@
+{
+  "version": "1.18.2",
+  "vanilla-jar": {
+    "url": "https://launcher.mojang.com/v1/objects/c8f83c5655308435b3dcf03c06d9fe8740a77469/server.jar",
+    "sha1": "c8f83c5655308435b3dcf03c06d9fe8740a77469"
+  },
+  "mojang-mappings": {
+    "url": "https://launcher.mojang.com/v1/objects/e562f588fea155d96291267465dc3323bfe1551b/server.txt",
+    "sha1": "e562f588fea155d96291267465dc3323bfe1551b"
+  },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18.2/mcp_config-1.18.2.zip",
+    "sha1": "e87c1a29d590a468e950536ebcfaa58a34633a2b"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18.2-cl.csrg?at=641cb0c939c7c2a3c4b42f2fd7bca7c8b34254ae"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.18.2.tiny"
+  }
+}

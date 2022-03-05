@@ -19,12 +19,15 @@ package org.screamingsandals.nms.mapper.parser;
 import lombok.SneakyThrows;
 import org.screamingsandals.nms.mapper.errors.SymbolNotFoundMappingError;
 import org.screamingsandals.nms.mapper.extension.Version;
+import org.screamingsandals.nms.mapper.fixes.GenericMethodOverridingFix;
+import org.screamingsandals.nms.mapper.fixes.StrangeSpigotMethodOverridingFix;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
 
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -141,8 +144,6 @@ public class SpigotMappingParser {
                     return;
                 }
 
-                var selfLink = ClassDefinition.Link.nmsLink(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED));
-
                 if (split.length == 3) {
                     // field
                     var fields = spigotToValue.get(split[0]).getFields();
@@ -228,84 +229,6 @@ public class SpigotMappingParser {
                             .findFirst()
                             .ifPresentOrElse(methodDefinition -> {
                                 methodDefinition.getMapping().put(MappingType.SPIGOT, split[3]);
-
-                                // Try to find overridden methods
-                                map.entrySet()
-                                        .stream()
-                                        .filter(entry -> isImplementing(map, entry.getValue(), selfLink))
-                                        .forEach(entry -> {
-                                            entry.getValue()
-                                                    .getMethods()
-                                                    .stream()
-                                                    .filter(m -> {
-                                                        if (!m.getMapping().get(MappingType.OBFUSCATED).equals(split[1])) {
-                                                            return false;
-                                                        }
-                                                        if (m.getParameters().size() != allMatches.size()) {
-                                                            return false;
-                                                        }
-
-                                                        for (var i = 0; i < m.getParameters().size(); i++) {
-                                                            var par = m.getParameters().get(i);
-                                                            var spar = allMatches.get(i);
-
-                                                            if (!par.getType().equals(spar)) {
-                                                                return false;
-                                                            }
-                                                        }
-
-                                                        return true;
-                                                    })
-                                                    .findFirst()
-                                                    .ifPresent(md -> {
-                                                        md.getMapping().put(MappingType.SPIGOT, split[3]);
-                                                    });
-
-                                        });
-
-                                // Try to find strangely overridden methods
-                                if (methodDefinition.getMapping().containsKey(MappingType.SEARGE)) {
-                                    map.entrySet()
-                                            .stream()
-                                            .filter(entry -> isImplementing(map, entry.getValue(), selfLink))
-                                            .forEach(entry -> {
-                                                entry.getValue()
-                                                        .getMethods()
-                                                        .stream()
-                                                        .filter(m -> {
-                                                            if (!m.getMapping().containsKey(MappingType.SEARGE) || m.getMapping().containsKey(MappingType.SPIGOT)) {
-                                                                return false;
-                                                            }
-                                                            if (!m.getMapping().get(MappingType.SEARGE).equals(methodDefinition.getMapping().get(MappingType.SEARGE))) {
-                                                                return false;
-                                                            }
-                                                            if (m.getParameters().size() != allMatches.size()) {
-                                                                return false;
-                                                            }
-
-                                                            for (var i = 0; i < m.getParameters().size(); i++) {
-                                                                var par = m.getParameters().get(i);
-                                                                var spar = allMatches.get(i);
-
-                                                                if (!par.getType().equals(spar)) {
-                                                                    return false;
-                                                                }
-                                                            }
-
-                                                            return true;
-                                                        })
-                                                        .findFirst()
-                                                        .ifPresent(md -> {
-                                                            System.out.println("Strange Spigot mapping fixed: "
-                                                                    + entry.getValue().getMapping().get(MappingType.OBFUSCATED) + "#" + md.getMapping().get(MappingType.OBFUSCATED) + "(" + md.getParameters().stream().map(ClassDefinition.Link::getType).collect(Collectors.joining(", ")) + ")"
-                                                                    + " overrides " + spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + "#" + methodDefinition.getMapping().get(MappingType.OBFUSCATED) + "(" + methodDefinition.getParameters().stream().map(ClassDefinition.Link::getType).collect(Collectors.joining(", ")) + ")"
-                                                                    + "\n\tSpigot name: " +  entry.getValue().getMapping().getOrDefault(MappingType.SPIGOT, entry.getValue().getMapping().get(MappingType.OBFUSCATED)) + "#" + split[3] + "\n\tSearge name: " + entry.getValue().getMapping().getOrDefault(MappingType.SEARGE, entry.getValue().getMapping().get(MappingType.OBFUSCATED)) + "#" + methodDefinition.getMapping().get(MappingType.SEARGE)
-                                                            );
-                                                            md.getMapping().put(MappingType.SPIGOT, split[3]);
-                                                        });
-
-                                            });
-                                }
                             }, () -> {
                                 var s2 = String.join(",", allMatches);
                                 if (!excluded.contains(spigotToValue.get(split[0]).getMapping().get(MappingType.OBFUSCATED) + " method " + split[1] + "(" + s2 + ")")) {
@@ -316,6 +239,9 @@ public class SpigotMappingParser {
                 }
             });
         }
+
+        new GenericMethodOverridingFix(MappingType.SPIGOT).fix(map);
+        new StrangeSpigotMethodOverridingFix(MappingType.SPIGOT).fix(map);
 
         return cl.lines().findFirst().map(e -> e.substring(1).trim()).orElse(null);
     }

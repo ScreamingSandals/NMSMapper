@@ -16,10 +16,12 @@
 
 package org.screamingsandals.nms.generator.configuration;
 
+import groovy.lang.Closure;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.screamingsandals.nms.generator.utils.Action;
 import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
 import java.util.function.Consumer;
@@ -50,7 +52,7 @@ public class NMSMapperConfiguration {
         }
     }
 
-    public RequiredClass reqClass(String unifiedString, Consumer<RequiredClass> consumer) {
+    public RequiredClass reqClass(String unifiedString, Action<RequiredClass> consumer) {
         var split = unifiedString.split(":");
         if (split.length == 1) {
             return reqClass(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion(), consumer);
@@ -63,15 +65,22 @@ public class NMSMapperConfiguration {
         }
     }
 
+    public RequiredClass reqClass(String unifiedString, Closure<RequiredClass> consumer) {
+        return reqClass(unifiedString, GroovyUtils.convertToAction(consumer));
+    }
+
     public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion) {
         return new RequiredClass(mapping, className, forcedVersion, classContext);
     }
 
-    public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion, Consumer<RequiredClass> consumer) {
+    public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion, Action<RequiredClass> consumer) {
         var required = reqClass(className, mapping, forcedVersion);
-        GroovyUtils.hackClosure(consumer, required);
-        consumer.accept(required);
+        consumer.execute(required);
         return required;
+    }
+
+    public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion, Closure<RequiredClass> consumer) {
+        return reqClass(className, mapping, forcedVersion, GroovyUtils.convertToAction(consumer));
     }
 
     @SneakyThrows

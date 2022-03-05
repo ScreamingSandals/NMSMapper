@@ -21,6 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import org.gradle.internal.impldep.org.bouncycastle.cert.ocsp.Req;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.build.Accessor;
@@ -39,6 +40,11 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private final ClassContext context;
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @Nullable
+    @Getter
+    private String forcedEnumFieldsLoadVersion;
 
     public RequiredClass(String mapping, String theClass, @Nullable String forcedVersion, ClassContext context) {
         super(mapping, theClass, forcedVersion);
@@ -79,6 +85,12 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
 
     public RequiredClass reqEnumField(String name, String mapping, @Nullable String forcedVersion) {
         requiredSymbols.add(new RequiredEnumField(mapping, name, forcedVersion));
+        return this;
+    }
+
+    @ApiStatus.Experimental
+    public RequiredClass reqAllEnumFieldsOfVersion(String version) {
+        this.forcedEnumFieldsLoadVersion = version;
         return this;
     }
 

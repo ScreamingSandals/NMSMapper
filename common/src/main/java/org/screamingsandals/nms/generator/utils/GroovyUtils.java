@@ -16,6 +16,8 @@
 
 package org.screamingsandals.nms.generator.utils;
 
+import groovy.lang.Closure;
+
 import java.lang.reflect.Proxy;
 
 public class GroovyUtils {
@@ -33,5 +35,13 @@ public class GroovyUtils {
 
         } catch (Throwable ignored) {
         }
+    }
+
+    public static <T> Action<T> convertToAction(Closure<T> closure) {
+        return t -> {
+            closure.setDelegate(t);
+            closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+            closure.call(t);
+        };
     }
 }

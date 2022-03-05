@@ -23,6 +23,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.configuration.NMSMapperConfiguration;
 import org.screamingsandals.nms.generator.configuration.RequiredClass;
+import org.screamingsandals.nms.generator.configuration.RequiredField;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
@@ -73,6 +74,7 @@ public class AccessorClassGenerator {
                 .load();
 
         var forcedVersions = new HashMap<String, ConfigurationNode>();
+        var versionSpecificData = new HashMap<String, ConfigurationNode>();
 
         System.out.println("Copying AccessorUtils...");
         accessorUtils = ClassName.get(basePackage, "AccessorUtils");
@@ -139,6 +141,59 @@ public class AccessorClassGenerator {
                 throw new IllegalArgumentException("Can't find class: " + className);
             }
 
+            if (requiredClass.getForcedEnumFieldsLoadVersion() != null && !requiredClass.getForcedEnumFieldsLoadVersion().isEmpty()) {
+                var version = requiredClass.getForcedEnumFieldsLoadVersion();
+                var versionObfuscatedName = typeMapping.node("OBFUSCATED")
+                        .childrenMap()
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> Arrays.asList(entry.getKey().toString().split(",")).contains(version))
+                        .map(entry -> entry.getValue().getString())
+                        .findFirst()
+                        .orElseThrow();
+                versionSpecificData.computeIfAbsent(version, s -> {
+                            try {
+                                return GsonConfigurationLoader
+                                        .builder()
+                                        .source(() -> new BufferedReader(
+                                                new InputStreamReader(
+                                                        Objects.requireNonNull(
+                                                                AccessorClassGenerator.class.getResourceAsStream("/nms-mappings/" + s + ".json")
+                                                        )
+                                                )
+                                        ))
+                                        .build()
+                                        .load();
+                            } catch (ConfigurateException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .node(versionObfuscatedName, "fields")
+                        .childrenList()
+                        .stream()
+                        .filter(node1 -> {
+                            var modifier = node1.node("modifier").getInt();
+                            return java.lang.reflect.Modifier.isFinal(modifier)
+                                    && java.lang.reflect.Modifier.isStatic(modifier)
+                                    && ("&" + versionObfuscatedName).equals(node1.node("type").getString());
+                        })
+                        .map(node1 -> {
+                            var fieldName = node1.node("mapping", "MOJANG").getString();
+                            var type = "mojang";
+                            if (fieldName == null) {
+                                fieldName = node1.node("mapping", "SPIGOT").getString();
+                                type = "spigot";
+                                if (fieldName == null) {
+                                    fieldName = node1.node("mapping", "OBFUSCATED").getString();
+                                    type = "obfuscated";
+                                }
+                            }
+
+                            return new RequiredField(type, fieldName, version);
+                        })
+                        .forEach(requiredClass.getRequiredSymbols()::add);
+            }
+
             var accessor = new Accessor(name, builder, typeMapping, requiredClass, classHash);
             accessors.add(accessor);
             requiredClassAccessorMap.put(requiredClass, accessor);
@@ -197,7 +252,7 @@ public class AccessorClassGenerator {
                 .filter(stringStringEntry -> {
                     if (
                             (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty())
-                            || (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty())
+                                    || (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty())
                     ) {
                         var version = new ComparableVersion(stringStringEntry.getKey());
                         if (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty()) {

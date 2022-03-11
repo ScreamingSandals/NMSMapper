@@ -37,7 +37,7 @@ public class StrangeSpigotMethodOverridingFix extends AbstractSingleFix {
             var selfLink = ClassDefinition.Link.nmsLink(classDefinition.getMapping().get(MappingType.OBFUSCATED));
             classDefinition.getMethods()
                     .stream()
-                    .filter(methodDefinition -> methodDefinition.getMapping().containsKey(this.mappingType))
+                    .filter(methodDefinition -> methodDefinition.getMapping().containsKey(this.mappingType) && methodDefinition.getMapping().containsKey(MappingType.SEARGE))
                     .forEach(methodDefinition -> map.entrySet()
                             .stream()
                             .filter(entry -> SpigotMappingParser.isImplementing(map, entry.getValue(), selfLink))

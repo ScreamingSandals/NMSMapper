@@ -137,7 +137,7 @@ public abstract class DocsGenerationTask extends DefaultTask {
             generator.putPage(page);
         });
 
-        System.out.println("Generating pages using Thymeleaf...");
+        System.out.println("Generating pages using Thymeleaf & compressing using HtmlCompressor...");
         generator.generate();
 
         System.out.println("Copying static contents...");

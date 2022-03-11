@@ -16,6 +16,7 @@
 
 package org.screamingsandals.nms.mapper.web;
 
+import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 import lombok.Data;
 import org.screamingsandals.nms.mapper.web.pages.AbstractPage;
 import org.thymeleaf.TemplateEngine;
@@ -26,6 +27,7 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,7 @@ public class WebGenerator {
     private final TemplateEngine templateEngine;
     private final FileTemplateResolver templateResolver;
     private final File finalFolder;
+    private final HtmlCompressor compressor;
 
     private final List<AbstractPage> pageBuffer = new ArrayList<>();
 
@@ -48,6 +51,8 @@ public class WebGenerator {
         templateResolver.setSuffix(".html");
         templateResolver.setCacheable(true);
         templateEngine.setTemplateResolver(templateResolver);
+
+        compressor = new HtmlCompressor();
     }
 
     public void putPage(AbstractPage page) {
@@ -64,9 +69,11 @@ public class WebGenerator {
 
         var file = new File(finalFolder, page.getFinalLocation());
         file.getParentFile().mkdirs();
-        var stringWriter = new FileWriter(file);
+        var stringWriter = new StringWriter();
         templateEngine.process(page.getTemplateName(), context, stringWriter);
-        stringWriter.close();
+        var fileWriter = new FileWriter(file);
+        fileWriter.write(compressor.compress(stringWriter.toString()));
+        fileWriter.close();
     }
 
     public void generate() throws IOException {

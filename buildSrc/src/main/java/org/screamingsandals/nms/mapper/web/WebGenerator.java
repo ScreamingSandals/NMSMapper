@@ -17,6 +17,8 @@
 package org.screamingsandals.nms.mapper.web;
 
 import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
+import com.googlecode.htmlcompressor.compressor.YuiCssCompressor;
+import com.googlecode.htmlcompressor.compressor.YuiJavaScriptCompressor;
 import lombok.Data;
 import org.screamingsandals.nms.mapper.web.pages.AbstractPage;
 import org.thymeleaf.TemplateEngine;
@@ -53,6 +55,11 @@ public class WebGenerator {
         templateEngine.setTemplateResolver(templateResolver);
 
         compressor = new HtmlCompressor();
+        compressor.setJavaScriptCompressor(new YuiJavaScriptCompressor());
+        compressor.setCssCompressor(new YuiCssCompressor());
+        compressor.setCompressJavaScript(true);
+        compressor.setCompressCss(true);
+        compressor.setRemoveIntertagSpaces(true);
     }
 
     public void putPage(AbstractPage page) {

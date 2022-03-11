@@ -25,6 +25,7 @@ dependencies {
     implementation 'com.jcraft:jsch:0.1.55'
     implementation 'org.thymeleaf:thymeleaf:3.0.14.RELEASE'
     implementation 'com.googlecode.htmlcompressor:htmlcompressor:1.5.2'
+    implementation 'com.yahoo.platform.yui:yuicompressor:2.4.8'
 
 }
 

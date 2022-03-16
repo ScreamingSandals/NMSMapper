@@ -45,7 +45,7 @@ public abstract class RemappingTask extends DefaultTask {
         var utils = getUtils().get();
         var workspace = version.getWorkspace();
 
-        var mapping = new Mapping(version.getVersion());
+        var mapping = new Mapping(version.getVersion(), version.getSpigotNmsVersion());
         utils.getMappings().put(mapping.getVersion(), mapping);
 
         System.out.println("======= Mapping " + (version.getRealVersion() != null ? version.getRealVersion() : version.getVersion()) + " =======");

@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.mapper.errors.MappingError;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.*;
@@ -58,7 +59,11 @@ public class DescriptionPage extends AbstractPage {
     @Override
     public void fillContext(Context context) {
         context.setVariable("defaultMapping", mapping.getDefaultMapping());
-        context.setVariable("packageName", className.contains(".") ? className.substring(0, className.lastIndexOf(".")) : "(default package)");
+        if (mapping.getDefaultMapping() == MappingType.SPIGOT && mapping.getSpigotNms() != null) {
+            context.setVariable("packageName", className.contains(".") ? className.substring(0, className.lastIndexOf(".")).replace("${V}", mapping.getSpigotNms()) : "(default package)");
+        } else {
+            context.setVariable("packageName", className.contains(".") ? className.substring(0, className.lastIndexOf(".")) : "(default package)");
+        }
         context.setVariable("historyLink", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0)) + "history/" + definition.getJoinedKey() + ".html");
 
         if (definition.getType() != ClassDefinition.Type.INTERFACE) {
@@ -73,7 +78,7 @@ public class DescriptionPage extends AbstractPage {
         context.setVariable("classMappings", definition.getMapping()
                 .entrySet()
                 .stream()
-                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue()))
+                .map(entry -> new SymbolMapping(entry.getKey(), entry.getKey() == MappingType.SPIGOT && mapping.getSpigotNms() != null ? entry.getValue().replace("${V}", mapping.getSpigotNms()) : entry.getValue()))
                 .collect(Collectors.toList())
         );
 
@@ -172,7 +177,9 @@ public class DescriptionPage extends AbstractPage {
                 type = type.substring(0, type.lastIndexOf("$"));
             }
             var mappingName = mapping.getMappings().get(type).getMapping().getOrDefault(mappingType, type);
-
+            if (mappingType == MappingType.SPIGOT && mapping.getSpigotNms() != null) {
+                mappingName = mappingName.replace("${V}", mapping.getSpigotNms());
+            }
             return new ClassNameLink(mappingName.substring(mappingName.lastIndexOf(".") + 1), generateLink(type), mappingName, suffix.toString());
         } else {
             // not a primitive type

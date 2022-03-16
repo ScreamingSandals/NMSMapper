@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.single;
 
 import lombok.Data;
+import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.mapper.utils.License;
 
 import java.util.ArrayList;
@@ -31,5 +32,7 @@ public class Mapping {
     private final List<MappingType> supportedMappings = new ArrayList<>();
     private final List<License> licenses = new ArrayList<>();
     private MappingType defaultMapping = MappingType.OBFUSCATED;
+    @Nullable
+    private final String spigotNms;
 
 }

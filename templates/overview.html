@@ -37,7 +37,7 @@
                     <tbody>
                         <tr th:each="package : ${#lists.sort(#lists.toList(packages))}" class="py-1">
                             <td>
-                                <a th:href="${package.replace('.', '/')+'/index.html'}">[[${package}]]</a>
+                                <a th:href="${package.replace('.', '/').replace('${V}', 'VVV')+'/index.html'}">[[${package.replace('${V}', spigotVersionReplacer)}]]</a>
                             </td>
                         </tr>
                     </tbody>

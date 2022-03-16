@@ -174,6 +174,7 @@ public abstract class ConfigGenerationTask extends DefaultTask {
 
                 var node = loader.load();
                 var buildDataRevision = node.node("refs", "BuildData").getString();
+                var craftBukkitRevision = node.node("refs", "CraftBukkit").getString();
 
                 var info = GsonConfigurationLoader.builder()
                         .url(new URL("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/info.json?at=" + buildDataRevision))
@@ -200,6 +201,22 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                     }
                 } else {
                     System.out.println("No Spigot class mappings found! (not released yet or discontinued)");
+                }
+
+                try {
+                    var cbPomUrl = new URL("https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/raw/pom.xml?at=" + craftBukkitRevision).toURI();
+
+                    var cbResult = httpClient.send(HttpRequest.newBuilder().uri(cbPomUrl).build(), HttpResponse.BodyHandlers.ofString());
+
+                    cbResult.body().lines()
+                            .filter(s -> s.contains("minecraft_version"))
+                            .map(s -> s.split("[><]")[2])
+                            .findFirst()
+                            .ifPresent(s -> {
+                                versionBuilder.spigotNmsVersion(s);
+                                System.out.println("CraftBukkit/Spigot NMS version: " + s);
+                            });
+                } catch (Throwable ignored) {
                 }
             } catch (IOException exception) {
                 System.out.println("No Spigot mappings found!");

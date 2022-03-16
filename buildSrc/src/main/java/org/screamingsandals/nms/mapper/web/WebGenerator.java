@@ -26,12 +26,16 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
+import javax.annotation.processing.Processor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Data
 public class WebGenerator {
@@ -83,9 +87,20 @@ public class WebGenerator {
         fileWriter.close();
     }
 
-    public void generate() throws IOException {
+    public void generate() throws ExecutionException, InterruptedException {
+        var exec = Executors.newFixedThreadPool(8);
+        var futures = new ArrayList<Future<?>>(pageBuffer.size());
         for (var page : pageBuffer) {
-            generate(page);
+            futures.add(exec.submit(() -> {
+                try {
+                    generate(page);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }));
+        }
+        for (var f : futures) {
+            f.get(); // wait for a processor to complete
         }
         pageBuffer.clear();
     }

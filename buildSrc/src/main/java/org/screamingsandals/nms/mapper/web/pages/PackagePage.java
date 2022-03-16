@@ -16,6 +16,7 @@
 
 package org.screamingsandals.nms.mapper.web.pages;
 
+import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.ClassNameLink;
 import org.screamingsandals.nms.mapper.web.components.NavbarLink;
@@ -35,7 +36,7 @@ public class PackagePage extends AbstractPage {
         super(
                 "package",
                 mapping.getVersion() + "/" + packageName.replace(".", "/").replace("${V}", "VVV") + "/index.html",
-                packageName,
+                mapping.getDefaultMapping() == MappingType.SPIGOT && mapping.getSpigotNms() != null ? packageName.replace("${V}", mapping.getSpigotNms()) : packageName,
                 List.of(
                         new NavbarLink("Version Overview", "../".repeat(packageName.split("\\.").length), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)

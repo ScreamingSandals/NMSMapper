@@ -1,5 +1,6 @@
 {
   "version": "1.11.1",
+  "spigot-nms-version": "1_11_R1",
   "vanilla-jar": {
     "url": "https://launcher.mojang.com/v1/objects/1f97bd101e508d7b52b3d6a7879223b000b5eba0/server.jar",
     "sha1": "1f97bd101e508d7b52b3d6a7879223b000b5eba0"

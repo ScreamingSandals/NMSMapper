@@ -16,6 +16,7 @@
 
 package org.screamingsandals.nms.mapper.web.pages;
 
+import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.NavbarLink;
 import org.screamingsandals.nms.mapper.single.Mapping;
@@ -48,5 +49,6 @@ public class OverviewPage extends AbstractPage {
         context.setVariable("defaultMapping", mapping.getDefaultMapping());
         context.setVariable("licenses", mapping.getLicenses());
         context.setVariable("packages", packages);
+        context.setVariable("spigotVersionReplacer", mapping.getDefaultMapping() == MappingType.SPIGOT && mapping.getSpigotNms() != null ? mapping.getSpigotNms() : "${V}");
     }
 }

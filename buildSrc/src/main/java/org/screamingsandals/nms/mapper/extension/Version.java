@@ -32,6 +32,8 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 public class Version {
     private String version;
     private String realVersion;
+    @Nullable
+    private String spigotNmsVersion;
     private DownloadableContent vanillaJar;
     @Nullable
     private DownloadableContent mojangMappings;

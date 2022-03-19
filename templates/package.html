@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
     <head th:replace="~{fragments/head}"></head>
     <body>
-        <nav th:replace="~{fragments/nav}"></nav>
+        <nav th:replace="~{fragments/nav :: frag (false)}"></nav>
 
         <div class="container">
             <h1 th:text="${pageTitle}"></h1>

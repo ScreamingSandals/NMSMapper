@@ -26,7 +26,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
-import javax.annotation.processing.Processor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

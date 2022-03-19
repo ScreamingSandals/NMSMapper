@@ -137,6 +137,22 @@ public abstract class DocsGenerationTask extends DefaultTask {
             generator.putPage(page);
         });
 
+
+        System.out.println("Preparing generation of 1.16.5/1.17.1/1.18.2 comparison site...");
+        var maps = getUtils().get().getMappings();
+        generator.putPage(new ComparePage(
+                getUtils().get().getJoinedMappings(),
+                List.of(maps.get("1.16.5"), maps.get("1.17.1"), maps.get("1.18.2")),
+                "spigot-to-mojang",
+                "Spigot/Mojang",
+                MappingType.MOJANG,
+                MappingType.SPIGOT,
+                // Additional filters: we don't need classes added in 1.17.1 or 1.18.2 because their mojang and spigot mapping is exactly the same for all classes (at least I think)
+                joinedClassDefinition -> joinedClassDefinition.getMapping().entrySet()
+                        .stream().anyMatch(e -> Arrays.asList(e.getKey().getKey().split(",")).contains("1.16.5")),
+                "Classes which were not present in version 1.16.5 are filtered out, because their Spigot mapping is probably the same as their Mojang mapping."
+            ));
+
         System.out.println("Generating pages using Thymeleaf & compressing using HtmlCompressor...");
         generator.generate();
 

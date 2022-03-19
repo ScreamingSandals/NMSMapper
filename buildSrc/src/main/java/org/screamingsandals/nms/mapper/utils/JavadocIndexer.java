@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class JavadocIndexer {
+    public static final JavadocIndexer INSTANCE = new JavadocIndexer();
     private static final Pattern ARRAY_MATCHER = Pattern.compile("\\[.*]");
     // package - module
     private final Map<String, String> packageIndex = new HashMap<>();

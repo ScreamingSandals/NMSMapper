@@ -1,5 +1,5 @@
-<nav xmlns:th="http://www.thymeleaf.org" class="navbar navbar-light navbar-expand-lg bg-light">
-    <div class="container">
+<nav xmlns:th="http://www.thymeleaf.org" class="navbar navbar-light navbar-expand-lg bg-light" th:fragment="frag (containerFluid)">
+    <div th:class="${containerFluid ? 'container-fluid' : 'container'}">
         <a th:href="${basePath} ?: '#'" class="navbar-brand">NMS Mapper</a>
         <button class="navbar-toggler" type="button" bs-toggle="collapse" bs-target="#mainNavbarCollapse"
                 aria-expanded="false" aria-label="Toggle navigation">

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+    <head th:replace="~{fragments/head}"></head>
+    <body>
+        <nav th:replace="~{fragments/nav :: frag (true)}"></nav>
+
+        <div class="container-fluid">
+            <h1 th:text="${pageTitle}"></h1>
+            <p>Only symbols which had a [[${secondMappingName}]] mapping in one of the compared versions are shown.</p>
+            <p>[[${extraText}]]</p>
+            <p>For searching use a built-in tool in your browser (Ctrl+F or F3)</p>
+
+            <table class="table table-bordered table-sm" style="font-size:0.7em;">
+                <thead class="table-secondary sticky-top">
+                    <tr>
+                        <th></th>
+                        <th th:each="version: ${versions}">[[${version}]]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <th:block th:each="comparison : ${comparisons}">
+                        <tr class="table-secondary">
+                            <td th:colspan="1+${versions.size()}">Class:</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
+                            </td>
+                            <td th:each="version: ${versions}">
+                                <a th:href="${comparison.getLink(version)}">[[${comparison.getBaseName(version)}]]</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="badge me-2 bg-primary">Obfuscated</span>
+                            </td>
+                            <td th:each="version: ${versions}">[[${comparison.getObfuscatedName(version)}]]</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span th:class="'badge me-2 bg-'+${secondMappingColor}">[[${secondMappingName}]]</span>
+                            </td>
+                            <td th:each="version: ${versions}">[[${comparison.getSecondName(version)}]]</td>
+                        </tr>
+                        <tr th:unless="${comparison.fields.isEmpty()}">
+                            <td th:colspan="1+${versions.size()}">Fields:</td>
+                        </tr>
+                        <th:block th:each="field: ${comparison.fields}">
+                            <tr style="border-top: 3px solid #515151">
+                                <td>
+                                    <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
+                                </td>
+                                <td th:each="version: ${versions}">[[${field.getBaseName(version)}]]</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="badge me-2 bg-primary">Obfuscated</span>
+                                </td>
+                                <td th:each="version: ${versions}">[[${field.getObfuscatedName(version)}]]</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span th:class="'badge me-2 bg-'+${secondMappingColor}">[[${secondMappingName}]]</span>
+                                </td>
+                                <td th:each="version: ${versions}">[[${field.getSecondName(version)}]]</td>
+                            </tr>
+                        </th:block>
+                        <tr th:unless="${comparison.methods.isEmpty()}">
+                            <td th:colspan="1+${versions.size()}">Methods:</td>
+                        </tr>
+                        <th:block th:each="method: ${comparison.methods}">
+                            <tr style="border-top: 3px solid #515151">
+                                <td>
+                                    <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
+                                </td>
+                                <td th:each="version: ${versions}">
+                                    [[${method.getBaseName(version)}]](
+                                    <th:block th:each="argument,iterStat: ${method.getArguments(version)}">
+                                        <th:block th:replace="~{fragments/reference :: frag (${argument})}" />[[${iterStat.last} ? '' : ', ']]
+                                    </th:block>
+                                    )
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="badge me-2 bg-primary">Obfuscated</span>
+                                </td>
+                                <td th:each="version: ${versions}">[[${method.getObfuscatedName(version)}]]</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span th:class="'badge me-2 bg-'+${secondMappingColor}">[[${secondMappingName}]]</span>
+                                </td>
+                                <td th:each="version: ${versions}">[[${method.getSecondName(version)}]]</td>
+                            </tr>
+                        </th:block>
+                    </th:block>
+                </tbody>
+            </table>
+
+            <footer th:replace="~{fragments/footer}"></footer>
+        </div>
+    </body>
+</html>

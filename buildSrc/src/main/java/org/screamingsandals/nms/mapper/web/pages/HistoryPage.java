@@ -18,6 +18,7 @@ package org.screamingsandals.nms.mapper.web.pages;
 
 import org.gradle.util.VersionNumber;
 import org.screamingsandals.nms.mapper.joined.JoinedClassDefinition;
+import org.screamingsandals.nms.mapper.utils.JavadocIndexer;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.ChangedSymbol;
 import org.screamingsandals.nms.mapper.web.components.Changelog;
@@ -377,13 +378,13 @@ public class HistoryPage extends AbstractPage {
     }
 
     public ClassNameLink nmsLink(ClassDefinition.Link link) {
+        var type = link.getType();
+        var suffix = new StringBuilder();
+        while (type.endsWith("[]")) {
+            suffix.append("[]");
+            type = type.substring(0, type.length() - 2);
+        }
         if (link.isNms()) {
-            var type = link.getType();
-            var suffix = new StringBuilder();
-            while (type.endsWith("[]")) {
-                suffix.append("[]");
-                type = type.substring(0, type.length() - 2);
-            }
             if (type.matches(".*\\$\\d+")) { // WTF? How
                 suffix.insert(0, type.substring(type.lastIndexOf("$")));
                 type = type.substring(0, type.lastIndexOf("$"));
@@ -392,7 +393,14 @@ public class HistoryPage extends AbstractPage {
             var name = joinedMappingsClassLinks.entrySet().stream().filter(e -> e.getValue().equals(finalType)).map(Map.Entry::getKey).findFirst().orElse(finalType);
             return new ClassNameLink(name.substring(name.lastIndexOf(".") + 1), type + ".html", name, suffix.toString());
         } else {
-            return new ClassNameLink(link.getType(), null, null, null); // TODO: Indexer
+            // not a primitive type
+            if (type.contains(".")) {
+                var result = JavadocIndexer.INSTANCE.linkFor(type);
+                if (result != null) {
+                    return new ClassNameLink(type.substring(type.lastIndexOf(".") + 1), result, type, suffix.toString());
+                }
+            }
+            return new ClassNameLink(type, null, null, null);
         }
     }
 }

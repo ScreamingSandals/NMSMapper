@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DescriptionPage extends AbstractPage {
-    private static final JavadocIndexer INDEXER = new JavadocIndexer();
     private final Mapping mapping;
     private final ClassDefinition definition;
     private final String className;
@@ -184,7 +183,7 @@ public class DescriptionPage extends AbstractPage {
         } else {
             // not a primitive type
             if (type.contains(".")) {
-                var result = INDEXER.linkFor(type);
+                var result = JavadocIndexer.INSTANCE.linkFor(type);
                 if (result != null) {
                     return new ClassNameLink(type.substring(type.lastIndexOf(".") + 1), result, type, suffix.toString());
                 }

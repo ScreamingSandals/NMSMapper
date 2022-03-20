@@ -6,7 +6,8 @@ git fetch origin gh-pages
 git worktree add -f build/gitDocs -
 cd build/gitDocs || exit 1
 git checkout --orphan tmp-pages
-git checkout -m gh-pages CNAME
+git reset --hard
+git checkout origin/gh-pages CNAME
 mv ../docs/* .
 git add .
 git commit -m "Updated NMSMapper docs"

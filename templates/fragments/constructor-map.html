@@ -12,10 +12,7 @@
                 <!--/*@thymesVar id="symbol" type="org.screamingsandals.nms.mapper.newweb.components.Constructor"*/-->
                 <td>[[${symbol.modifier}]]</td>
                 <td>
-                    <th:block th:if="${symbol.arguments.isEmpty()}" th:text="'()'" />
-                    <th:block th:each="argument,iterStat: ${symbol.arguments}">
-                        [[${iterStat.first} ? '(' : '']]<th:block th:replace="~{fragments/reference :: frag (${argument.link})}" /> [[${argument.name}]][[${iterStat.last} ? ')' : ', ']]
-                    </th:block>
+                    (<span th:remove="tag" th:each="argument,iterStat: ${symbol.arguments}">[(${argument.link.rendered})] [[${argument.name}]][[${!iterStat.last}? ', ']]</span>)
                 </td>
             </tr>
         </tbody>

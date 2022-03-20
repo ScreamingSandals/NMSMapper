@@ -80,11 +80,7 @@
                                     <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
                                 </td>
                                 <td th:each="version: ${versions}">
-                                    [[${method.getBaseName(version)}]](
-                                    <th:block th:each="argument,iterStat: ${method.getArguments(version)}">
-                                        <th:block th:replace="~{fragments/reference :: frag (${argument})}" />[[${iterStat.last} ? '' : ', ']]
-                                    </th:block>
-                                    )
+                                    [[${method.getBaseName(version)}]](<span th:each="argument,iterStat: ${method.getArguments(version)}" th:remove="tag">[(${argument.rendered})][[${!iterStat.last}? ', ']]</span>)
                                 </td>
                             </tr>
                             <tr th:if="${showObfuscated}">

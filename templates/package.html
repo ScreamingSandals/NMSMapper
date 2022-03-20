@@ -20,9 +20,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="interface : ${#lists.sort(interfaces)}" class="py-1">
-                            <td>
-                                <th:block th:replace="~{fragments/reference::frag (${interface})}" />
-                            </td>
+                            <td th:utext="${interface.rendered}"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -39,9 +37,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="annotation : ${#lists.sort(annotations)}" class="py-1">
-                            <td>
-                                <th:block th:replace="~{fragments/reference::frag (${annotation})}" />
-                            </td>
+                            <td th:utext="${annotation.rendered}"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -58,9 +54,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="class : ${#lists.sort(classes)}" class="py-1">
-                            <td>
-                                <th:block th:replace="~{fragments/reference::frag (${class})}" />
-                            </td>
+                            <td th:utext="${class.rendered}"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -77,9 +71,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="enum : ${#lists.sort(enums)}" class="py-1">
-                            <td>
-                                <th:block th:replace="~{fragments/reference::frag (${enum})}" />
-                            </td>
+                            <td th:utext="${enum.rendered}"></td>
                         </tr>
                     </tbody>
                 </table>

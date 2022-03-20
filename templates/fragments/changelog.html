@@ -39,10 +39,10 @@
 
     <div th:fragment="change (changedSymbol)" th:class="'font-monospace alert-' + (${changedSymbol.addition} ? (${changelog.first} ? 'info' : 'success') : 'danger')">
         <!--/*@thymesVar id="changedSymbol" type="org.screamingsandals.nms.mapper.newweb.components.ChangedSymbol"*/-->
-        [[${changedSymbol.addition} ? (${changelog.first} ? '' : '+') : '-']] <th:block th:if="${changedSymbol.returnType}"><th:block th:replace="~{fragments/reference :: frag (${changedSymbol.returnType})}" /></th:block>
-        <th:block th:if="${changedSymbol.canHaveArguments}">(<th:block th:each="arg,iterStat : ${changedSymbol.arguments}"><th:block th:replace="~{fragments/reference :: frag (${arg})}"/><th:block th:unless="${iterStat.last}">, </th:block></th:block>)</th:block>
+        [[${changedSymbol.addition} ? (${changelog.first} ? '' : '+') : '-']] [(${changedSymbol.returnType}? ${changedSymbol.returnType.rendered})]
+        <th:block th:if="${changedSymbol.canHaveArguments}">(<span th:remove="tag" th:each="arg,iterStat : ${changedSymbol.arguments}">[(${arg.rendered})][[${!iterStat.last}? ', ']]</span>)</th:block>
         <th:block th:if="${changedSymbol.mappings}" th:each="mapping,iterStat : ${changedSymbol.mappings}">
-            [[${mapping.key.webName}]]: [[${mapping.value}]]<th:block th:unless="${iterStat.last}">, </th:block>
+            [[${mapping.key.webName}]]: [[${mapping.value}]][[${!iterStat.last}? ', ']]
         </th:block>
     </div>
 </div>

@@ -46,4 +46,15 @@ public class ClassNameLink implements Comparable<ClassNameLink> {
             return suffix.compareTo(Objects.requireNonNullElse(o.suffix, ""));
         }
     }
+
+    public String getRendered() {
+        /* Because there was a problem with whitespaces in Thymeleaf,
+           this small html code is generated directly in Java and then this method is used to get the html in templates
+           */
+        if (link != null) {
+            return "<a href=\"" + link + "\">" + name + "</a>" + (suffix != null ? suffix : "");
+        } else {
+            return name + (suffix != null ? suffix : "");
+        }
+    }
 }

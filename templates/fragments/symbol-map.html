@@ -10,7 +10,7 @@
         <tbody>
             <tr th:each="symbol: ${symbols}">
                 <!--/*@thymesVar id="symbol" type="org.screamingsandals.nms.mapper.newweb.components.Symbol"*/-->
-                <td>[[${symbol.modifier}]]<th:block th:if="${symbol.type}"> <th:block th:replace="~{fragments/reference :: frag (${symbol.type})}" /></th:block></td>
+                <td>[[${symbol.modifier}]] [(${symbol.type}? ${symbol.type.rendered})]</td>
                 <td th:insert="~{fragments/mappings :: frag (${symbol.mappings})}"></td>
             </tr>
         </tbody>

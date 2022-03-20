@@ -9,9 +9,7 @@
                 <a href="index.html">[[${packageName}]]</a>
             </p>
             <h2 th:text="${pageTitle}"></h2>
-            <p th:if="${extends}">extends
-                <th:block th:replace="~{fragments/reference::frag (${extends})}" />
-            </p>
+            <p th:if="${extends}">extends [(${extends.rendered})]</p>
 
             <div class="row">
                 <div class="col-md-10">
@@ -20,9 +18,7 @@
                             <b>All known superinterfaces:</b>
                         </div>
                         <div>
-                            <th:block th:each="superinterface, iterStat : ${knownSuperinterfaces}">
-                                <th:block th:replace="~{fragments/reference::frag (${superinterface})}" /><th:block th:unless="${iterStat.last}">,</th:block>
-                            </th:block>
+                            <span th:each="superinterface, iterStat : ${knownSuperinterfaces}">[(${superinterface.rendered})][[${!iterStat.last}? ', ']]</span>
                         </div>
                     </div>
                 </div>

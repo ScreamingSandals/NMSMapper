@@ -1,6 +1,0 @@
-<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="frag (reference)">
-    <!--/*@thymesVar id="reference" type="org.screamingsandals.nms.mapper.newweb.components.ClassNameLink"*/-->
-    <a th:if="${reference.link}" th:href="${reference.link}" th:text="${reference.name}"></a>
-    <th:block th:unless="${reference.link}" th:text="${reference.name}" />
-    [[${reference.suffix} ?: '']]
-</th:block>

@@ -45,7 +45,7 @@ public class DescriptionPage extends AbstractPage {
                 mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className),
                 MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
                 List.of(
-                        new NavbarLink("Version Overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
+                        new NavbarLink("Version overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 true,

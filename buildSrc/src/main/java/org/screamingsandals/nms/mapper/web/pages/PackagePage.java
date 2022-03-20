@@ -38,7 +38,7 @@ public class PackagePage extends AbstractPage {
                 mapping.getVersion() + "/" + packageName.replace(".", "/").replace("${V}", "VVV") + "/index.html",
                 mapping.getDefaultMapping() == MappingType.SPIGOT && mapping.getSpigotNms() != null ? packageName.replace("${V}", mapping.getSpigotNms()) : packageName,
                 List.of(
-                        new NavbarLink("Version Overview", "../".repeat(packageName.split("\\.").length), false),
+                        new NavbarLink("Version overview", "../".repeat(packageName.split("\\.").length), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 true,

@@ -42,7 +42,7 @@ public class HistoryPage extends AbstractPage {
                 "history/" + classHashName + ".html",
                 "History of " + className,
                 List.of(
-                        new NavbarLink("Version Overview", null, false),
+                        new NavbarLink("Version overview", null, false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 false,

@@ -35,7 +35,7 @@ public class OverviewPage extends AbstractPage {
                 version + "/index.html",
                 "NMS mapping - v" + version,
                 List.of(
-                        new NavbarLink("Version Overview", null, true),
+                        new NavbarLink("Version overview", null, true),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 true,

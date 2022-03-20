@@ -48,7 +48,10 @@ public class DescriptionPage extends AbstractPage {
                         new NavbarLink("Version Overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
-                true
+                true,
+                false,
+                true,
+                false
         );
         this.mapping = mapping;
         this.definition = definition;

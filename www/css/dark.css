@@ -40,3 +40,7 @@ a:hover {
 nav.bg-light {
     --bs-bg-opacity: 0;
 }
+
+.compare-row {
+    border-top-color: #515151!important;
+}

@@ -41,6 +41,9 @@ public class MainPage extends AbstractPage {
                         new NavbarLink("Version Overview", null, false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
+                false,
+                false,
+                false,
                 false
         );
     }

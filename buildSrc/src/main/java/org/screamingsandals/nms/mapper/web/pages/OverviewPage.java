@@ -38,7 +38,10 @@ public class OverviewPage extends AbstractPage {
                         new NavbarLink("Version Overview", null, true),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
-                true
+                true,
+                false,
+                false,
+                false
         );
         this.mapping = mapping;
         this.packages = packages;

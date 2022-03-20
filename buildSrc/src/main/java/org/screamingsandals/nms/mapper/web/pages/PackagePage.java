@@ -41,7 +41,10 @@ public class PackagePage extends AbstractPage {
                         new NavbarLink("Version Overview", "../".repeat(packageName.split("\\.").length), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
-                true
+                true,
+                false,
+                false,
+                false
         );
         this.mapping = mapping;
         this.paths = paths;

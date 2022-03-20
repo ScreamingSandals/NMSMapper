@@ -29,6 +29,9 @@ public abstract class AbstractPage {
     private final String pageTitle;
     private final List<NavbarLink> links;
     private final boolean searchAllowed;
+    private final boolean containerFluid;
+    private final boolean highlightJs;
+    private final boolean disableScripts;
 
     public abstract void fillContext(Context context);
 }

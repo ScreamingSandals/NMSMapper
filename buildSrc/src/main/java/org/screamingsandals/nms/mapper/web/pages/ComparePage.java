@@ -37,8 +37,10 @@ public class ComparePage extends AbstractPage {
     private final Map<String, JoinedClassDefinition> joinedMappings;
     private final Predicate<JoinedClassDefinition> additionalFilter;
     private final String extraText;
+    private final boolean showObfuscated;
+    private final List<MappingType> mappingTypes;
 
-    public ComparePage(Map<String, JoinedClassDefinition> joinedMappings, List<Mapping> mappings, String name, String title, MappingType baseMapping, MappingType secondMapping, Predicate<JoinedClassDefinition> additionalFilter, String extraText) {
+    public ComparePage(Map<String, JoinedClassDefinition> joinedMappings, List<Mapping> mappings, String name, String title, MappingType baseMapping, MappingType secondMapping, Predicate<JoinedClassDefinition> additionalFilter, String extraText, boolean showObfuscated) {
         super(
                 "compare",
                 "comparison/" + name + ".html",
@@ -47,7 +49,10 @@ public class ComparePage extends AbstractPage {
                         new NavbarLink("Version Overview", null, false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
-                false
+                false,
+                true,
+                false,
+                true
         );
         this.versions = mappings.stream().map(Mapping::getVersion).collect(Collectors.toList());
         this.spigotReplacements = mappings.stream().map(mapping -> new AbstractMap.SimpleEntry<>(mapping.getVersion(), mapping.getSpigotNms())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -56,6 +61,8 @@ public class ComparePage extends AbstractPage {
         this.joinedMappings = joinedMappings;
         this.additionalFilter = additionalFilter != null ? additionalFilter : joinedClassDefinition -> true;
         this.extraText = extraText;
+        this.showObfuscated = showObfuscated;
+        this.mappingTypes = showObfuscated ? List.of(baseMapping, secondMapping, MappingType.OBFUSCATED) : List.of(baseMapping, secondMapping);
     }
 
     @Override
@@ -66,34 +73,35 @@ public class ComparePage extends AbstractPage {
         context.setVariable("secondMappingColor", secondMapping.getBootstrapColor());
         context.setVariable("versions", versions);
         context.setVariable("extraText", extraText != null ? extraText : "");
+        context.setVariable("showObfuscated", showObfuscated);
 
-        context.setVariable("comparisons", joinedMappings.values()
+        context.setVariable("comparisons", joinedMappings.entrySet()
                 .stream()
                 .filter(entry ->
-                        entry.getMapping().keySet().stream().anyMatch(e ->
+                        entry.getValue().getMapping().keySet().stream().anyMatch(e ->
                                 versions.stream().anyMatch(v -> Arrays.asList(e.getKey().split(",")).contains(v))
                                         && e.getValue() == baseMapping
                         )
                                 &&
-                                entry.getMapping().keySet().stream().anyMatch(e ->
+                                entry.getValue().getMapping().keySet().stream().anyMatch(e ->
                                         versions.stream().anyMatch(v -> Arrays.asList(e.getKey().split(",")).contains(v))
                                                 && e.getValue() == secondMapping
                                 )
-                                && additionalFilter.test(entry)
+                                && additionalFilter.test(entry.getValue())
                 )
-                .sorted(Comparator.comparing(entry -> entry.getMapping().entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().getMapping().entrySet().stream()
                         .filter(e -> Arrays.asList(e.getKey().getKey().split(",")).contains(versions.get(0)) && e.getKey().getValue() == baseMapping)
                         .findFirst()
                         .map(Map.Entry::getValue)
-                        .orElseGet(() -> entry.getMapping().values().stream().findFirst().orElseThrow())
+                        .orElseGet(() -> entry.getValue().getMapping().values().stream().findFirst().orElseThrow())
                 ))
-                .map(entry -> new CompareClassMultiVersion(versions.stream().map(v -> {
-                            var neededMappings = entry.getMapping()
+                .map(entry -> new CompareClassMultiVersion(entry.getKey(), versions.stream().map(v -> {
+                            var neededMappings = entry.getValue().getMapping()
                                     .entrySet()
                                     .stream()
                                     .filter(
                                             e -> Arrays.asList(e.getKey().getKey().split(",")).contains(v)
-                                                    && (List.of(baseMapping, secondMapping, MappingType.OBFUSCATED).contains(e.getKey().getValue()))
+                                                    && this.mappingTypes.contains(e.getKey().getValue())
                                     )
                                     .map(e -> Map.entry(e.getKey().getValue(), e.getKey().getValue() == MappingType.SPIGOT
                                             && spigotReplacements.get(v) != null ? e.getValue().replace("${V}", spigotReplacements.get(v)) : e.getValue()))
@@ -102,7 +110,7 @@ public class ComparePage extends AbstractPage {
                                 return null;
                             }
                             return Map.entry(v, new CompareClass(
-                                    "../" + entry.getPathKeys().get(v),
+                                    "../" + entry.getValue().getPathKeys().get(v),
                                     neededMappings.get(baseMapping),
                                     neededMappings.get(MappingType.OBFUSCATED),
                                     neededMappings.get(secondMapping)
@@ -110,7 +118,7 @@ public class ComparePage extends AbstractPage {
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
-                        entry.getFields()
+                        entry.getValue().getFields()
                                 .stream()
                                 .filter(joinedField ->
                                         joinedField.getMapping().keySet().stream().anyMatch(e ->
@@ -128,7 +136,7 @@ public class ComparePage extends AbstractPage {
                                                     .stream()
                                                     .filter(
                                                             e -> Arrays.asList(e.getKey().getKey().split(",")).contains(v)
-                                                                    && (List.of(baseMapping, secondMapping, MappingType.OBFUSCATED).contains(e.getKey().getValue()))
+                                                                    && this.mappingTypes.contains(e.getKey().getValue())
                                                     )
                                                     .map(e -> Map.entry(e.getKey().getValue(), e.getValue()))
                                                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -144,7 +152,7 @@ public class ComparePage extends AbstractPage {
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
                                 .collect(Collectors.toList()),
-                        entry.getMethods()
+                        entry.getValue().getMethods()
                                 .stream()
                                 .filter(joinedMethod -> joinedMethod.getMapping().keySet().stream().anyMatch(e ->
                                         versions.stream().anyMatch(v -> Arrays.asList(e.getKey().split(",")).contains(v))
@@ -161,7 +169,7 @@ public class ComparePage extends AbstractPage {
                                                             .stream()
                                                             .filter(
                                                                     e -> Arrays.asList(e.getKey().getKey().split(",")).contains(v)
-                                                                            && (List.of(baseMapping, secondMapping, MappingType.OBFUSCATED).contains(e.getKey().getValue()))
+                                                                            && this.mappingTypes.contains(e.getKey().getValue())
                                                             )
                                                             .map(e -> Map.entry(e.getKey().getValue(), e.getValue()))
                                                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

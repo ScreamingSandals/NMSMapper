@@ -73,6 +73,9 @@ public class WebGenerator {
         var context = new Context();
         context.setVariable("pageTitle", page.getPageTitle());
         context.setVariable("searchAllowed", page.isSearchAllowed());
+        context.setVariable("containerFluid", page.isContainerFluid());
+        context.setVariable("highlightJs", page.isHighlightJs());
+        context.setVariable("disableScripts", page.isDisableScripts());
         context.setVariable("navLinks", page.getLinks());
         context.setVariable("basePath", "../".repeat(page.getFinalLocation().split("/").length - 1));
         page.fillContext(context);

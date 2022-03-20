@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Data
 public class CompareClassMultiVersion {
+    private final String joinedKey;
     private final Map<String, CompareClass> map;
     private final List<CompareFieldMultiVersion> fields;
     private final List<CompareMethodMultiVersion> methods;

@@ -30,7 +30,7 @@
         </li>
     </ul>
 
-    <script>
+    <script th:unless="${disableScripts}">
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [data-tooltip="true"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)

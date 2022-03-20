@@ -2,7 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
     <head th:replace="~{fragments/head}"></head>
     <body>
-        <nav th:replace="~{fragments/nav :: frag (true)}"></nav>
+        <nav th:replace="~{fragments/nav}"></nav>
+
+        <style>
+            .cmrow {
+                border-top: 3px solid #dee2e6;
+            }
+        </style>
 
         <div class="container-fluid">
             <h1 th:text="${pageTitle}"></h1>
@@ -19,8 +25,8 @@
                 </thead>
                 <tbody>
                     <th:block th:each="comparison : ${comparisons}">
-                        <tr class="table-secondary">
-                            <td th:colspan="1+${versions.size()}">Class:</td>
+                        <tr class="table-secondary" th:id="${comparison.joinedKey}">
+                            <td th:colspan="1+${versions.size()}"><a th:href="'#' + ${comparison.joinedKey}">&#x1F517;</a> Class:</td>
                         </tr>
                         <tr>
                             <td>
@@ -30,7 +36,7 @@
                                 <a th:href="${comparison.getLink(version)}">[[${comparison.getBaseName(version)}]]</a>
                             </td>
                         </tr>
-                        <tr>
+                        <tr th:if="${showObfuscated}">
                             <td>
                                 <span class="badge me-2 bg-primary">Obfuscated</span>
                             </td>
@@ -46,13 +52,13 @@
                             <td th:colspan="1+${versions.size()}">Fields:</td>
                         </tr>
                         <th:block th:each="field: ${comparison.fields}">
-                            <tr style="border-top: 3px solid #515151">
+                            <tr class="cmrow">
                                 <td>
                                     <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
                                 </td>
                                 <td th:each="version: ${versions}">[[${field.getBaseName(version)}]]</td>
                             </tr>
-                            <tr>
+                            <tr th:if="${showObfuscated}">
                                 <td>
                                     <span class="badge me-2 bg-primary">Obfuscated</span>
                                 </td>
@@ -69,7 +75,7 @@
                             <td th:colspan="1+${versions.size()}">Methods:</td>
                         </tr>
                         <th:block th:each="method: ${comparison.methods}">
-                            <tr style="border-top: 3px solid #515151">
+                            <tr class="cmrow">
                                 <td>
                                     <span th:class="'badge me-2 bg-'+${baseMappingColor}">[[${baseMappingName}]]</span>
                                 </td>
@@ -81,7 +87,7 @@
                                     )
                                 </td>
                             </tr>
-                            <tr>
+                            <tr th:if="${showObfuscated}">
                                 <td>
                                     <span class="badge me-2 bg-primary">Obfuscated</span>
                                 </td>

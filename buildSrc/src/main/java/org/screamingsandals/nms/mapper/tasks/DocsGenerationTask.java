@@ -143,14 +143,28 @@ public abstract class DocsGenerationTask extends DefaultTask {
         generator.putPage(new ComparePage(
                 getUtils().get().getJoinedMappings(),
                 List.of(maps.get("1.16.5"), maps.get("1.17.1"), maps.get("1.18.2")),
-                "spigot-to-mojang",
-                "Spigot/Mojang",
+                "mojang-to-spigot",
+                "Mojang/Spigot",
                 MappingType.MOJANG,
                 MappingType.SPIGOT,
                 // Additional filters: we don't need classes added in 1.17.1 or 1.18.2 because their mojang and spigot mapping is exactly the same for all classes (at least I think)
                 joinedClassDefinition -> joinedClassDefinition.getMapping().entrySet()
                         .stream().anyMatch(e -> Arrays.asList(e.getKey().getKey().split(",")).contains("1.16.5")),
-                "Classes which were not present in version 1.16.5 are filtered out, because their Spigot mapping is probably the same as their Mojang mapping."
+                "Classes which were not present in version 1.16.5 are filtered out, because their Spigot mapping is probably the same as their Mojang mapping.",
+                false
+        ));
+        generator.putPage(new ComparePage(
+                getUtils().get().getJoinedMappings(),
+                List.of(maps.get("1.16.5"), maps.get("1.17.1"), maps.get("1.18.2")),
+                "mojang-to-obfuscated-to-spigot",
+                "Mojang/Obfuscated/Spigot",
+                MappingType.MOJANG,
+                MappingType.SPIGOT,
+                // Additional filters: we don't need classes added in 1.17.1 or 1.18.2 because their mojang and spigot mapping is exactly the same for all classes (at least I think)
+                joinedClassDefinition -> joinedClassDefinition.getMapping().entrySet()
+                        .stream().anyMatch(e -> Arrays.asList(e.getKey().getKey().split(",")).contains("1.16.5")),
+                "Classes which were not present in version 1.16.5 are filtered out, because their Spigot mapping is probably the same as their Mojang mapping.",
+                true
             ));
 
         System.out.println("Generating pages using Thymeleaf & compressing using HtmlCompressor...");

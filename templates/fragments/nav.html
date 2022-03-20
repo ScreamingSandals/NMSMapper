@@ -1,6 +1,6 @@
 <nav xmlns:th="http://www.thymeleaf.org" th:class="'navbar navbar-light navbar-expand' + ${!disableScripts ? '-lg' : ''} + ' bg-light'">
     <div th:class="${containerFluid ? 'container-fluid' : 'container'}">
-        <a th:href="${basePath} ?: '#'" class="navbar-brand">NMS Mapper</a>
+        <a th:href="${basePath} ?: '#'" class="navbar-brand">NMSMapper</a>
         <button th:unless="${disableScripts}" class="navbar-toggler" type="button" bs-toggle="collapse" bs-target="#mainNavbarCollapse"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

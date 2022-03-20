@@ -38,7 +38,7 @@ public class MainPage extends AbstractPage {
                 "index.html",
                 "NMS mapping browser",
                 List.of(
-                        new NavbarLink("Version Overview", null, false),
+                        new NavbarLink("Version overview", null, false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 false,

@@ -46,7 +46,7 @@ public class ComparePage extends AbstractPage {
                 "comparison/" + name + ".html",
                 title + " comparison",
                 List.of(
-                        new NavbarLink("Version Overview", null, false),
+                        new NavbarLink("Version overview", null, false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
                 ),
                 false,

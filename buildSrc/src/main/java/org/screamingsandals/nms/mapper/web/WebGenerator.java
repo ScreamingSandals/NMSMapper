@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
 
 @Data
 public class WebGenerator {
-    public static final String DOC_LINK = "https://docs.screamingsandals.org/ScreamingLib/2.0.1-SNAPSHOT/nmsmapper/";
+    public static final String DOC_LINK = "https://docs.screamingsandals.org/NMSMapperDocs/";
 
     private final TemplateEngine templateEngine;
     private final FileTemplateResolver templateResolver;

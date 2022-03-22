@@ -18,7 +18,7 @@ A Gradle plugin for generating multi-version NMS accessors.
 - [X] Reading Spigot mappings
 - [X] Reading MCP mappings
 - [ ] Reading Yarn mappings
-- [ ] Reading Fabric Intermediate mappings
+- [X] Reading Fabric Intermediate mappings
 - [X] Exporting result for each version to separated json file
 - [X] Support for pre-obfuscation map versions
 - [X] Generating website where you can easily browse through mapping (just like javadocs)

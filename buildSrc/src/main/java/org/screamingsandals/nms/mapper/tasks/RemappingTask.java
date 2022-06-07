@@ -135,6 +135,17 @@ public abstract class RemappingTask extends DefaultTask {
             }
         }
 
-        // TODO: Yarn
+        if (version.getYarnMappings() != null && version.getYarnMappings().isPresent()) {
+            System.out.println("Applying Yarn mappings...");
+            var license = YarnMappingParser.map(mapping.getMappings(), version, excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.YARN);
+
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                mapping.getLicenses().add(new License(MappingType.YARN, license, List.of(version.getYarnMappings().getUrl())));
+            }
+        }
     }
 }

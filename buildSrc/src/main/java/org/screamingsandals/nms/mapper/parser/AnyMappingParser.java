@@ -32,6 +32,10 @@ import java.util.regex.Pattern;
 
 public class AnyMappingParser {
     public static void map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted, ErrorsLogger errorsLogger) throws IOException {
+        map(map, inputStream, excluded, mappingType, inverted, errorsLogger, MappingType.OBFUSCATED);
+    }
+
+    public static void map(Map<String, ClassDefinition> map, InputStream inputStream, List<String> excluded, MappingType mappingType, boolean inverted, ErrorsLogger errorsLogger, MappingType sourceMappingType) throws IOException {
         var mappingFile = IMappingFile.load(inputStream, mappingType == MappingType.SPIGOT);
 
         var invertedBuffer = new HashMap<String, String>();
@@ -46,7 +50,13 @@ public class AnyMappingParser {
                     var original = (inverted ? iClass.getMapped() : iClass.getOriginal()).replace("/", ".");
                     var mapped = (inverted ? iClass.getOriginal() : iClass.getMapped()).replace("/", ".");
 
-                    var definition = map.get(original);
+                    ClassDefinition definition;
+                    if (sourceMappingType != MappingType.OBFUSCATED) {
+                        definition = map.values().stream().filter(classDefinition -> original.equals(classDefinition.getMapping().get(sourceMappingType))).findFirst().orElse(null);
+                    } else {
+                        definition = map.get(original);
+                    }
+
                     if (definition != null) { // we have only server classes
                         definition.getMapping().put(mappingType, mapped);
 
@@ -54,11 +64,25 @@ public class AnyMappingParser {
                             var iFieldOriginal = inverted ? iField.getMapped() : iField.getOriginal();
                             var iFieldMapped = inverted ? iField.getOriginal() : iField.getMapped();
 
-                            if (definition.getFields().containsKey(iFieldOriginal)) {
-                                definition.getFields().get(iFieldOriginal).getMapping().put(mappingType, iFieldMapped);
-                            } else if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " field " + iFieldOriginal)) {
-                                definition.getMappingErrors().add(new SymbolNotFoundMappingError(iFieldOriginal, mappingType, iFieldMapped));
-                                errorsLogger.incremenetErrors();
+                            if (sourceMappingType != MappingType.OBFUSCATED) {
+                                var field = definition.getFields().values()
+                                        .stream()
+                                        .filter(d -> iFieldOriginal.equals(d.getMapping().get(sourceMappingType)))
+                                        .findFirst()
+                                        .orElse(null);
+                                if (field != null) {
+                                    field.getMapping().put(mappingType, iFieldMapped);
+                                } else if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " field " + iFieldOriginal)) { // probably won't work correctly
+                                    definition.getMappingErrors().add(new SymbolNotFoundMappingError(iFieldOriginal, mappingType, iFieldMapped));
+                                    errorsLogger.incremenetErrors();
+                                }
+                            } else {
+                                if (definition.getFields().containsKey(iFieldOriginal)) {
+                                    definition.getFields().get(iFieldOriginal).getMapping().put(mappingType, iFieldMapped);
+                                } else if (!excluded.contains(definition.getMapping().get(MappingType.OBFUSCATED) + " field " + iFieldOriginal)) {
+                                    definition.getMappingErrors().add(new SymbolNotFoundMappingError(iFieldOriginal, mappingType, iFieldMapped));
+                                    errorsLogger.incremenetErrors();
+                                }
                             }
                         });
 
@@ -101,7 +125,7 @@ public class AnyMappingParser {
 
                             definition.getMethods().stream()
                                     .filter(m -> {
-                                        if (!m.getMapping().get(MappingType.OBFUSCATED).equals(iMethodOriginal)) {
+                                        if (!iMethodOriginal.equals(m.getMapping().get(sourceMappingType))) {
                                             return false;
                                         }
                                         if (m.getParameters().size() != allMatches.size()) {

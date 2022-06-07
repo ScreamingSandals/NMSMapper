@@ -410,4 +410,12 @@ public class AccessorUtils {
             return null;
         }
     }
+
+    public static boolean isCraftBukkitBased() {
+        return craftBukkitBased;
+    }
+
+    public static String getCraftBukkitImpl() {
+        return craftBukkitImpl;
+    }
 }

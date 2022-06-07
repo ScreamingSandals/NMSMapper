@@ -21,5 +21,9 @@
   },
   "intermediary-mappings": {
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.15.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.15%2Bbuild.2/yarn-1.15%2Bbuild.2-v2.jar",
+    "sha1": "80618c0d4cce438a933434ea316309fb4799e300"
   }
 }

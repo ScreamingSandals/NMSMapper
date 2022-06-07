@@ -45,6 +45,8 @@ public class Version {
     private DownloadableContent spigotMemberMappings;
     @Nullable
     private DownloadableContent intermediaryMappings;
+    @Nullable
+    private DownloadableContent yarnMappings;
 
     private transient Workspace workspace;
 

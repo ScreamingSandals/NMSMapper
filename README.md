@@ -242,10 +242,10 @@ Method generated with an alternative mapping will also use the mapping in its na
 ### How to add new minecraft version or update its info.json
 
 ```
-$ ./gradlew generateNmsConfig -PminecraftVersion=1.19
+$ ./gradlew generateNmsConfig -PminecraftVersion=1.19.1
 ```
 
 or for pre-releases and release-candidates (you have to rename it because it doesn't know how to deal with snapshots yet)
 ```
-$ ./gradlew generateNmsConfig -PminecraftVersion=1.19-rc1 -PcustomVersionString=1.19
+$ ./gradlew generateNmsConfig -PminecraftVersion=1.19.1-rc1 -PcustomVersionString=1.19.1
 ```

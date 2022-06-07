@@ -25,8 +25,9 @@ public enum MappingType {
     MOJANG("Mojang", "success"),
     OBFUSCATED("Obfuscated", "primary"), // sometimes referred to as NOTCH
     SPIGOT("Spigot", "warning"),
-    SEARGE("Searge", "danger"),
-    INTERMEDIARY("Intermediary", "info"); // read from MCPConfig
+    SEARGE("Searge", "danger"), // read from MCPConfig
+    INTERMEDIARY("Intermediary", "info"),
+    YARN("Yarn", "secondary");
 
     private final String webName;
     private final String bootstrapColor;

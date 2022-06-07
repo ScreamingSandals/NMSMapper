@@ -133,8 +133,37 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                                 .sha1(null)
                                 .build()
                         );
+
+                var yarnMappingsVersions = GsonConfigurationLoader.builder()
+                        .url(new URL("https://maven.fabricmc.net/net/fabricmc/yarn/versions.json"))
+                        .build()
+                        .load();
+
+                var node = yarnMappingsVersions.node(version);
+                if (!node.empty() && node.isList()) {
+                    var list = node.childrenList();
+                    var yarnBuild = list.get(list.size() - 1).getInt();
+                    var yarnUrl = "https://maven.fabricmc.net/net/fabricmc/yarn/" + version + "%2Bbuild." + yarnBuild + "/yarn-" + version + "%2Bbuild." + yarnBuild + "-v2.jar";
+                    String sha1 = null;
+
+                    var yarnSha1 = httpClient.send(HttpRequest.newBuilder().uri(new URI(yarnUrl + ".sha1")).build(), HttpResponse.BodyHandlers.ofString());
+                    if (yarnSha1.statusCode() < 400 && yarnSha1.statusCode() >= 200) {
+                        sha1 = yarnSha1.body();
+                    }
+
+                    System.out.println("Yarn mappings found: " + yarnUrl);
+                    versionBuilder
+                            .yarnMappings(Version.DownloadableContent.builder()
+                                    .url(yarnUrl)
+                                    .sha1(sha1)
+                                    .build()
+                            );
+                } else {
+                    System.out.println("No Yarn mappings found!");
+                }
+
             } else {
-                System.out.println("No Intermediary mappings found!");
+                System.out.println("No Intermediary mappings found! Also skipping Yarn!");
             }
 
             var seargeUrl = new URI("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip.sha1");

@@ -11,12 +11,13 @@
   },
   "searge-mappings": {
     "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18.2/mcp_config-1.18.2.zip",
-    "sha1": "e87c1a29d590a468e950536ebcfaa58a34633a2b"
-  },
-  "spigot-class-mappings": {
-    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18.2-cl.csrg?at=641cb0c939c7c2a3c4b42f2fd7bca7c8b34254ae"
+    "sha1": "ce7571bb8b3367a0368e4b94f6a182e1b523bb4a"
   },
   "intermediary-mappings": {
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.18.2.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.18.2%2Bbuild.3/yarn-1.18.2%2Bbuild.3-v2.jar",
+    "sha1": "9ad094374501592636cb9fa66b36d894a119d5ca"
   }
 }

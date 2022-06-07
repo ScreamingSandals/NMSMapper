@@ -17,7 +17,7 @@ A Gradle plugin for generating multi-version NMS accessors.
 - [X] Reading Mojang obfuscation maps
 - [X] Reading Spigot mappings
 - [X] Reading MCP mappings
-- [ ] Reading Yarn mappings
+- [X] Reading Yarn mappings
 - [X] Reading Fabric Intermediate mappings
 - [X] Exporting result for each version to separated json file
 - [X] Support for pre-obfuscation map versions

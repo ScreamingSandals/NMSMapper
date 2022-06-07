@@ -13,6 +13,9 @@
     "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.18.2/mcp_config-1.18.2.zip",
     "sha1": "ce7571bb8b3367a0368e4b94f6a182e1b523bb4a"
   },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.18.2-cl.csrg?at=641cb0c939c7c2a3c4b42f2fd7bca7c8b34254ae"
+  },
   "intermediary-mappings": {
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.18.2.tiny"
   },

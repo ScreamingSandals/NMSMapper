@@ -11,7 +11,7 @@
   },
   "searge-mappings": {
     "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.19/mcp_config-1.19.zip",
-    "sha1": "edaf7ebc143528e15720b7990fc9952489bcb040"
+    "sha1": "a14f37d49a30e018f7a3cd28157230486fdf565d"
   },
   "spigot-class-mappings": {
     "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.19-cl.csrg?at=e6ebde42e39100b18ca0265596b04f557b2b27cc"
@@ -20,7 +20,7 @@
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.tiny"
   },
   "yarn-mappings": {
-    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19%2Bbuild.1/yarn-1.19%2Bbuild.1-v2.jar",
-    "sha1": "6815a86a74a54ab578c810824a277bd55e609a8b"
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19%2Bbuild.4/yarn-1.19%2Bbuild.4-v2.jar",
+    "sha1": "27d7395ac4720d60b348713da5df95515edf8205"
   }
 }

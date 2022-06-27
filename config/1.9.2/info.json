@@ -1,0 +1,18 @@
+{
+  "version": "1.9.2",
+  "spigot-nms-version": "1_9_R1",
+  "vanilla-jar": {
+    "url": "https://launcher.mojang.com/v1/objects/2b95cc7b136017e064c46d04a5825fe4cfa1be30/server.jar",
+    "sha1": "2b95cc7b136017e064c46d04a5825fe4cfa1be30"
+  },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp/1.9.2/mcp-1.9.2-srg.zip",
+    "sha1": "cce13a875638bc039e3d23c0300a94dc7837f98e"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.9.2-cl.csrg?at=46d0be39f2fae4732ebe544dfada3949a18e2092"
+  },
+  "spigot-member-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.9.2-members.csrg?at=46d0be39f2fae4732ebe544dfada3949a18e2092"
+  }
+}

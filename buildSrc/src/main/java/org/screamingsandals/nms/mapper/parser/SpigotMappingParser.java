@@ -74,6 +74,11 @@ public class SpigotMappingParser {
                 return;
             }
 
+            // invalid symbol in mappings
+            if (version.getVersion().equals("1.9.2") && split[0].equals("ow")) {
+                return;
+            }
+
             var tempMapping = map.get(split[0]).getMapping().get(MappingType.SPIGOT);
 
             if (tempMapping != null) {

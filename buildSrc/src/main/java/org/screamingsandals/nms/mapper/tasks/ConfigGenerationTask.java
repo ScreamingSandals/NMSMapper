@@ -23,6 +23,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.screamingsandals.nms.mapper.extension.Version;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
+import org.spongepowered.configurate.xml.XmlConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -159,7 +160,41 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                                     .build()
                             );
                 } else {
-                    System.out.println("No Yarn mappings found!");
+                    // they broke it for 1.19.1 so just check maven metadata
+                    var xml = XmlConfigurationLoader.builder()
+                            .url(new URL("https://maven.fabricmc.net/net/fabricmc/yarn/maven-metadata.xml"))
+                            .build()
+                            .load();
+
+                    var node2 = xml.node("versioning", "versions");
+                    var optInt = node2.childrenList().stream()
+                            .map(nn -> nn.getString(""))
+                            .filter(str -> {
+                                var s = str.split("\\+");
+                                return s.length == 2 && s[0].equals(version);
+                            })
+                            .map(str -> Integer.valueOf(str.split("\\+")[1].split("\\.")[1]))
+                            .mapToInt(v -> v)
+                            .max();
+                    if (optInt.isPresent()) {
+                        var yarnUrl = "https://maven.fabricmc.net/net/fabricmc/yarn/" + version + "%2Bbuild." + optInt.getAsInt() + "/yarn-" + version + "%2Bbuild." + optInt.getAsInt() + "-v2.jar";
+                        String sha1 = null;
+
+                        var yarnSha1 = httpClient.send(HttpRequest.newBuilder().uri(new URI(yarnUrl + ".sha1")).build(), HttpResponse.BodyHandlers.ofString());
+                        if (yarnSha1.statusCode() < 400 && yarnSha1.statusCode() >= 200) {
+                            sha1 = yarnSha1.body();
+                        }
+
+                        System.out.println("Yarn mappings found: " + yarnUrl);
+                        versionBuilder
+                                .yarnMappings(Version.DownloadableContent.builder()
+                                        .url(yarnUrl)
+                                        .sha1(sha1)
+                                        .build()
+                                );
+                    } else {
+                        System.out.println("No Yarn mappings found!");
+                    }
                 }
 
             } else {

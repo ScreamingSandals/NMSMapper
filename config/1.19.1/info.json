@@ -9,8 +9,12 @@
     "url": "https://piston-data.mojang.com/v1/objects/3565648cdd47ae15738fb804a95a659137d7cfd3/server.txt",
     "sha1": "3565648cdd47ae15738fb804a95a659137d7cfd3"
   },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.19.1/mcp_config-1.19.1.zip",
+    "sha1": "918e3b593370b0a8842f3d4d4b4657999171f000"
+  },
   "spigot-class-mappings": {
-    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.19.1-cl.csrg?at=c540b6e228dc33c13c02b2af63a2691cda0cdea8"
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.19.1-cl.csrg?at=1a32ff0d74aec7d92025bebc5f7b40fc02040ea4"
   },
   "intermediary-mappings": {
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.1.tiny"

@@ -20,7 +20,7 @@
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.1.tiny"
   },
   "yarn-mappings": {
-    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.1%2Bbuild.1/yarn-1.19.1%2Bbuild.1-v2.jar",
-    "sha1": "f3c40f9d4a92e530e69901472a37b40fd8b957d6"
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.1%2Bbuild.6/yarn-1.19.1%2Bbuild.6-v2.jar",
+    "sha1": "0aacdaa3513a28c648bf7586923f447414157ba7"
   }
 }

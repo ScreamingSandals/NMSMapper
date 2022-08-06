@@ -1,0 +1,26 @@
+{
+  "version": "1.19.2",
+  "spigot-nms-version": "1_19_R1",
+  "vanilla-jar": {
+    "url": "https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar",
+    "sha1": "f69c284232d7c7580bd89a5a4931c3581eae1378"
+  },
+  "mojang-mappings": {
+    "url": "https://piston-data.mojang.com/v1/objects/ed5e6e8334ad67f5af0150beed0f3d156d74bd57/server.txt",
+    "sha1": "ed5e6e8334ad67f5af0150beed0f3d156d74bd57"
+  },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.19.2/mcp_config-1.19.2.zip",
+    "sha1": "f825e1ca07c31b1b3046fc459ba8823eed535818"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.19.2-cl.csrg?at=d96ad8e1e64b7c35bb632339c23621353be1f028"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.2.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.2%2Bbuild.1/yarn-1.19.2%2Bbuild.1-v2.jar",
+    "sha1": "1767ccf70e070a0c43530f503b9138328283eae4"
+  }
+}

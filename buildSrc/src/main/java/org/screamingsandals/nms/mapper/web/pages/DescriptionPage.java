@@ -28,6 +28,7 @@ import org.screamingsandals.nms.mapper.utils.JavadocIndexer;
 import org.screamingsandals.nms.mapper.utils.MiscUtils;
 import org.thymeleaf.context.Context;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +44,7 @@ public class DescriptionPage extends AbstractPage {
         super(
                 "description",
                 mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className),
-                MiscUtils.getModifierString(definition.getModifier()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
+                MiscUtils.getModifierString(definition.getModifier() & Modifier.classModifiers()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
                 List.of(
                         new NavbarLink("Version overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
@@ -88,7 +89,7 @@ public class DescriptionPage extends AbstractPage {
                 .values()
                 .stream()
                 .map(field -> new Symbol(
-                        MiscUtils.getModifierString(field.getModifier()),
+                        MiscUtils.getModifierString(field.getModifier() & Modifier.fieldModifiers()),
                         convertToMapping(field.getType(), mapping.getDefaultMapping()),
                         field
                                 .getMapping()
@@ -104,7 +105,7 @@ public class DescriptionPage extends AbstractPage {
         context.setVariable("classConstructors", definition.getConstructors()
                 .stream()
                 .map(constructor -> new Constructor(
-                                MiscUtils.getModifierString(constructor.getModifier()),
+                                MiscUtils.getModifierString(constructor.getModifier() & Modifier.constructorModifiers()),
                                 generateMethodDescriptor(constructor.getParameters(), mapping.getDefaultMapping())
                         )
                 )
@@ -114,7 +115,7 @@ public class DescriptionPage extends AbstractPage {
         context.setVariable("classMethods", definition.getMethods()
                 .stream()
                 .map(method -> new Symbol(
-                        MiscUtils.getModifierString(method.getModifier()),
+                        MiscUtils.getModifierString(method.getModifier() & Modifier.methodModifiers()),
                         convertToMapping(method.getReturnType(), mapping.getDefaultMapping()),
                         method.getMapping()
                                 .entrySet()

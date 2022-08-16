@@ -329,7 +329,8 @@ public class AccessorUtils {
 
         try {
             Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-            Constructor<?> constructorC = clazz.getConstructor(params);
+            Constructor<?> constructorC = clazz.getDeclaredConstructor(params);
+            constructorC.setAccessible(true);
             constructorCache.put(kvholder, constructorC);
             return constructorC;
         } catch (Throwable ignored) {

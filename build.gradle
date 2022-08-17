@@ -7,11 +7,6 @@ plugins {
 
 defaultTasks "saveNmsMappings", "screamCompile", "generateNmsDocs" // order is important
 
-allprojects {
-    group = 'org.screamingsandals.nms'
-    version = VERSION
-}
-
 apply plugin: NMSMapper
 
 subprojects {

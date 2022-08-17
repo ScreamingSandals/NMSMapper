@@ -27,12 +27,36 @@ import org.screamingsandals.nms.generator.build.Accessor;
 import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
 import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 @ToString(callSuper = true)
 public class RequiredClass extends RequiredSymbol implements RequiredArgumentType {
+    @Nullable
+    private static Class<?> kotlinJvmInternalClassBasedDeclarationContainer;
+    @Nullable
+    private static Method cBDCJClassMethod;
+
+    static {
+        // Please Jetbrains, don't rename it in the future :)
+        try {
+            kotlinJvmInternalClassBasedDeclarationContainer = Class.forName("kotlin.jvm.internal.ClassBasedDeclarationContainer"); // DeclarationContainerImpl
+        } catch (Throwable ignored) {
+            try {
+                kotlinJvmInternalClassBasedDeclarationContainer = Class.forName("kotlin.jvm.internal.DeclarationContainerImpl");
+            } catch (Throwable ignored2) {
+            }
+        }
+        try {
+            if (kotlinJvmInternalClassBasedDeclarationContainer != null) {
+                cBDCJClassMethod = kotlinJvmInternalClassBasedDeclarationContainer.getMethod("getJClass");
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
     @Getter
     private final List<RequiredClassMember> requiredSymbols = new ArrayList<>();
 
@@ -125,6 +149,13 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
                 list.add((RequiredArgumentType) p);
             } else if (p instanceof Class) {
                 list.add(new RequiredArgumentJvmClass((Class<?>) p));
+            } else if (kotlinJvmInternalClassBasedDeclarationContainer != null && cBDCJClassMethod != null && kotlinJvmInternalClassBasedDeclarationContainer.isInstance(p)) {
+                try {
+                    var javaClass = cBDCJClassMethod.invoke(p);
+                    list.add(new RequiredArgumentJvmClass((Class<?>) javaClass));
+                } catch (Throwable throwable) {
+                    throw new RuntimeException("Invalid configuration: Can't convert kotlin KClass to java Class", throwable);
+                }
             } else if (p instanceof CharSequence) {
                 var unifiedString = p.toString();
                 if (unifiedString.startsWith("@")) {

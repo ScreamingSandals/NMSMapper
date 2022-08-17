@@ -44,3 +44,8 @@ nav.bg-light {
 .cmrow {
     border-top-color: #515151!important;
 }
+
+.ui-widget-content {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+}

@@ -385,6 +385,15 @@ public class AccessorUtils {
                         .reduce((first, second) -> second)
                         .map(Map.Entry::getValue)
                 )
+                .or(() -> { // try the oldest version
+                    return Optional.ofNullable(map.get(mapping))
+                            .flatMap(m -> m.entrySet()
+                                    .stream()
+                                    .sorted((o1, o2) -> compare(o1.getKey(), o2.getKey()))
+                                    .reduce((first, second) -> second)
+                                    .map(Map.Entry::getValue)
+                            );
+                })
                 .orElse(null);
     }
 

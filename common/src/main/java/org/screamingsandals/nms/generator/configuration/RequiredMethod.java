@@ -147,11 +147,15 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
                 param.generateClassGetter(generator, accessor, strBuilder, args);
             }
 
-            return MethodSpec.methodBuilder("getMethod" + capitalized + count)
+            var methodBuilder = MethodSpec.methodBuilder("getMethod" + capitalized + count)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(Method.class)
-                    .addStatement("return $T.$N($T.class, $S, $L" + strBuilder + ")", args.toArray())
-                    .build();
+                    .addStatement("return $T.$N($T.class, $S, $L" + strBuilder + ")", args.toArray());
+            var nullable = generator.getConfiguration().getNullableAnnotation();
+            if (nullable != null) {
+                methodBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+            }
+            return methodBuilder.build();
         } else {
             throw new IllegalArgumentException("Can't find method: " + chain.getRequiredNames().toString() + "(" + String.join(", ", mappingParams) + ")");
         }

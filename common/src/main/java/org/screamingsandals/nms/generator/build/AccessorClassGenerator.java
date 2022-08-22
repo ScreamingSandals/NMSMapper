@@ -201,9 +201,12 @@ public class AccessorClassGenerator {
             var typeMethod = MethodSpec.methodBuilder("getType")
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(ParameterizedTypeName.get(ClassName.get(Class.class), ClassName.get("", "?")))
-                    .addStatement("return $T.$N($T.class, $L)", accessorUtils, "getType", ClassName.get(basePackage, name), generateMappings(typeMapping))
-                    .build();
-            builder.addMethod(typeMethod);
+                    .addStatement("return $T.$N($T.class, $L)", accessorUtils, "getType", ClassName.get(basePackage, name), generateMappings(typeMapping));
+            var nullable = configuration.getNullableAnnotation();
+            if (nullable != null) {
+                typeMethod.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+            }
+            builder.addMethod(typeMethod.build());
         });
 
 

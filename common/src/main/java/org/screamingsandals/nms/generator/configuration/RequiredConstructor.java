@@ -51,10 +51,14 @@ public class RequiredConstructor implements Required, RequiredClassMember {
             param.generateClassGetter(generator, accessor, strBuilder, args);
         }
 
-        return MethodSpec.methodBuilder("getConstructor" + id)
+        var constructorBuilder = MethodSpec.methodBuilder("getConstructor" + id)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(Constructor.class), ClassName.get("", "?")))
-                .addStatement("return $T.$N($T.class, $L" + strBuilder + ")", args.toArray())
-                .build();
+                .addStatement("return $T.$N($T.class, $L" + strBuilder + ")", args.toArray());
+        var nullable = generator.getConfiguration().getNullableAnnotation();
+        if (nullable != null) {
+            constructorBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+        }
+        return constructorBuilder.build();
     }
 }

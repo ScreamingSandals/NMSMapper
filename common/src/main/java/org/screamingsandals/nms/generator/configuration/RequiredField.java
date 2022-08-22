@@ -97,11 +97,15 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
                 accessor.getFieldNameCounter().put(firstName, count);
             }
 
-            return MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
+            var fieldBuilder = MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(Field.class)
-                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes))
-                    .build();
+                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes));
+            var nullable = generator.getConfiguration().getNullableAnnotation();
+            if (nullable != null) {
+                fieldBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+            }
+            return fieldBuilder.build();
         } else {
             throw new IllegalArgumentException("Can't find field: " + chain.getRequiredNames());
         }

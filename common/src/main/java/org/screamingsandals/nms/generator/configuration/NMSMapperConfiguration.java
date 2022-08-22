@@ -40,6 +40,10 @@ public class NMSMapperConfiguration {
     private String minMinecraftVersion = "1.9.4";
     @Nullable
     private String maxMinecraftVersion = null;
+    @Nullable
+    private String nullableAnnotation = null;
+    @Nullable
+    private String notNullAnnotation = null;
 
     public RequiredClass reqClass(String unifiedString) {
         var split = unifiedString.split(":");

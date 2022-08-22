@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.build.Accessor;
 import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
 import org.screamingsandals.nms.generator.utils.MiscUtils;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import javax.lang.model.element.Modifier;
@@ -35,14 +36,19 @@ import java.util.stream.Collectors;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class RequiredMethod extends RequiredSymbol implements RequiredClassMember {
+public class RequiredMethod extends RequiredChainedSymbol implements RequiredClassMember {
     @Getter
     @ToString.Exclude // TODO: fix recursion
     @EqualsAndHashCode.Exclude // TODO: fix recursion
     private final RequiredArgumentType[] params;
 
     public RequiredMethod(String mapping, String name, @Nullable String forcedVersion, RequiredArgumentType[] params) {
-        super(mapping, name, forcedVersion);
+        super(new RequiredNameChain(List.of(new RequiredName(mapping, name, forcedVersion))));
+        this.params = params;
+    }
+
+    public RequiredMethod(RequiredNameChain chain, RequiredArgumentType[] params) {
+        super(chain);
         this.params = params;
     }
 
@@ -72,18 +78,24 @@ public class RequiredMethod extends RequiredSymbol implements RequiredClassMembe
                     return build;
                 })
                 .collect(Collectors.toList());
+        var chain = getChain();
+        if (chain.getRequiredNames().isEmpty()) {
+            throw new UnsupportedOperationException("Provided chain has no names!");
+        }
+        System.out.println("Generating accessor method for method " + chain.getRequiredNames().toString() + "(" + String.join(", ", mappingParams) + ")");
 
-        var optional = accessor.getMapping().node("methods")
-                .childrenList()
-                .stream()
-                .filter(n -> {
+        var chainedNodes = chain.getRequiredNames().stream()
+                .flatMap(chainedName -> accessor.getMapping().node("methods")
+                        .childrenList()
+                        .stream()
+                        .filter(n -> {
                             try {
-                                return n.node(getMapping().toUpperCase())
+                                return n.node(chainedName.getMapping().toUpperCase())
                                         .childrenMap()
                                         .entrySet()
                                         .stream()
-                                        .anyMatch(n1 -> n1.getValue().getString("").equals(getName())
-                                                && (getForcedVersion() == null || Arrays.asList(n1.getKey().toString().split(",")).contains(getForcedVersion()))
+                                        .anyMatch(n1 -> n1.getValue().getString("").equals(chainedName.getName())
+                                                        && (chainedName.getForcedVersion() == null || Arrays.asList(n1.getKey().toString().split(",")).contains(chainedName.getForcedVersion()))
                                                         && (
                                                         generator.getConfiguration().getMinMinecraftVersion() == null
                                                                 || generator.getConfiguration().getMinMinecraftVersion().isEmpty()
@@ -103,27 +115,30 @@ public class RequiredMethod extends RequiredSymbol implements RequiredClassMembe
                                 e.printStackTrace();
                             }
                             return false;
-                        }
-                )
-                .findFirst();
+                        })
+                        .map(n -> (ConfigurationNode) n)
+                        .findFirst()
+                        .stream())
+                .collect(Collectors.toList());
 
-        if (optional.isPresent()) {
-            var n = optional.get();
-            var capitalized = getName().substring(0, 1).toUpperCase();
-            if (getName().length() > 1) {
-                capitalized += getName().substring(1);
+        if (!chainedNodes.isEmpty()) {
+            var firstName = chain.getRequiredNames().get(0).getName();
+
+            var capitalized = firstName.substring(0, 1).toUpperCase();
+            if (firstName.length() > 1) {
+                capitalized += firstName.substring(1);
             }
 
             int count;
-            if (!accessor.getMethodNameCounter().containsKey(getName())) {
-                accessor.getMethodNameCounter().put(getName(), 1);
+            if (!accessor.getMethodNameCounter().containsKey(firstName)) {
+                accessor.getMethodNameCounter().put(firstName, 1);
                 count = 1;
             } else {
-                count = accessor.getMethodNameCounter().get(getName()) + 1;
-                accessor.getMethodNameCounter().put(getName(), count);
+                count = accessor.getMethodNameCounter().get(firstName) + 1;
+                accessor.getMethodNameCounter().put(firstName, count);
             }
 
-            var args = new ArrayList<>(List.of(generator.getAccessorUtils(), "getMethod", ClassName.get(generator.getBasePackage(), accessor.getClassName()), getName() + count, generator.generateMappings(n)));
+            var args = new ArrayList<>(List.of(generator.getAccessorUtils(), "getMethod", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes)));
 
             var strBuilder = new StringBuilder();
 
@@ -138,7 +153,7 @@ public class RequiredMethod extends RequiredSymbol implements RequiredClassMembe
                     .addStatement("return $T.$N($T.class, $S, $L" + strBuilder + ")", args.toArray())
                     .build();
         } else {
-            throw new IllegalArgumentException("Can't find method: " + getName() + "(" + String.join(", ", mappingParams) + ")");
+            throw new IllegalArgumentException("Can't find method: " + chain.getRequiredNames().toString() + "(" + String.join(", ", mappingParams) + ")");
         }
     }
 }

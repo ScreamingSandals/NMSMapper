@@ -25,67 +25,85 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.build.Accessor;
 import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class RequiredField extends RequiredSymbol implements RequiredClassMember {
+public class RequiredField extends RequiredChainedSymbol implements RequiredClassMember {
     public RequiredField(String mapping, String name, @Nullable String forcedVersion) {
-        super(mapping, name, forcedVersion);
+        super(new RequiredNameChain(List.of(new RequiredName(mapping, name, forcedVersion))));
+    }
+
+    public RequiredField(RequiredNameChain chain) {
+        super(chain);
     }
 
     @Override
     @ApiStatus.Internal
     public MethodSpec generateSymbolAccessor(Accessor accessor, AccessorClassGenerator generator) {
-        System.out.println("Generating accessor method for field " + getName());
-        var optional = accessor.getMapping().node("fields")
-                .childrenList()
-                .stream()
-                .filter(n -> n.node(getMapping().toUpperCase()).childrenMap().entrySet().stream().anyMatch(n1 ->
-                        n1.getValue().getString("").equals(getName())
-                                && (getForcedVersion() == null || Arrays.asList(n1.getKey().toString().split(",")).contains(getForcedVersion()))
-                                && (
-                                generator.getConfiguration().getMinMinecraftVersion() == null
-                                        || generator.getConfiguration().getMinMinecraftVersion().isEmpty()
-                                        || Arrays.stream(n1.getKey().toString().split(","))
-                                        .anyMatch(s -> new ComparableVersion(s).compareTo(new ComparableVersion(generator.getConfiguration().getMinMinecraftVersion())) >= 0)
-                        )
-                                && (
-                                generator.getConfiguration().getMaxMinecraftVersion() == null
-                                        || generator.getConfiguration().getMaxMinecraftVersion().isEmpty()
-                                        || Arrays.stream(n1.getKey().toString().split(","))
-                                        .anyMatch(s -> new ComparableVersion(s).compareTo(new ComparableVersion(generator.getConfiguration().getMaxMinecraftVersion())) <= 0)
-                        )
-                ))
-                .findFirst();
+        var chain = getChain();
+        if (chain.getRequiredNames().isEmpty()) {
+            throw new UnsupportedOperationException("Provided chain has no names!");
+        }
 
-        if (optional.isPresent()) {
-            var n = optional.get();
+        System.out.println("Generating accessor method for field " + chain.getRequiredNames().toString());
+        var chainedNodes = chain.getRequiredNames().stream()
+                .flatMap(chainedName -> accessor.getMapping().node("fields")
+                        .childrenList()
+                        .stream()
+                        .filter(n -> n.node(chainedName.getMapping().toUpperCase()).childrenMap().entrySet().stream().anyMatch(n1 ->
+                                n1.getValue().getString("").equals(chainedName.getName())
+                                        && (chainedName.getForcedVersion() == null || Arrays.asList(n1.getKey().toString().split(",")).contains(chainedName.getForcedVersion()))
+                                        && (
+                                        generator.getConfiguration().getMinMinecraftVersion() == null
+                                                || generator.getConfiguration().getMinMinecraftVersion().isEmpty()
+                                                || Arrays.stream(n1.getKey().toString().split(","))
+                                                .anyMatch(s -> new ComparableVersion(s).compareTo(new ComparableVersion(generator.getConfiguration().getMinMinecraftVersion())) >= 0)
+                                )
+                                        && (
+                                        generator.getConfiguration().getMaxMinecraftVersion() == null
+                                                || generator.getConfiguration().getMaxMinecraftVersion().isEmpty()
+                                                || Arrays.stream(n1.getKey().toString().split(","))
+                                                .anyMatch(s -> new ComparableVersion(s).compareTo(new ComparableVersion(generator.getConfiguration().getMaxMinecraftVersion())) <= 0)
+                                )
+                        ))
+                        .map(n -> (ConfigurationNode) n)
+                        .findFirst()
+                        .stream())
+                .collect(Collectors.toList());
 
-            var capitalized = getName().substring(0, 1).toUpperCase();
-            if (getName().length() > 1) {
-                capitalized += getName().substring(1);
+        if (!chainedNodes.isEmpty()) {
+            var firstName = chain.getRequiredNames().get(0).getName();
+
+            var capitalized = firstName.substring(0, 1).toUpperCase();
+            if (firstName.length() > 1) {
+                capitalized += firstName.substring(1);
             }
 
             int count;
-            if (!accessor.getFieldNameCounter().containsKey(getName())) {
-                accessor.getFieldNameCounter().put(getName(), 1);
+            if (!accessor.getFieldNameCounter().containsKey(firstName)) {
+                accessor.getFieldNameCounter().put(firstName, 1);
                 count = 1;
             } else {
-                count = accessor.getFieldNameCounter().get(getName()) + 1;
-                accessor.getFieldNameCounter().put(getName(), count);
+                count = accessor.getFieldNameCounter().get(firstName) + 1;
+                accessor.getFieldNameCounter().put(firstName, count);
             }
 
             return MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(Field.class)
-                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), getName() + count, generator.generateMappings(n))
+                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes))
                     .build();
         } else {
-            throw new IllegalArgumentException("Can't find field: " + getName());
+            throw new IllegalArgumentException("Can't find field: " + chain.getRequiredNames());
         }
     }
 }

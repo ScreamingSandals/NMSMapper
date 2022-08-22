@@ -80,12 +80,17 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         if (split.length == 1) {
             return reqField(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion());
         } else if (split.length == 2) {
-            return reqField(split[1], split[0], context.getDefaultForcedVersion());
+            return reqField(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], context.getDefaultForcedVersion());
         } else if (split.length == 3) {
-            return reqField(split[1], split[0], split[2]);
+            return reqField(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], split[2].isBlank() ? context.getDefaultForcedVersion() : split[2]);
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqField(RequiredNameChain chain) {
+        requiredSymbols.add(new RequiredField(chain));
+        return this;
     }
 
     public RequiredClass reqField(String name, String mapping, @Nullable String forcedVersion) {
@@ -98,12 +103,17 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         if (split.length == 1) {
             return reqEnumField(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion());
         } else if (split.length == 2) {
-            return reqEnumField(split[1], split[0], context.getDefaultForcedVersion());
+            return reqEnumField(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], context.getDefaultForcedVersion());
         } else if (split.length == 3) {
-            return reqEnumField(split[1], split[0], split[2]);
+            return reqEnumField(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], split[2].isBlank() ? context.getDefaultForcedVersion() : split[2]);
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqEnumField(RequiredNameChain chain) {
+        requiredSymbols.add(new RequiredEnumField(chain));
+        return this;
     }
 
     public RequiredClass reqEnumField(String name, String mapping, @Nullable String forcedVersion) {
@@ -127,12 +137,17 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         if (split.length == 1) {
             return reqMethod(split[0], context.getDefaultMapping(), context.getDefaultForcedVersion(), params);
         } else if (split.length == 2) {
-            return reqMethod(split[1], split[0], context.getDefaultForcedVersion(), params);
+            return reqMethod(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], context.getDefaultForcedVersion(), params);
         } else if (split.length == 3) {
-            return reqMethod(split[1], split[0], split[2], params);
+            return reqMethod(split[1], split[0].isBlank() ? context.getDefaultMapping() : split[0], split[2].isBlank() ? context.getDefaultForcedVersion() : split[2], params);
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqMethod(RequiredNameChain chain, Object... params) {
+        requiredSymbols.add(new RequiredMethod(chain, parseParams(params)));
+        return this;
     }
 
     public RequiredClass reqMethod(String name, String mapping, String forcedVersion, Object[] params) {

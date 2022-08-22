@@ -16,12 +16,11 @@
 
 package org.screamingsandals.nms.generator.configuration;
 
-import lombok.EqualsAndHashCode;
-import org.jetbrains.annotations.Nullable;
+import lombok.Data;
 
-@EqualsAndHashCode(callSuper = true)
-public abstract class RequiredSymbol extends RequiredName implements Required {
-    public RequiredSymbol(String mapping, String name, @Nullable String forcedVersion) {
-        super(mapping, name, forcedVersion);
-    }
+import java.util.List;
+
+@Data
+public class RequiredNameChain {
+    private final List<RequiredName> requiredNames;
 }

@@ -240,53 +240,71 @@ public class AccessorClassGenerator {
     }
 
     public CodeBlock generateMappings(ConfigurationNode node) {
+        return generateMappings(List.of(node));
+    }
+
+    public CodeBlock generateMappings(List<ConfigurationNode> nodes) {
         var codeBlock = CodeBlock.builder()
                 .add("mapper -> {\n")
                 .indent();
 
-        var obfuscatedFallback = node.node("OBFUSCATED")
-                .childrenMap()
-                .entrySet()
+        var usedNode = new HashMap<String, ConfigurationNode>();
+        var rawObfuscatedFallback = new HashMap<String, String>();
+        nodes.forEach(node -> {
+            node.node("OBFUSCATED")
+                    .childrenMap()
+                    .entrySet()
+                    .stream()
+                    .flatMap(entry -> Arrays.stream(entry.getKey().toString().split(",")).map(s1 -> Map.entry(s1, entry.getValue().getString(""))))
+                    .filter(stringStringEntry -> {
+                        if (rawObfuscatedFallback.containsKey(stringStringEntry.getKey())) {
+                            return false; // don't overwrite it
+                        }
+
+                        if (
+                                (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty())
+                                || (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty())
+                        ) {
+                            var version = new ComparableVersion(stringStringEntry.getKey());
+                            if (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty()) {
+                                var min = new ComparableVersion(configuration.getMinMinecraftVersion());
+                                if (version.compareTo(min) < 0) {
+                                    return false;
+                                }
+                            }
+                            if (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty()) {
+                                var max = new ComparableVersion(configuration.getMaxMinecraftVersion());
+                                if (version.compareTo(max) > 0) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    })
+                    .forEach(e -> {
+                        rawObfuscatedFallback.put(e.getKey(), e.getValue());
+                        usedNode.put(e.getKey(), node);
+                    });
+        });
+        var obfuscatedFallback = rawObfuscatedFallback.entrySet()
                 .stream()
-                .flatMap(entry -> Arrays.stream(entry.getKey().toString().split(",")).map(s1 -> Map.entry(s1, entry.getValue().getString(""))))
-                .filter(stringStringEntry -> {
-                    if (
-                            (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty())
-                                    || (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty())
-                    ) {
-                        var version = new ComparableVersion(stringStringEntry.getKey());
-                        if (configuration.getMinMinecraftVersion() != null && !configuration.getMinMinecraftVersion().isEmpty()) {
-                            var min = new ComparableVersion(configuration.getMinMinecraftVersion());
-                            if (version.compareTo(min) < 0) {
-                                return false;
-                            }
-                        }
-                        if (configuration.getMaxMinecraftVersion() != null && !configuration.getMaxMinecraftVersion().isEmpty()) {
-                            var max = new ComparableVersion(configuration.getMaxMinecraftVersion());
-                            if (version.compareTo(max) > 0) {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                })
                 .sorted(Comparator.comparing(o -> new ComparableVersion(o.getKey())))
                 .collect(Collectors.toList());
+
 
         // currently support spigot and searge. vanilla servers are not supported
         var spigotLatest = new AtomicReference<String>();
 
-        var allSpigotMappings = node.node("SPIGOT").childrenMap().entrySet()
-                .stream()
-                .flatMap(entry -> Arrays.stream(entry.getKey().toString().split(",")).map(s1 -> Map.entry(s1, entry.getValue().getString(""))))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
         obfuscatedFallback.forEach(entry -> {
-            var value = entry.getValue();
-
-            if (allSpigotMappings.containsKey(entry.getKey())) {
-                value = allSpigotMappings.get(entry.getKey());
-            }
+            var value = usedNode.get(entry.getKey())
+                    .node("SPIGOT")
+                    .childrenMap()
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Arrays.asList(e.getKey().toString().split(",")).contains(entry.getKey()))
+                    .findFirst()
+                    .map(e -> e.getValue().getString())
+                    .orElse(entry.getValue());
 
             if (spigotLatest.get() == null || !spigotLatest.get().equals(value)) {
                 codeBlock.add("$N.$N($S, $S, $S);\n", "mapper", "map", "spigot", entry.getKey(), value);
@@ -297,16 +315,19 @@ public class AccessorClassGenerator {
 
         var seargeLatest = new AtomicReference<String>();
 
-        var allSeargeMappings = node.node("SEARGE").childrenMap().entrySet()
-                .stream()
-                .flatMap(entry -> Arrays.stream(entry.getKey().toString().split(",")).map(s1 -> Map.entry(s1, entry.getValue().getString(""))))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
         obfuscatedFallback.forEach(entry -> {
             var value = entry.getValue();
+            var seargeValue = usedNode.get(entry.getKey())
+                    .node("SEARGE")
+                    .childrenMap()
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Arrays.asList(e.getKey().toString().split(",")).contains(entry.getKey()))
+                    .findFirst()
+                    .map(e -> e.getValue().getString());
 
-            if (allSeargeMappings.containsKey(entry.getKey())) {
-                value = allSeargeMappings.get(entry.getKey());
+            if (seargeValue.isPresent()) {
+                value = seargeValue.get();
             } else if (seargeLatest.get() != null) {
                 // Searge mappings are usually consistent across versions, so skip the mapping if there's no value in mappings but there's value in the seargeLatest variable
                 return;

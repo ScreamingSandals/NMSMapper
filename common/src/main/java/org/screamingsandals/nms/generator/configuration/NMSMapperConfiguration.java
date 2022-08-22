@@ -24,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.screamingsandals.nms.generator.utils.Action;
 import org.screamingsandals.nms.generator.utils.GroovyUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Data
@@ -44,9 +46,9 @@ public class NMSMapperConfiguration {
         if (split.length == 1) {
             return reqClass(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion());
         } else if (split.length == 2) {
-            return reqClass(split[1], split[0], classContext.getDefaultForcedVersion());
+            return reqClass(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], classContext.getDefaultForcedVersion());
         } else if (split.length == 3) {
-            return reqClass(split[1], split[0], split[2]);
+            return reqClass(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], split[2].isBlank() ? classContext.getDefaultForcedVersion() : split[2]);
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
@@ -57,9 +59,9 @@ public class NMSMapperConfiguration {
         if (split.length == 1) {
             return reqClass(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion(), consumer);
         } else if (split.length == 2) {
-            return reqClass(split[1], split[0], classContext.getDefaultForcedVersion(), consumer);
+            return reqClass(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], classContext.getDefaultForcedVersion(), consumer);
         } else if (split.length == 3) {
-            return reqClass(split[1], split[0], split[2], consumer);
+            return reqClass(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], split[2].isBlank() ? classContext.getDefaultForcedVersion() : split[2], consumer);
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
@@ -81,6 +83,37 @@ public class NMSMapperConfiguration {
 
     public RequiredClass reqClass(String className, String mapping, @Nullable String forcedVersion, Closure<RequiredClass> consumer) {
         return reqClass(className, mapping, forcedVersion, GroovyUtils.convertToAction(consumer));
+    }
+
+    public RequiredNameChain chain(String... unifiedStrings) {
+        if (unifiedStrings.length == 0) {
+            throw new RuntimeException("Invalid configuration: name chain needs at least one name");
+        }
+        var list = new ArrayList<RequiredName>();
+        for (var unifiedString : unifiedStrings) {
+            var split = unifiedString.split(":");
+            if (split.length == 1) {
+                list.add(name(split[0], classContext.getDefaultMapping(), classContext.getDefaultForcedVersion()));
+            } else if (split.length == 2) {
+                list.add(name(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], classContext.getDefaultForcedVersion()));
+            } else if (split.length == 3) {
+                list.add(name(split[1], split[0].isBlank() ? classContext.getDefaultMapping() : split[0], split[2].isBlank() ? classContext.getDefaultForcedVersion() : split[2]));
+            } else {
+                throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
+            }
+        }
+        return new RequiredNameChain(list);
+    }
+
+    public RequiredNameChain chain(RequiredName... names) {
+        if (names.length == 0) {
+            throw new RuntimeException("Invalid configuration: name chain needs at least one name");
+        }
+        return new RequiredNameChain(List.of(names));
+    }
+
+    public RequiredName name(String name, String mapping, @Nullable String forcedVersion) {
+        return new RequiredName(mapping, name, forcedVersion != null ? forcedVersion : classContext.getDefaultForcedVersion());
     }
 
     @SneakyThrows

@@ -25,10 +25,13 @@ import lombok.ToString;
 import org.jetbrains.annotations.ApiStatus;
 import org.screamingsandals.nms.generator.build.Accessor;
 import org.screamingsandals.nms.generator.build.AccessorClassGenerator;
+import org.screamingsandals.nms.generator.utils.MiscUtils;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import javax.lang.model.element.Modifier;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class RequiredConstructor implements Required, RequiredClassMember {
@@ -39,7 +42,46 @@ public class RequiredConstructor implements Required, RequiredClassMember {
     @Override
     @ApiStatus.Internal
     public MethodSpec generateSymbolAccessor(Accessor accessor, AccessorClassGenerator generator) {
-        // TODO: check existence of constructor
+        var mappingParams = Arrays.stream(params)
+                .map(s -> {
+                    var s2 = s;
+                    if (s instanceof RequiredArgumentArrayClass) {
+                        s2 = ((RequiredArgumentArrayClass) s).getType();
+                    }
+                    String build;
+
+                    if (s2 instanceof RequiredClass) {
+                        build = "&" + generator.getRequiredClassAccessorMap().get(s2).getClassHash();
+                    } else if (s2 instanceof RequiredArgumentStringClass) {
+                        build = ((RequiredArgumentStringClass) s2).getClassName();
+                    } else if (s2 instanceof RequiredArgumentJvmClass) {
+                        build = MiscUtils.convertWeirdResultOfClassName(((RequiredArgumentJvmClass) s2).getTheClass().getName());
+                    } else {
+                        throw new UnsupportedOperationException("Don't know what " + s.getClass() + " is!");
+                    }
+                    if (s instanceof RequiredArgumentArrayClass) {
+                        build += "[]".repeat(((RequiredArgumentArrayClass) s).getDimensions());
+                    }
+                    return build;
+                })
+                .collect(Collectors.toList());
+
+        if (
+                accessor.getMapping().node("constructors").childrenList()
+                        .stream()
+                        .noneMatch(n -> {
+                            try {
+                                return Objects.equals(n.node("parameters").getList(String.class), mappingParams);
+                            } catch (SerializationException e) {
+                                e.printStackTrace();
+                                return false;
+                            }
+                        })
+        ) {
+            throw new IllegalArgumentException("Constructor (" + String.join(", ", mappingParams) + ") does not exist in any version");
+        }
+
+        System.out.println("Generating accessor method for constructor (" + String.join(", ", mappingParams) + ")");
 
         var id = accessor.getConstructorCounter().getAndIncrement();
         var args = new ArrayList<Object>(List.of(generator.getAccessorUtils(), "getConstructor", ClassName.get(generator.getBasePackage(), accessor.getClassName()), id));

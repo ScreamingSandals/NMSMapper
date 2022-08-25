@@ -1,0 +1,16 @@
+if (availableMapping_{PLATFORM_NAME}) {
+    String res = reduceMapping(map, "{PLATFORM_NAME}");
+
+    try {
+        Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
+        try {
+            Field fieldC = clazz.getDeclaredField(res);
+            fieldC.setAccessible(true);
+
+            Object enumeration = fieldC.get(null);
+            enumCache.put(kvholder, enumeration);
+            return enumeration;
+        } catch (Throwable ignored2) {
+        }
+    } catch (Throwable ignored) {}
+}

@@ -90,7 +90,7 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
                         .stream()
                         .filter(n -> {
                             try {
-                                return n.node(chainedName.getMapping().toUpperCase())
+                                return n.node(chainedName.getMapping().toUpperCase(Locale.ROOT))
                                         .childrenMap()
                                         .entrySet()
                                         .stream()
@@ -124,7 +124,7 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
         if (!chainedNodes.isEmpty()) {
             var firstName = chain.getRequiredNames().get(0).getName();
 
-            var capitalized = firstName.substring(0, 1).toUpperCase();
+            var capitalized = firstName.substring(0, 1).toUpperCase(Locale.ROOT);
             if (firstName.length() > 1) {
                 capitalized += firstName.substring(1);
             }
@@ -138,7 +138,7 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
                 accessor.getMethodNameCounter().put(firstName, count);
             }
 
-            var args = new ArrayList<>(List.of(generator.getAccessorUtils(), "getMethod", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes)));
+            var args = new ArrayList<>(List.of(generator.getAccessorUtils(), "getMethod", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes, generator.getConfiguration().isAddInformationJavadoc())));
 
             var strBuilder = new StringBuilder();
 
@@ -154,6 +154,22 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
             var nullable = generator.getConfiguration().getNullableAnnotation();
             if (nullable != null) {
                 methodBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+            }
+            if (generator.getConfiguration().isAddInformationJavadoc()) {
+                var requestedMethod = new StringBuilder();
+                if (chain.getRequiredNames().size() == 1) {
+                    var name = chain.getRequiredNames().get(0);
+                    requestedMethod.append("Requested method: ").append(name.getName()).append(!name.getMapping().isBlank() ? ", mapping: " + name.getMapping() : "").append(name.getForcedVersion() != null && !name.getForcedVersion().isBlank() ? ", version: " + name.getForcedVersion() : "");
+                } else {
+                    requestedMethod.append("The method was requested using the following chain of names:\n<ul>");
+                    for (var name : chain.getRequiredNames()) {
+                        requestedMethod.append("\n<li>").append(name.getName()).append(!name.getMapping().isBlank() ? ", mapping: " + name.getMapping() : "").append(name.getForcedVersion() != null && !name.getForcedVersion().isBlank() ? ", version: " + name.getForcedVersion() : "");
+                    }
+                    requestedMethod.append("\n</ul>");
+                }
+                methodBuilder.addJavadoc("This method returns the {@link Method} object of the requested NMS method.\n<p>\n" +
+                        requestedMethod +
+                        "\n<p>\nThis method is safe to call: exception is handler and null is returned in case of failure.\n\n@return the method object or null if either class does not exist or it does not have this field in the specific environment");
             }
             return methodBuilder.build();
         } else {

@@ -1,0 +1,23 @@
+try {
+    Class<?> mcForgeClass = Class.forName("net.minecraftforge.common.MinecraftForge");
+    availableMapping_SEARGE = true; // auto-generated field
+
+    String str;
+    try {
+        // Flattening versions
+        Class<?> mcpVersionClass = Class.forName("net.minecraftforge.versions.mcp.MCPVersion");
+        str = mcpVersionClass.getMethod("getMCVersion").invoke(null).toString();
+    } catch (Throwable ignored) {
+        // Legacy versions
+        str = mcForgeClass.getField("MC_VERSION").get(null).toString();
+    }
+
+    if (str != null) {
+        int[] res = convertVersion(str);
+        MAJOR_VERSION = res[0];
+        MINOR_VERSION = res[1];
+        PATCH_VERSION = res[2];
+    }
+} catch (Throwable ignored) {
+    // probably not using MCP mappings
+}

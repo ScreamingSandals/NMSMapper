@@ -1,0 +1,3 @@
+if (mappingType.equals("SPIGOT")) {
+    symbol = symbol.replace("${V}", craftBukkitImpl);
+}

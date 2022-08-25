@@ -44,6 +44,8 @@ public class NMSMapperConfiguration {
     private String nullableAnnotation = null;
     @Nullable
     private String notNullAnnotation = null;
+    private boolean addInformationJavadoc = true;
+    private List<String> mapForPlatforms = List.of("searge", "spigot");
 
     public RequiredClass reqClass(String unifiedString) {
         var split = unifiedString.split(":");
@@ -58,6 +60,10 @@ public class NMSMapperConfiguration {
         }
     }
 
+    public RequiredClass reqClass(RequiredName name) {
+        return reqClass(name.getName(), name.getMapping(), name.getForcedVersion());
+    }
+
     public RequiredClass reqClass(String unifiedString, Action<RequiredClass> consumer) {
         var split = unifiedString.split(":");
         if (split.length == 1) {
@@ -69,6 +75,14 @@ public class NMSMapperConfiguration {
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqClass(RequiredName name, Action<RequiredClass> consumer) {
+        return reqClass(name.getName(), name.getMapping(), name.getForcedVersion(), consumer);
+    }
+
+    public RequiredClass reqClass(RequiredName name, Closure<RequiredClass> consumer) {
+        return reqClass(name, GroovyUtils.convertToAction(consumer));
     }
 
     public RequiredClass reqClass(String unifiedString, Closure<RequiredClass> consumer) {

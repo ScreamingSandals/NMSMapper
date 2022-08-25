@@ -1,0 +1,22 @@
+if (availableMapping_{PLATFORM_NAME}) {
+    // getting the last mapping
+    String res = reduceMapping(map, "{PLATFORM_NAME}");
+
+    if (res != null) {
+        // trying to use it
+        try {
+            Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
+            Class<?> clazz1 = clazz;
+            do {
+                try {
+                    Field fieldC = clazz1.getDeclaredField(res);
+                    fieldC.setAccessible(true);
+                    fieldCache.put(kvholder, fieldC);
+                    return fieldC;
+                } catch (Throwable ignored2) {
+                }
+            } while ((clazz1 = clazz1.getSuperclass()) != null && clazz1 != Object.class);
+        } catch (Throwable ignored) {
+        }
+    }
+}

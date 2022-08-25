@@ -27,6 +27,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 
 import java.nio.file.Files;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,7 +58,7 @@ public class NMSMapper implements Plugin<Project> {
 
         try (var stream = Files.walk(configFolder.toPath().toAbsolutePath())) {
             final var versions = stream.filter(Files::isDirectory)
-                    .filter(path -> !path.getFileName().toString().toLowerCase().endsWith(".disabled"))
+                    .filter(path -> !path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".disabled"))
                     .map(path -> path.resolve("info.json"))
                     .filter(Files::exists)
                     .filter(Files::isRegularFile)

@@ -88,6 +88,11 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         }
     }
 
+    public RequiredClass reqField(RequiredName name) {
+        requiredSymbols.add(new RequiredField(new RequiredNameChain(List.of(name))));
+        return this;
+    }
+
     public RequiredClass reqField(RequiredNameChain chain) {
         requiredSymbols.add(new RequiredField(chain));
         return this;
@@ -109,6 +114,11 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqEnumField(RequiredName chain) {
+        requiredSymbols.add(new RequiredEnumField(new RequiredNameChain(List.of(chain))));
+        return this;
     }
 
     public RequiredClass reqEnumField(RequiredNameChain chain) {
@@ -143,6 +153,11 @@ public class RequiredClass extends RequiredSymbol implements RequiredArgumentTyp
         } else {
             throw new RuntimeException("Invalid configuration: Can't parse " + unifiedString);
         }
+    }
+
+    public RequiredClass reqMethod(RequiredName name, Object... params) {
+        requiredSymbols.add(new RequiredMethod(new RequiredNameChain(List.of(name)), parseParams(params)));
+        return this;
     }
 
     public RequiredClass reqMethod(RequiredNameChain chain, Object... params) {

@@ -32,6 +32,7 @@ import javax.lang.model.element.Modifier;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
                 .flatMap(chainedName -> accessor.getMapping().node("fields")
                         .childrenList()
                         .stream()
-                        .filter(n -> n.node(chainedName.getMapping().toUpperCase()).childrenMap().entrySet().stream().anyMatch(n1 ->
+                        .filter(n -> n.node(chainedName.getMapping().toUpperCase(Locale.ROOT)).childrenMap().entrySet().stream().anyMatch(n1 ->
                                 n1.getValue().getString("").equals(chainedName.getName())
                                         && (chainedName.getForcedVersion() == null || Arrays.asList(n1.getKey().toString().split(",")).contains(chainedName.getForcedVersion()))
                                         && (
@@ -83,7 +84,7 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
         if (!chainedNodes.isEmpty()) {
             var firstName = chain.getRequiredNames().get(0).getName();
 
-            var capitalized = firstName.substring(0, 1).toUpperCase();
+            var capitalized = firstName.substring(0, 1).toUpperCase(Locale.ROOT);
             if (firstName.length() > 1) {
                 capitalized += firstName.substring(1);
             }
@@ -100,10 +101,26 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
             var fieldBuilder = MethodSpec.methodBuilder("getField" + capitalized + (count != 1 ? count : ""))
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                     .returns(Field.class)
-                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes));
+                    .addStatement("return $T.$N($T.class, $S, $L)", generator.getAccessorUtils(), "getField", ClassName.get(generator.getBasePackage(), accessor.getClassName()), firstName + count, generator.generateMappings(chainedNodes, generator.getConfiguration().isAddInformationJavadoc()));
             var nullable = generator.getConfiguration().getNullableAnnotation();
             if (nullable != null) {
                 fieldBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+            }
+            if (generator.getConfiguration().isAddInformationJavadoc()) {
+                var requestedField = new StringBuilder();
+                if (chain.getRequiredNames().size() == 1) {
+                    var name = chain.getRequiredNames().get(0);
+                    requestedField.append("Requested field: ").append(name.getName()).append(!name.getMapping().isBlank() ? ", mapping: " + name.getMapping() : "").append(name.getForcedVersion() != null && !name.getForcedVersion().isBlank() ? ", version: " + name.getForcedVersion() : "");
+                } else {
+                    requestedField.append("The field was requested using the following chain of names:\n<ul>");
+                    for (var name : chain.getRequiredNames()) {
+                        requestedField.append("\n<li>").append(name.getName()).append(!name.getMapping().isBlank() ? ", mapping: " + name.getMapping() : "").append(name.getForcedVersion() != null && !name.getForcedVersion().isBlank() ? ", version: " + name.getForcedVersion() : "");
+                    }
+                    requestedField.append("\n</ul>");
+                }
+                fieldBuilder.addJavadoc("This method returns the {@link Field} object of the requested NMS field.\n<p>\n" +
+                        requestedField +
+                        "\n<p>\nThis method is safe to call: exception is handler and null is returned in case of failure.\n\n@return the resolved field object or null if either class does not exist or it does not have this field in the specific environment");
             }
             return fieldBuilder.build();
         } else {

@@ -1,0 +1,14 @@
+if (availableMapping_{PLATFORM_NAME}) {
+    // getting the last mapping
+    String res = reduceMapping(map, "{PLATFORM_NAME}");
+
+    if (res != null) {
+        // trying to use it
+        try {
+            Class<?> clazz = Class.forName(res);
+            classCache.put(accessor, clazz);
+            return clazz;
+        } catch (Throwable ignored) {
+        }
+    }
+}

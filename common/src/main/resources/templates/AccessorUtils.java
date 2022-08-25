@@ -33,73 +33,13 @@ public class AccessorUtils {
     private static int MAJOR_VERSION;
     private static int MINOR_VERSION;
     private static int PATCH_VERSION;
-    private static String craftBukkitImpl = "v1_99_R9";
-    private static boolean craftBukkitBased = false;
-    private static boolean mcpBased = false;
+    {/*=Generate=fields*/}
 
     static {
-        try {
-            Class<?> mcForgeClass = Class.forName("net.minecraftforge.common.MinecraftForge");
-            mcpBased = true;
-
-            String str;
-            try {
-                // Flattening versions
-                Class<?> mcpVersionClass = Class.forName("net.minecraftforge.versions.mcp.MCPVersion");
-                str = mcpVersionClass.getMethod("getMCVersion").invoke(null).toString();
-            } catch (Throwable ignored) {
-                // Legacy versions
-                str = mcForgeClass.getField("MC_VERSION").get(null).toString();
-            }
-
-            if (str != null) {
-                int[] res = convertVersion(str);
-                MAJOR_VERSION = res[0];
-                MINOR_VERSION = res[1];
-                PATCH_VERSION = res[2];
-            }
-        } catch (Throwable ignored) {
-            // probably not using MCP mappings
-        }
-
-        try {
-            Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
-            Method method = bukkitClass.getMethod("getServer");
-            if (MAJOR_VERSION == 0) { // we don't know version yet, this server don't implement forge
-                Pattern versionPattern = Pattern.compile("\\(MC: (\\d+)\\.(\\d+)\\.?(\\d+?)?");
-                Matcher matcher = versionPattern.matcher(bukkitClass.getMethod("getVersion").invoke(null).toString());
-                int majorVersion = 1;
-                int minorVersion = 0;
-                int patchVersion = 0;
-                if (matcher.find()) {
-                    MatchResult matchResult = matcher.toMatchResult();
-                    try {
-                        majorVersion = Integer.parseInt(matchResult.group(1), 10);
-                    } catch (Exception ignored) {
-                    }
-                    try {
-                        minorVersion = Integer.parseInt(matchResult.group(2), 10);
-                    } catch (Exception ignored) {
-                    }
-                    if (matchResult.groupCount() >= 3) {
-                        try {
-                            patchVersion = Integer.parseInt(matchResult.group(3), 10);
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-                MAJOR_VERSION = majorVersion;
-                MINOR_VERSION = minorVersion;
-                PATCH_VERSION = patchVersion;
-            }
-
-            String packName = method.invoke(null).getClass().getPackage().getName();
-            craftBukkitImpl = packName.substring(packName.lastIndexOf('.') + 1);
-            craftBukkitBased = true;
-        } catch (Throwable ignored) {
-            // probably not CraftBukkit Based
-        }
+        {/*=Generate=static*/}
     }
+
+    {/*=Generate=initializers*/}
 
     public static Class<?> getType(Class<?> accessor, Consumer<AccessorMapper> mapper) {
         Class<?> cache = classCache.get(accessor);
@@ -112,35 +52,7 @@ public class AccessorUtils {
 
         Map<String, Map<int[], String>> map = accessorMapper.map;
 
-        if (mcpBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "mcp");
-
-            if (res != null) {
-                // trying to use it
-                try {
-                    Class<?> clazz = Class.forName(res);
-                    classCache.put(accessor, clazz);
-                    return clazz;
-                } catch (Throwable ignored) {
-                }
-            }
-        }
-
-        if (craftBukkitBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "spigot");
-
-            if (res != null) {
-                // trying to use it
-                try {
-                    Class<?> clazz = Class.forName(res);
-                    classCache.put(accessor, clazz);
-                    return clazz;
-                } catch (Throwable ignored) {
-                }
-            }
-        }
+        {/*=Generate=reflection=class*/}
 
         // cache that we don't have it
         classCache.put(accessor, null);
@@ -158,51 +70,7 @@ public class AccessorUtils {
 
         Map<String, Map<int[], String>> map = accessorMapper.map;
 
-        if (mcpBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "mcp");
-
-            if (res != null) {
-                // trying to use it
-                try {
-                    Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                    Class<?> clazz1 = clazz;
-                    do {
-                        try {
-                            Field fieldC = clazz1.getDeclaredField(res);
-                            fieldC.setAccessible(true);
-                            fieldCache.put(kvholder, fieldC);
-                            return fieldC;
-                        } catch (Throwable ignored2) {
-                        }
-                    } while ((clazz1 = clazz1.getSuperclass()) != null && clazz1 != Object.class);
-                } catch (Throwable ignored) {
-                }
-            }
-        }
-
-        if (craftBukkitBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "spigot");
-
-            if (res != null) {
-                // trying to use it
-                try {
-                    Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                    Class<?> clazz1 = clazz;
-                    do {
-                        try {
-                            Field fieldC = clazz1.getDeclaredField(res);
-                            fieldC.setAccessible(true);
-                            fieldCache.put(kvholder, fieldC);
-                            return fieldC;
-                        } catch (Throwable ignored2) {
-                        }
-                    } while ((clazz1 = clazz1.getSuperclass()) != null && clazz1 != Object.class);
-                } catch (Throwable ignored) {
-                }
-            }
-        }
+        {/*=Generate=reflection=fields*/}
 
         // cache that we don't have it
         fieldCache.put(kvholder, null);
@@ -220,41 +88,7 @@ public class AccessorUtils {
 
         Map<String, Map<int[], String>> map = accessorMapper.map;
 
-
-        if (mcpBased) {
-            String res = reduceMapping(map, "mcp");
-
-            try {
-                Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                try {
-                    Field fieldC = clazz.getDeclaredField(res);
-                    fieldC.setAccessible(true);
-
-                    Object enumeration = fieldC.get(null);
-                    enumCache.put(kvholder, enumeration);
-                    return enumeration;
-                } catch (Throwable ignored2) {
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        if (craftBukkitBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "spigot");
-
-            try {
-                Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                try {
-                    Field fieldC = clazz.getDeclaredField(res);
-                    fieldC.setAccessible(true);
-
-                    Object enumeration = fieldC.get(null);
-                    enumCache.put(kvholder, enumeration);
-                    return enumeration;
-                } catch (Throwable ignored2) {
-                }
-            } catch (Throwable ignored) {}
-        }
+        {/*=Generate=reflection=enums*/}
 
         // cache that we don't have it
         enumCache.put(kvholder, null);
@@ -272,49 +106,7 @@ public class AccessorUtils {
 
         Map<String, Map<int[], String>> map = accessorMapper.map;
 
-        if (mcpBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "mcp");
-
-            if (res != null) {
-                try {
-                    Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                    Class<?> clazz2 = clazz;
-                    do {
-                        try {
-                            Method methodC = clazz2.getDeclaredMethod(res, params);
-                            methodC.setAccessible(true);
-                            methodCache.put(kvholder, methodC);
-                            return methodC;
-                        } catch (Throwable ignored2) {
-                        }
-                    } while ((clazz2 = clazz2.getSuperclass()) != null && clazz2 != Object.class);
-                } catch (Throwable ignored) {
-                }
-            }
-        }
-
-        if (craftBukkitBased) {
-            // getting the last mapping
-            String res = reduceMapping(map, "spigot");
-
-            if (res != null) {
-                try {
-                    Class<?> clazz = (Class<?>) accessor.getMethod("getType").invoke(null);
-                    Class<?> clazz2 = clazz;
-                    do {
-                        try {
-                            Method methodC = clazz2.getDeclaredMethod(res, params);
-                            methodC.setAccessible(true);
-                            methodCache.put(kvholder, methodC);
-                            return methodC;
-                        } catch (Throwable ignored2) {
-                        }
-                    } while ((clazz2 = clazz2.getSuperclass()) != null && clazz2 != Object.class);
-                } catch (Throwable ignored) {
-                }
-            }
-        }
+        {/*=Generate=reflection=methods*/}
 
         // cache that we don't have it
         methodCache.put(kvholder, null);
@@ -404,9 +196,7 @@ public class AccessorUtils {
             if (!map.containsKey(mappingType)) {
                 map.put(mappingType, new HashMap<>());
             }
-            if (mappingType.equals("spigot")) {
-                symbol = symbol.replace("${V}", craftBukkitImpl);
-            }
+            {/*=Generate=mapper*/}
             Map<int[], String> map2 = map.get(mappingType);
             map2.put(convertVersion(minVersion), symbol);
             return this;
@@ -419,13 +209,5 @@ public class AccessorUtils {
         } catch (ClassNotFoundException ex) {
             return null;
         }
-    }
-
-    public static boolean isCraftBukkitBased() {
-        return craftBukkitBased;
-    }
-
-    public static String getCraftBukkitImpl() {
-        return craftBukkitImpl;
     }
 }

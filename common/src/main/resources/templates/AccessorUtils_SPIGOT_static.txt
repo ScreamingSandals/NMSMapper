@@ -1,0 +1,37 @@
+try {
+    Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
+    Method method = bukkitClass.getMethod("getServer");
+    if (MAJOR_VERSION == 0) { // we don't know version yet, this server don't implement forge
+        Pattern versionPattern = Pattern.compile("\\(MC: (\\d+)\\.(\\d+)\\.?(\\d+?)?");
+        Matcher matcher = versionPattern.matcher(bukkitClass.getMethod("getVersion").invoke(null).toString());
+        int majorVersion = 1;
+        int minorVersion = 0;
+        int patchVersion = 0;
+        if (matcher.find()) {
+            MatchResult matchResult = matcher.toMatchResult();
+            try {
+                majorVersion = Integer.parseInt(matchResult.group(1), 10);
+            } catch (Exception ignored) {
+            }
+            try {
+                minorVersion = Integer.parseInt(matchResult.group(2), 10);
+            } catch (Exception ignored) {
+            }
+            if (matchResult.groupCount() >= 3) {
+                try {
+                    patchVersion = Integer.parseInt(matchResult.group(3), 10);
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        MAJOR_VERSION = majorVersion;
+        MINOR_VERSION = minorVersion;
+        PATCH_VERSION = patchVersion;
+    }
+
+    String packName = method.invoke(null).getClass().getPackage().getName();
+    craftBukkitImpl = packName.substring(packName.lastIndexOf('.') + 1);
+    availableMapping_SPIGOT = true;
+} catch (Throwable ignored) {
+    // probably not CraftBukkit Based
+}

@@ -1,0 +1,9 @@
+public static void initMapping_{PLATFORM_NAME}(int majorVersion, int minorVersion, int patchVersion) {
+    if (availableMapping_{PLATFORM_NAME}) {
+        throw new UnsupportedOperationException("{PLATFORM_NAME} has been already initialized.");
+    }
+    MAJOR_VERSION = majorVersion;
+    MINOR_VERSION = minorVersion;
+    PATCH_VERSION = patchVersion;
+    availableMapping_{PLATFORM_NAME} = true;
+}

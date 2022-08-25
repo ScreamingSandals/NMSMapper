@@ -32,6 +32,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,7 @@ public class DescriptionPage extends AbstractPage {
         super(
                 "description",
                 mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className),
-                MiscUtils.getModifierString(definition.getModifier() & Modifier.classModifiers()) + definition.getType().name().toLowerCase() + " " + className.substring(className.lastIndexOf(".") + 1),
+                MiscUtils.getModifierString(definition.getModifier() & Modifier.classModifiers()) + definition.getType().name().toLowerCase(Locale.ROOT) + " " + className.substring(className.lastIndexOf(".") + 1),
                 List.of(
                         new NavbarLink("Version overview", "../".repeat(className.split("\\.").length + (className.split("\\.").length == 1 ? 1 : 0) - 1), false),
                         new NavbarLink("Documentation", WebGenerator.DOC_LINK, false)
@@ -157,7 +158,7 @@ public class DescriptionPage extends AbstractPage {
             case SPIGOT:
                 return "spigot:" + className.substring(className.lastIndexOf(".") + 1);
             default:
-                return mapping.getDefaultMapping().name().toLowerCase() + ":" + className;
+                return mapping.getDefaultMapping().name().toLowerCase(Locale.ROOT) + ":" + className;
         }
     }
 

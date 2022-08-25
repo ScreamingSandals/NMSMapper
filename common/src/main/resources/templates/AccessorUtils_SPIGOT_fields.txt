@@ -1,0 +1,5 @@
+private static String craftBukkitImpl = "v1_99_R9";
+
+public static String getCraftBukkitImpl() {
+    return craftBukkitImpl;
+}

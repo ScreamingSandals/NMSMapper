@@ -52,7 +52,7 @@ public class RequiredEnumField extends RequiredChainedSymbol implements Required
             throw new UnsupportedOperationException("Provided chain has no names!");
         }
 
-        System.out.println("Generating accessor method for enum/constant field " + chain.getRequiredNames().toString());
+        System.out.println("[" + accessor.getClassName() + "] Generating accessor method for enum/constant field " + chain.getRequiredNames().toString());
         var chainedNodes = chain.getRequiredNames().stream()
                 .flatMap(chainedName -> accessor.getMapping().node("fields")
                         .childrenList()
@@ -117,11 +117,11 @@ public class RequiredEnumField extends RequiredChainedSymbol implements Required
                 }
                 fieldBuilder.addJavadoc("This method returns the value of an enum constant or a static final field of the requested NMS field.\n<p>\n" +
                         requestedField +
-                        "\n<p>\nThis method is safe to call: exception is handler and null is returned in case of failure.\n\n@return the value of the field or null if it cannot be resolved for any reason");
+                        "\n<p>\nThis method is safe to call: exception is handled and null is returned in case of failure.\n\n@return the value of the field or null if it cannot be resolved for any reason");
             }
             return fieldBuilder.build();
         } else {
-            throw new IllegalArgumentException("Can't find field: " + chain.getRequiredNames().toString());
+            throw new IllegalArgumentException("[" + accessor.getClassName() + "] Can't find field: " + chain.getRequiredNames().toString());
         }
     }
 }

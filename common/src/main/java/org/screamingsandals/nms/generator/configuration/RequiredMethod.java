@@ -54,7 +54,7 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
 
     @Override
     public MethodSpec generateSymbolAccessor(Accessor accessor, AccessorClassGenerator generator) {
-
+        var hashToName = new HashMap<String, String>();
         var mappingParams = Arrays.stream(params)
                 .map(s -> {
                     var s2 = s;
@@ -64,7 +64,9 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
                     String build;
 
                     if (s2 instanceof RequiredClass) {
-                        build = "&" + generator.getRequiredClassAccessorMap().get(s2).getClassHash();
+                        var classAccessor = generator.getRequiredClassAccessorMap().get(s2);
+                        build = "&" + classAccessor.getClassHash();
+                        hashToName.put(build, classAccessor.getRequiredClass().getName());
                     } else if (s2 instanceof RequiredArgumentStringClass) {
                         build = ((RequiredArgumentStringClass) s2).getClassName();
                     } else if (s2 instanceof RequiredArgumentJvmClass) {
@@ -82,7 +84,16 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
         if (chain.getRequiredNames().isEmpty()) {
             throw new UnsupportedOperationException("Provided chain has no names!");
         }
-        System.out.println("Generating accessor method for method " + chain.getRequiredNames().toString() + "(" + String.join(", ", mappingParams) + ")");
+        var paramsString = mappingParams.stream().map(s -> {
+                            var s2 = s.replace("[]", "");
+                            if (hashToName.containsKey(s2)) {
+                                var s3 = hashToName.get(s2);
+                                s = s.replace(s2, s3);
+                            }
+                            return s;
+                        })
+                        .collect(Collectors.joining(", "));
+        System.out.println("[" + accessor.getClassName() + "] Generating accessor method for method " + chain.getRequiredNames().toString() + "(" + paramsString + ")");
 
         var chainedNodes = chain.getRequiredNames().stream()
                 .flatMap(chainedName -> accessor.getMapping().node("methods")
@@ -167,13 +178,14 @@ public class RequiredMethod extends RequiredChainedSymbol implements RequiredCla
                     }
                     requestedMethod.append("\n</ul>");
                 }
+                requestedMethod.append("\nParameters of requested method: (").append(paramsString.replace("$", "$$")).append(")");
                 methodBuilder.addJavadoc("This method returns the {@link Method} object of the requested NMS method.\n<p>\n" +
                         requestedMethod +
-                        "\n<p>\nThis method is safe to call: exception is handler and null is returned in case of failure.\n\n@return the method object or null if either class does not exist or it does not have this field in the specific environment");
+                        "\n<p>\nThis method is safe to call: exception is handled and null is returned in case of failure.\n\n@return the method object or null if either class does not exist or it does not have this field in the specific environment");
             }
             return methodBuilder.build();
         } else {
-            throw new IllegalArgumentException("Can't find method: " + chain.getRequiredNames().toString() + "(" + String.join(", ", mappingParams) + ")");
+            throw new IllegalArgumentException("[" + accessor.getClassName() + "] Can't find method: " + chain.getRequiredNames().toString() + "(" + paramsString + ")");
         }
     }
 }

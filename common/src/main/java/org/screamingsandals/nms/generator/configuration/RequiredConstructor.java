@@ -32,6 +32,7 @@ import javax.lang.model.element.Modifier;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 public class RequiredConstructor implements Required, RequiredClassMember {
@@ -42,6 +43,7 @@ public class RequiredConstructor implements Required, RequiredClassMember {
     @Override
     @ApiStatus.Internal
     public MethodSpec generateSymbolAccessor(Accessor accessor, AccessorClassGenerator generator) {
+        var hashToName = new HashMap<String, String>();
         var mappingParams = Arrays.stream(params)
                 .map(s -> {
                     var s2 = s;
@@ -51,7 +53,9 @@ public class RequiredConstructor implements Required, RequiredClassMember {
                     String build;
 
                     if (s2 instanceof RequiredClass) {
-                        build = "&" + generator.getRequiredClassAccessorMap().get(s2).getClassHash();
+                        var classAccessor = generator.getRequiredClassAccessorMap().get(s2);
+                        build = "&" + classAccessor.getClassHash();
+                        hashToName.put(build, classAccessor.getRequiredClass().getName());
                     } else if (s2 instanceof RequiredArgumentStringClass) {
                         build = ((RequiredArgumentStringClass) s2).getClassName();
                     } else if (s2 instanceof RequiredArgumentJvmClass) {
@@ -66,22 +70,41 @@ public class RequiredConstructor implements Required, RequiredClassMember {
                 })
                 .collect(Collectors.toList());
 
-        if (
-                accessor.getMapping().node("constructors").childrenList()
-                        .stream()
-                        .noneMatch(n -> {
-                            try {
-                                return Objects.equals(n.node("parameters").getList(String.class), mappingParams);
-                            } catch (SerializationException e) {
-                                e.printStackTrace();
-                                return false;
-                            }
-                        })
-        ) {
-            throw new IllegalArgumentException("Constructor (" + String.join(", ", mappingParams) + ") does not exist in any version");
+        var foundInVersions = accessor.getMapping().node("constructors").childrenList()
+                .stream()
+                .filter(n -> {
+                    try {
+                        return Objects.equals(n.node("parameters").getList(String.class), mappingParams);
+                    } catch (SerializationException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                })
+                .flatMap(n -> {
+                    try {
+                        return n.node("versions").getList(String.class).stream();
+                    } catch (SerializationException | NullPointerException e) {
+                        e.printStackTrace();
+                        return Stream.of();
+                    }
+                })
+                .collect(Collectors.toList());
+
+        var paramsString = mappingParams.stream().map(s -> {
+                    var s2 = s.replace("[]", "");
+                    if (hashToName.containsKey(s2)) {
+                        var s3 = hashToName.get(s2);
+                        s = s.replace(s2, s3);
+                    }
+                    return s;
+                })
+                .collect(Collectors.joining(", "));
+
+        if (foundInVersions.isEmpty()) {
+            throw new IllegalArgumentException("[" + accessor.getClassName() + "] Constructor (" + paramsString + ") does not exist in any version");
         }
 
-        System.out.println("Generating accessor method for constructor (" + String.join(", ", mappingParams) + ")");
+        System.out.println("[" + accessor.getClassName() + "] Generating accessor method for constructor (" +  paramsString + ")");
 
         var id = accessor.getConstructorCounter().getAndIncrement();
         var args = new ArrayList<Object>(List.of(generator.getAccessorUtils(), "getConstructor", ClassName.get(generator.getBasePackage(), accessor.getClassName()), id));
@@ -100,6 +123,12 @@ public class RequiredConstructor implements Required, RequiredClassMember {
         var nullable = generator.getConfiguration().getNullableAnnotation();
         if (nullable != null) {
             constructorBuilder.addAnnotation(ClassName.get(nullable.substring(0, nullable.lastIndexOf('.')), nullable.substring(nullable.lastIndexOf('.') + 1)));
+        }
+        if (generator.getConfiguration().isAddInformationJavadoc()) {
+            constructorBuilder.addJavadoc("This method returns the {@link Constructor} object of the requested NMS constructor.\n<p>\n" +
+                    "Requested constructor: (" + paramsString.replace("$", "$$") + ")" +
+                    "\n<p>\nPresent in versions: " + String.join(", ", foundInVersions).replace("$", "$$") +
+                    "\n<p>\nThis method is safe to call: exception is handled and null is returned in case of failure.\n\n@return the resolved constructor object or null if either class does not exist or it does not have this constructor in the specific environment");
         }
         return constructorBuilder.build();
     }

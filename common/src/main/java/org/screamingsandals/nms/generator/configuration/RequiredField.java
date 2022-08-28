@@ -55,7 +55,7 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
             throw new UnsupportedOperationException("Provided chain has no names!");
         }
 
-        System.out.println("Generating accessor method for field " + chain.getRequiredNames().toString());
+        System.out.println("[" + accessor.getClassName() + "] Generating accessor method for field " + chain.getRequiredNames().toString());
         var chainedNodes = chain.getRequiredNames().stream()
                 .flatMap(chainedName -> accessor.getMapping().node("fields")
                         .childrenList()
@@ -120,11 +120,11 @@ public class RequiredField extends RequiredChainedSymbol implements RequiredClas
                 }
                 fieldBuilder.addJavadoc("This method returns the {@link Field} object of the requested NMS field.\n<p>\n" +
                         requestedField +
-                        "\n<p>\nThis method is safe to call: exception is handler and null is returned in case of failure.\n\n@return the resolved field object or null if either class does not exist or it does not have this field in the specific environment");
+                        "\n<p>\nThis method is safe to call: exception is handled and null is returned in case of failure.\n\n@return the resolved field object or null if either class does not exist or it does not have this field in the specific environment");
             }
             return fieldBuilder.build();
         } else {
-            throw new IllegalArgumentException("Can't find field: " + chain.getRequiredNames());
+            throw new IllegalArgumentException("[" + accessor.getClassName() + "] Can't find field: " + chain.getRequiredNames());
         }
     }
 }

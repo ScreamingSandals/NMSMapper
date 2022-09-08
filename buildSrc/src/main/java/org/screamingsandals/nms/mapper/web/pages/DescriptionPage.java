@@ -17,7 +17,7 @@
 package org.screamingsandals.nms.mapper.web.pages;
 
 import lombok.SneakyThrows;
-import org.jetbrains.annotations.Nullable;
+import org.apache.bcel.Const;
 import org.screamingsandals.nms.mapper.errors.MappingError;
 import org.screamingsandals.nms.mapper.web.WebGenerator;
 import org.screamingsandals.nms.mapper.web.components.*;
@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DescriptionPage extends AbstractPage {
@@ -107,7 +106,7 @@ public class DescriptionPage extends AbstractPage {
                 .stream()
                 .map(constructor -> new Constructor(
                                 MiscUtils.getModifierString(constructor.getModifier() & Modifier.constructorModifiers()),
-                                generateMethodDescriptor(constructor.getParameters(), mapping.getDefaultMapping())
+                                generateMethodDescriptor(constructor.getParameters(), mapping.getDefaultMapping(), isVarArgs(constructor.getModifier()))
                         )
                 )
                 .collect(Collectors.toList())
@@ -121,20 +120,25 @@ public class DescriptionPage extends AbstractPage {
                         method.getMapping()
                                 .entrySet()
                                 .stream()
-                                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue(), generateMethodDescriptor(method.getParameters(), entry.getKey())))
+                                .map(entry -> new SymbolMapping(entry.getKey(), entry.getValue(), generateMethodDescriptor(method.getParameters(), entry.getKey(), isVarArgs(method.getModifier()))))
                                 .collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList())
         );
     }
 
-    private List<SymbolArgument> generateMethodDescriptor(List<ClassDefinition.Link> parameters, MappingType mappingType) {
-        AtomicInteger counter = new AtomicInteger();
-        return parameters
-                .stream()
-                .map(link -> convertToMapping(link, mappingType))
-                .map(classNameLink -> new SymbolArgument(classNameLink, "arg" + counter.getAndIncrement()))
-                .collect(Collectors.toList());
+    private boolean isVarArgs(int modifier) {
+        return (modifier & Const.ACC_VARARGS) != 0;
+    }
+
+    private List<SymbolArgument> generateMethodDescriptor(List<ClassDefinition.Link> parameters, MappingType mappingType, boolean varArgs) {
+        int last = parameters.size() - 1;
+        List<SymbolArgument> list = new ArrayList<>();
+        for (int counter = 0; counter < parameters.size(); counter++) {
+            ClassNameLink classNameLink = convertToMapping(parameters.get(counter), mappingType, varArgs && last == counter);
+            list.add(new SymbolArgument(classNameLink, "arg" + counter));
+        }
+        return list;
     }
 
     public List<ClassNameLink> getAllKnownSuperinterfaces() {
@@ -169,11 +173,19 @@ public class DescriptionPage extends AbstractPage {
     }
 
     public ClassNameLink convertToMapping(ClassDefinition.Link link, MappingType mappingType) {
+        return convertToMapping(link, mappingType, false);
+    }
+
+    public ClassNameLink convertToMapping(ClassDefinition.Link link, MappingType mappingType, boolean isVarArgs) {
         var type = link.getType();
         var suffix = new StringBuilder();
         while (type.endsWith("[]")) {
-            suffix.append("[]");
             type = type.substring(0, type.length() - 2);
+            if (isVarArgs && !type.endsWith("[]")) { // only the outermost/last dimension can be varargs
+                suffix.append("...");
+            } else {
+                suffix.append("[]");
+            }
         }
         if (link.isNms()) {
             if (type.matches(".*\\$\\d+")) { // WTF? How

@@ -20,7 +20,15 @@
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.2.tiny"
   },
   "yarn-mappings": {
-    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.2%2Bbuild.1/yarn-1.19.2%2Bbuild.1-v2.jar",
-    "sha1": "1767ccf70e070a0c43530f503b9138328283eae4"
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.2%2Bbuild.28/yarn-1.19.2%2Bbuild.28-v2.jar",
+    "sha1": "cc2d3d5bc9ddd8ecd7bf8fb1b40731045f9ffcdb"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.19.2/hashed-1.19.2.tiny",
+    "sha1": "4718c1d1c421a5768f5de1230ade13d4d49b5918"
+  },
+  "quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.19.2+build.21/quilt-mappings-1.19.2+build.21-v2.jar",
+    "sha1": "14b87e2fd098ab4cf23dfdfc4d5bda42d00ad68e"
   }
 }

@@ -25,5 +25,9 @@
   "yarn-mappings": {
     "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.17%2Bbuild.13/yarn-1.17%2Bbuild.13-v2.jar",
     "sha1": "8539ca4d93c77d6df666ddd7e2046cb358fc546f"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.17/hashed-1.17.tiny",
+    "sha1": "ae563c61535b4f84a563cb9d0e4de59ae0765ea9"
   }
 }

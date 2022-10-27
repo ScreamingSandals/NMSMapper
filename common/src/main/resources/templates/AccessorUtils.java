@@ -169,24 +169,26 @@ public class AccessorUtils {
     }
 
     public static String reduceMapping(Map<String, Map<int[], String>> map, String mapping) {
-        return Optional.ofNullable(map.get(mapping))
+        Optional<String> opt = Optional.ofNullable(map.get(mapping))
                 .flatMap(m -> m.entrySet()
                         .stream()
                         .filter(entry -> isVersion(entry.getKey()))
                         .sorted((o1, o2) -> compare(o1.getKey(), o2.getKey()))
                         .reduce((first, second) -> second)
                         .map(Map.Entry::getValue)
-                )
-                .or(() -> { // try the oldest version
-                    return Optional.ofNullable(map.get(mapping))
-                            .flatMap(m -> m.entrySet()
-                                    .stream()
-                                    .sorted((o1, o2) -> compare(o1.getKey(), o2.getKey()))
-                                    .reduce((first, second) -> second)
-                                    .map(Map.Entry::getValue)
-                            );
-                })
-                .orElse(null);
+                );
+        if (opt.isPresent()) {
+            return opt.get();
+        } else {
+            return Optional.ofNullable(map.get(mapping))
+                    .flatMap(m -> m.entrySet()
+                            .stream()
+                            .sorted((o1, o2) -> compare(o1.getKey(), o2.getKey()))
+                            .reduce((first, second) -> second)
+                            .map(Map.Entry::getValue)
+                    )
+                    .orElse(null);
+        }
     }
 
     public static class AccessorMapper {

@@ -201,6 +201,59 @@ public abstract class ConfigGenerationTask extends DefaultTask {
                 System.out.println("No Intermediary mappings found! Also skipping Yarn!");
             }
 
+            var quiltHashedUrl = "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/" + version + "/hashed-" + version + ".tiny";
+            var quiltHashed = new URI(quiltHashedUrl + ".sha1");
+
+            var quiltHashedSha1 = httpClient.send(HttpRequest.newBuilder().uri(quiltHashed).build(), HttpResponse.BodyHandlers.ofString());
+
+            if (quiltHashedSha1.statusCode() < 400 && quiltHashedSha1.statusCode() >= 200) {
+                System.out.println("Hashed (QuiltMC) mappings found: " + quiltHashedUrl);
+                versionBuilder
+                        .hashedQuiltMappings(Version.DownloadableContent.builder()
+                                .url(quiltHashedUrl)
+                                .sha1(quiltHashedSha1.body())
+                                .build()
+                        );
+
+                var xml = XmlConfigurationLoader.builder()
+                        .url(new URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/maven-metadata.xml"))
+                        .build()
+                        .load();
+
+                var node2 = xml.node("versioning", "versions");
+                var optInt = node2.childrenList().stream()
+                        .map(nn -> nn.getString(""))
+                        .filter(str -> {
+                            var s = str.split("\\+");
+                            return s.length == 2 && s[0].equals(version);
+                        })
+                        .map(str -> Integer.valueOf(str.split("\\+")[1].split("\\.")[1]))
+                        .mapToInt(v -> v)
+                        .max();
+                if (optInt.isPresent()) {
+                    var quiltUrl = "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/" + version + "+build." + optInt.getAsInt() + "/quilt-mappings-" + version + "+build." + optInt.getAsInt() + "-v2.jar";
+                    String sha1 = null;
+
+                    var yarnSha1 = httpClient.send(HttpRequest.newBuilder().uri(new URI(quiltUrl + ".sha1")).build(), HttpResponse.BodyHandlers.ofString());
+                    if (yarnSha1.statusCode() < 400 && yarnSha1.statusCode() >= 200) {
+                        sha1 = yarnSha1.body();
+                    }
+
+                    System.out.println("QuiltMC mappings found: " + quiltUrl);
+                    versionBuilder
+                            .quiltMappings(Version.DownloadableContent.builder()
+                                    .url(quiltUrl)
+                                    .sha1(sha1)
+                                    .build()
+                            );
+                } else {
+                    System.out.println("No QuiltMC mappings found!");
+                }
+            } else {
+                System.out.println("No Hashed (QuiltMC) mappings found! Also skipping QuiltMC!");
+            }
+
+
             var seargeUrl = new URI("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/" + version + "/mcp_config-" + version + ".zip.sha1");
 
             var seargeSha1 = httpClient.send(HttpRequest.newBuilder().uri(seargeUrl).build(), HttpResponse.BodyHandlers.ofString());

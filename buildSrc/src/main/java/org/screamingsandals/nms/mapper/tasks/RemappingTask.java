@@ -147,5 +147,32 @@ public abstract class RemappingTask extends DefaultTask {
                 mapping.getLicenses().add(new License(MappingType.YARN, license, List.of(version.getYarnMappings().getUrl())));
             }
         }
+
+        if (version.getHashedQuiltMappings() != null && version.getHashedQuiltMappings().isPresent()) {
+            System.out.println("Applying Hashed (QuiltMC) mappings...");
+            errors.setSilent(true); // it spams the console for no reason, maybe we will fix it later
+            var license = HashedMappingParser.map(mapping.getMappings(), version, excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.HASHED);
+
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                mapping.getLicenses().add(new License(MappingType.HASHED, license, List.of(version.getHashedQuiltMappings().getUrl())));
+            }
+        }
+
+        if (version.getQuiltMappings() != null && version.getQuiltMappings().isPresent()) {
+            System.out.println("Applying QuiltMC mappings...");
+            var license = QuiltMCMappingParser.map(mapping.getMappings(), version, excluded, errors);
+            mapping.getSupportedMappings().add(MappingType.QUILTMC);
+
+            errors.printWarn();
+            errors.reset();
+
+            if (license != null) {
+                mapping.getLicenses().add(new License(MappingType.QUILTMC, license, List.of(version.getQuiltMappings().getUrl())));
+            }
+        }
     }
 }

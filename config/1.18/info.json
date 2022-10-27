@@ -22,5 +22,9 @@
   "yarn-mappings": {
     "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.18%2Bbuild.1/yarn-1.18%2Bbuild.1-v2.jar",
     "sha1": "135d233aa04d58402ea678f33c09e2457395bfdf"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.18/hashed-1.18.tiny",
+    "sha1": "e46f0f4f17014ce67ea5734814b40293cd994060"
   }
 }

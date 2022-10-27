@@ -47,6 +47,10 @@ public class Version {
     private DownloadableContent intermediaryMappings;
     @Nullable
     private DownloadableContent yarnMappings;
+    @Nullable
+    private DownloadableContent hashedQuiltMappings;
+    @Nullable
+    private DownloadableContent quiltMappings;
 
     private transient Workspace workspace;
 

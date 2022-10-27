@@ -22,5 +22,13 @@
   "yarn-mappings": {
     "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19%2Bbuild.4/yarn-1.19%2Bbuild.4-v2.jar",
     "sha1": "27d7395ac4720d60b348713da5df95515edf8205"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.19/hashed-1.19.tiny",
+    "sha1": "6c57a47f947bbe1f0c07ca58204296066d05cb2c"
+  },
+  "quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.19+build.1/quilt-mappings-1.19+build.1-v2.jar",
+    "sha1": "6d423355783781bcb1d8eb5d9eb51f340b01ec9c"
   }
 }

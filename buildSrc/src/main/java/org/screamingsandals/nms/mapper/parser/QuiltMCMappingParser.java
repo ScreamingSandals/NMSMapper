@@ -17,6 +17,7 @@
 package org.screamingsandals.nms.mapper.parser;
 
 import org.screamingsandals.nms.mapper.extension.Version;
+import org.screamingsandals.nms.mapper.fixes.GenericMethodOverridingFix;
 import org.screamingsandals.nms.mapper.single.ClassDefinition;
 import org.screamingsandals.nms.mapper.single.MappingType;
 import org.screamingsandals.nms.mapper.utils.ErrorsLogger;
@@ -43,6 +44,8 @@ public class QuiltMCMappingParser {
             var inputStream = zip.getInputStream(entry);
 
             AnyMappingParser.map(map, inputStream, excluded, MappingType.QUILTMC, false, errorsLogger, MappingType.HASHED);
+
+            new GenericMethodOverridingFix(MappingType.QUILTMC).fix(map);
 
             return Files.readAllLines(
                     version.getWorkspace()

@@ -180,14 +180,7 @@ public class AccessorUtils {
         if (opt.isPresent()) {
             return opt.get();
         } else {
-            return Optional.ofNullable(map.get(mapping))
-                    .flatMap(m -> m.entrySet()
-                            .stream()
-                            .sorted((o1, o2) -> compare(o1.getKey(), o2.getKey()))
-                            .reduce((first, second) -> second)
-                            .map(Map.Entry::getValue)
-                    )
-                    .orElse(null);
+            return null;
         }
     }
 

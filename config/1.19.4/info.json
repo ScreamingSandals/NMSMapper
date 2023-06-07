@@ -20,15 +20,15 @@
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.19.4.tiny"
   },
   "yarn-mappings": {
-    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.4%2Bbuild.1/yarn-1.19.4%2Bbuild.1-v2.jar",
-    "sha1": "c9ed14b16e7fc73cc5ee7f3da279619298a76281"
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.19.4%2Bbuild.2/yarn-1.19.4%2Bbuild.2-v2.jar",
+    "sha1": "edacebf8586b112518f24c5efddef020c983bd12"
   },
   "hashed-quilt-mappings": {
     "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.19.4/hashed-1.19.4.tiny",
     "sha1": "d5d1fb795ca8b0e8ead0ed48472445e29a152d5c"
   },
   "quilt-mappings": {
-    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.19.4+build.2/quilt-mappings-1.19.4+build.2-v2.jar",
-    "sha1": "9a365d763e5eb94cda3de3aae08773111b43853c"
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.19.4+build.10/quilt-mappings-1.19.4+build.10-v2.jar",
+    "sha1": "a89d69abe3e813dcaebef72e23aa484e3ef93b2c"
   }
 }

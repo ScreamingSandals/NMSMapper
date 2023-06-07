@@ -1,0 +1,34 @@
+{
+  "version": "1.20",
+  "spigot-nms-version": "1_20_R1",
+  "vanilla-jar": {
+    "url": "https://piston-data.mojang.com/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar",
+    "sha1": "15c777e2cfe0556eef19aab534b186c0c6f277e1"
+  },
+  "mojang-mappings": {
+    "url": "https://piston-data.mojang.com/v1/objects/15e61168fd24c7950b22cd3b9e771a7ce4035b41/server.txt",
+    "sha1": "15e61168fd24c7950b22cd3b9e771a7ce4035b41"
+  },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.20/mcp_config-1.20.zip",
+    "sha1": "f53fa90dce55181036f0efda49ac6cf051c86514"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20-cl.csrg?at=2881c6b6dd146126596342d4025d37a9a84a0b03"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.20.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.20%2Bbuild.1/yarn-1.20%2Bbuild.1-v2.jar",
+    "sha1": "6cab913d6ae2848d09eb35f03f174c3ee40d4306"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.20/hashed-1.20.tiny",
+    "sha1": "d2202876e2774af0329c7c7b0cfb624bd99c6da3"
+  },
+  "quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.20+build.1/quilt-mappings-1.20+build.1-v2.jar",
+    "sha1": "b4656c606bc57c8edaccafbc5df48e1776ee3283"
+  }
+}

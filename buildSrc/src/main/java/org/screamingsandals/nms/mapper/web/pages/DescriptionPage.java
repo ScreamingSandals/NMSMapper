@@ -78,6 +78,12 @@ public class DescriptionPage extends AbstractPage {
         context.setVariable("errors", definition.getMappingErrors());
         context.setVariable("totalErrorSeverity", Arrays.stream(MappingError.Level.values()).filter(level -> definition.getMappingErrors().stream().anyMatch(mappingError -> mappingError.getErrorLevel() == level)).findFirst().orElse(MappingError.Level.OKAY));
 
+        if (mapping.getDefaultMapping() == MappingType.SPIGOT && mapping.getSpigotNms() != null) {
+            context.setVariable("takenakaClassUrl", "https://mappings.cephx.dev/" + mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className).replace("${V}", mapping.getSpigotNms()));
+        } else {
+            context.setVariable("takenakaClassUrl", "https://mappings.cephx.dev/" + mapping.getVersion() + "/" + MiscUtils.classNameToUrl(className));
+        }
+
         context.setVariable("classMappings", definition.getMapping()
                 .entrySet()
                 .stream()

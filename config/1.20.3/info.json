@@ -9,6 +9,10 @@
     "url": "https://piston-data.mojang.com/v1/objects/c1cafe916dd8b58ed1fe0564fc8f786885224e62/server.txt",
     "sha1": "c1cafe916dd8b58ed1fe0564fc8f786885224e62"
   },
+  "searge-mappings": {
+    "url": "https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/1.20.3/mcp_config-1.20.3.zip",
+    "sha1": "e8db71f875ee7602cf05c1c955c4d998cf005ea9"
+  },
   "spigot-class-mappings": {
     "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20.3-cl.csrg?at=58819a3c2a15e6e47ad89d32fb60d44c253491f3"
   },
@@ -18,5 +22,13 @@
   "yarn-mappings": {
     "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.20.3%2Bbuild.1/yarn-1.20.3%2Bbuild.1-v2.jar",
     "sha1": "f16d25078fe6f095a2b65db98ebf38c8b645a248"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.20.3/hashed-1.20.3.tiny",
+    "sha1": "c7d91f09341e593051211a99b37f6991d678f25d"
+  },
+  "quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.20.3+build.1/quilt-mappings-1.20.3+build.1-v2.jar",
+    "sha1": "ee6946b6b971452981506660ea9b200bd716569a"
   }
 }

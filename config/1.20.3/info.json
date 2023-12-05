@@ -1,0 +1,22 @@
+{
+  "version": "1.20.3",
+  "spigot-nms-version": "1_20_R3",
+  "vanilla-jar": {
+    "url": "https://piston-data.mojang.com/v1/objects/4fb536bfd4a83d61cdbaf684b8d311e66e7d4c49/server.jar",
+    "sha1": "4fb536bfd4a83d61cdbaf684b8d311e66e7d4c49"
+  },
+  "mojang-mappings": {
+    "url": "https://piston-data.mojang.com/v1/objects/c1cafe916dd8b58ed1fe0564fc8f786885224e62/server.txt",
+    "sha1": "c1cafe916dd8b58ed1fe0564fc8f786885224e62"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20.3-cl.csrg?at=58819a3c2a15e6e47ad89d32fb60d44c253491f3"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.20.3.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.20.3%2Bbuild.1/yarn-1.20.3%2Bbuild.1-v2.jar",
+    "sha1": "f16d25078fe6f095a2b65db98ebf38c8b645a248"
+  }
+}

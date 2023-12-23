@@ -28,7 +28,7 @@
     "sha1": "c7d91f09341e593051211a99b37f6991d678f25d"
   },
   "quilt-mappings": {
-    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.20.3+build.1/quilt-mappings-1.20.3+build.1-v2.jar",
-    "sha1": "ee6946b6b971452981506660ea9b200bd716569a"
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.20.3+build.3/quilt-mappings-1.20.3+build.3-v2.jar",
+    "sha1": "003f51bb442df184f8ec6fada344c3fcc41182de"
   }
 }

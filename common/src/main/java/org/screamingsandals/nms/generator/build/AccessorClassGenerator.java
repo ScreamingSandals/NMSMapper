@@ -147,8 +147,8 @@ public class AccessorClassGenerator {
                     name += "_" + counter;
                 }
                 counter++;
-            } while (takenAccessorNames.contains(name));
-            takenAccessorNames.add(name);
+            } while (takenAccessorNames.contains(name.toLowerCase(Locale.ROOT)));
+            takenAccessorNames.add(name.toLowerCase(Locale.ROOT));
 
             var builder = TypeSpec.classBuilder(name)
                     .addModifiers(Modifier.PUBLIC);

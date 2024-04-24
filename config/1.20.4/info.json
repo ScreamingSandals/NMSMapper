@@ -14,7 +14,7 @@
     "sha1": "55d51be7dba2ea898d2213e4312f29f76a8788c6"
   },
   "spigot-class-mappings": {
-    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20.4-cl.csrg?at=17eb87e5cd509ff55d691b74902ac19c3b62ca0c"
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20.4-cl.csrg?at=a9c23e0aa2429445ce39109e093bce0d89a14ab3"
   },
   "intermediary-mappings": {
     "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.20.4.tiny"

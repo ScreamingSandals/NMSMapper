@@ -1,0 +1,30 @@
+{
+  "version": "1.20.5",
+  "spigot-nms-version": "1_20_R4",
+  "vanilla-jar": {
+    "url": "https://piston-data.mojang.com/v1/objects/79493072f65e17243fd36a699c9a96b4381feb91/server.jar",
+    "sha1": "79493072f65e17243fd36a699c9a96b4381feb91"
+  },
+  "mojang-mappings": {
+    "url": "https://piston-data.mojang.com/v1/objects/14be97974a77b09eb8bca88ed9268445f0fde3e7/server.txt",
+    "sha1": "14be97974a77b09eb8bca88ed9268445f0fde3e7"
+  },
+  "spigot-class-mappings": {
+    "url": "https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/raw/mappings/bukkit-1.20.5-cl.csrg?at=a7f7c2118b877fde4cf0f32f1f730ffcdee8e9ee"
+  },
+  "intermediary-mappings": {
+    "url": "https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/1.20.5.tiny"
+  },
+  "yarn-mappings": {
+    "url": "https://maven.fabricmc.net/net/fabricmc/yarn/1.20.5%2Bbuild.1/yarn-1.20.5%2Bbuild.1-v2.jar",
+    "sha1": "e6222d3163789615c5a7c99e82a6ebb10d870891"
+  },
+  "hashed-quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/hashed/1.20.5/hashed-1.20.5.tiny",
+    "sha1": "ab67c65f89274d6c1aacc276aed637bb98de57b0"
+  },
+  "quilt-mappings": {
+    "url": "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.20.5+build.1/quilt-mappings-1.20.5+build.1-v2.jar",
+    "sha1": "ed26ccc18b93da5b725e62bba7db5532e482bcbc"
+  }
+}

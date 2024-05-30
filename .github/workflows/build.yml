@@ -26,6 +26,6 @@ jobs:
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           OPTIMIZE_FOR_CI_CD: "1"
-      - name: Publish NMSMapper website
-        run: bash publish-web.sh
+#      - name: Publish NMSMapper website
+#        run: bash publish-web.sh
 

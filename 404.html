@@ -41,6 +41,15 @@
         }
     }
 
+    const versionAlias = {
+        '1.20': '1.20.1',
+        '1.20.5': '1.20.6',
+    }
+
+    if (versionAlias.hasOwnProperty(parts[0])) {
+        parts[0] = versionAlias[parts[0]];
+    }
+
     if (parts[0] !== 'history') {
         window.location.href = 'https://mappings.cephx.dev/' + parts.join('/');
     }

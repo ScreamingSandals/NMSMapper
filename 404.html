@@ -11,7 +11,8 @@
     if (path.startsWith('/')) {
         path = path.substring(1);
     }
-    const parts = path.split('/', 2);
+    const index = path.indexOf('/');
+    const parts = index !== 0 ? [path.substring(0, index), path.substring(index + 1)] : [path];
     if (parts.length === 2 && parts[1] !== '') {
         /* >= 1.14.4: mojmaps are used for links */
         const versionSpigotMap = {
